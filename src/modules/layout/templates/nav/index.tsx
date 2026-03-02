@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import Image from "next/image";
-import WLogo from "@assets/images/w-logo.png";
 
 import { listRegions } from "@lib/data/regions";
 import { listLocales } from "@lib/data/locales";
@@ -39,7 +38,7 @@ export default async function Nav() {
             >
               <div className="flex flex-row items-center">
                 <Image
-                  src={WLogo}
+                  src="/Wlogo.png"
                   alt="Whiff Theory Logo"
                   width={60}
                   height={60}
