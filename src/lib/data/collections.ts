@@ -46,6 +46,7 @@ export type CollectionBackground = {
   id: string
   collection_id: string
   file_url: string
+  mobile_image_url: string | null
   badge: string | null
   description: string | null
   font_color_palette: string | null

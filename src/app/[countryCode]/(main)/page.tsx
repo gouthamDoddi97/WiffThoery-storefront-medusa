@@ -38,6 +38,7 @@ export default async function Home(props: {
       const bg = bgMap.get(c.id)!
       return {
         src: bg.file_url,
+        mobileSrc: bg.mobile_image_url ?? undefined,
         title: c.title,
         description: bg.description ?? "",
         badge: bg.badge ?? "",

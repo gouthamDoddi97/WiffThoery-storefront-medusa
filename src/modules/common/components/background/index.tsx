@@ -12,22 +12,33 @@ const isVideo = (src: string) =>
 const Background = ({ src, mobileSrc, alt }: Props) => (
   <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
     {isVideo(src) ? (
-      <video
-        className="h-full w-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
+      <>
+        {/* Desktop: video */}
+        <video
+          className={`h-full w-full object-cover ${mobileSrc ? "hidden sm:block" : ""}`}
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src={src} type="video/webm" />
+        </video>
+        {/* Mobile: fallback image */}
         {mobileSrc && (
-          <source src={mobileSrc} media="(max-width: 768px)" type="video/webm" />
+          <img
+            src={mobileSrc}
+            alt={alt ?? ""}
+            className="h-full w-full object-cover sm:hidden"
+          />
         )}
-        <source src={src} type="video/webm" />
-      </video>
+      </>
     ) : (
       <img src={src} alt={alt ?? ""} className="h-full w-full object-cover" />
     )}
   </div>
 )
+
+
+
 
 export default Background
