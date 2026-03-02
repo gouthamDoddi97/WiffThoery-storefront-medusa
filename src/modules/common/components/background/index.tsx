@@ -23,13 +23,25 @@ const Background = ({ src, mobileSrc, alt }: Props) => (
         >
           <source src={src} type="video/webm" />
         </video>
-        {/* Mobile: fallback image */}
+        {/* Mobile: fallback image or video */}
         {mobileSrc && (
-          <img
-            src={mobileSrc}
-            alt={alt ?? ""}
-            className="h-full w-full object-cover sm:hidden"
-          />
+          isVideo(mobileSrc) ? (
+            <video
+              className="h-full w-full object-cover sm:hidden"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source src={mobileSrc} type="video/webm" />
+            </video>
+          ) : (
+            <img
+              src={mobileSrc}
+              alt={alt ?? ""}
+              className="h-full w-full object-cover sm:hidden"
+            />
+          )
         )}
       </>
     ) : (
