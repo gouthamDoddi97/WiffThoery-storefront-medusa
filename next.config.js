@@ -52,12 +52,12 @@ const nextConfig = {
       ...(backendHostname
         ? [{ protocol: "https", hostname: backendHostname }]
         : []),
-      ...(S3_HOSTNAME && S3_PATHNAME
+      ...(S3_HOSTNAME
         ? [
             {
               protocol: "https",
               hostname: S3_HOSTNAME,
-              pathname: S3_PATHNAME,
+              pathname: "/**",
             },
           ]
         : []),
