@@ -56,7 +56,6 @@ const nextConfig = {
             {
               protocol: "https",
               hostname: S3_HOSTNAME,
-              pathname: "/**",
             },
           ]
         : []),
