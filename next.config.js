@@ -5,8 +5,7 @@ checkEnvVariables()
 /**
  * Medusa Cloud-related environment variables
  */
-const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
-const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
+const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME || "pub-e954515d20cd47a0b767bba302e9d2c4.r2.dev"
 
 // Extract hostname from the backend URL so product/collection images load
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || ""
