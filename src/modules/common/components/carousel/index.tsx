@@ -8,6 +8,7 @@ import LocalizedClientLink from "../localized-client-link"
 interface CarouselProps {
   slides: {
     src: string
+    mobileSrc?: string
     title: string
     description: string
     badge: string,
@@ -75,7 +76,7 @@ const Carousel = ( { slides, autoPlay, autoPlayInterval }: CarouselProps) => {
               className="flex-[0_0_100%] h-full"
             >
               <div className={`relative h-full overflow-hidden p-8 small:p-16 text-left ${fontColor}`}>
-                <Background src={slide.src} alt={slide.title} />
+                <Background src={slide.src} mobileSrc={slide.mobileSrc} alt={slide.title} />
                 <span className={`inline-flex items-center rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs uppercase tracking-[0.2em] text-white`}>
                   {slide.badge}
                 </span>
