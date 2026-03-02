@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Image from "next/image";
-import WLogo from "../../../../../public/WLogo.png";
+import WLogo from "@assets/images/w-logo.png";
 
 import { listRegions } from "@lib/data/regions";
 import { listLocales } from "@lib/data/locales";
