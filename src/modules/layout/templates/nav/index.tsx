@@ -37,7 +37,7 @@ export default async function Nav() {
             >
               <div className="flex flex-row items-center">
                 <img
-                  src="WLogo.png"
+                  src="/WLogo.png"
                   alt="Whiff Theory Logo"
                   width={60}
                   height={60}
