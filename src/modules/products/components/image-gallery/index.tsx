@@ -4,17 +4,30 @@ import Image from "next/image"
 
 type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
+  layout?: "vertical" | "horizontal"
 }
 
-const ImageGallery = ({ images }: ImageGalleryProps) => {
+const ImageGallery = ({ images, layout = "vertical" }: ImageGalleryProps) => {
+  const isHorizontal = layout === "horizontal"
+
   return (
     <div className="flex items-start relative">
-      <div className="flex flex-col flex-1 small:mx-16 gap-y-4">
+      <div
+        className={
+          isHorizontal
+            ? "flex flex-row flex-1 small:mx-16 gap-x-4 overflow-x-auto"
+            : "flex flex-col flex-1 small:mx-16 gap-y-4"
+        }
+      >
         {images.map((image, index) => {
           return (
             <Container
               key={image.id}
-              className="relative aspect-[29/34] w-full overflow-hidden bg-ui-bg-subtle"
+              className={
+                isHorizontal
+                  ? "relative aspect-[29/34] flex-shrink-0 w-[280px] small:w-[360px] overflow-hidden bg-ui-bg-subtle"
+                  : "relative aspect-[29/34] w-full overflow-hidden bg-ui-bg-subtle"
+              }
               id={image.id}
             >
               {!!image.url && (

@@ -21,7 +21,7 @@ interface CarouselProps {
 
 
 
-const Carousel = ( { slides, autoPlay, autoPlayInterval }: CarouselProps) => {
+const LinkCarousel = ( { slides, autoPlay, autoPlayInterval }: CarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -116,4 +116,4 @@ const Carousel = ( { slides, autoPlay, autoPlayInterval }: CarouselProps) => {
   )
 }
 
-export default Carousel
+export default LinkCarousel

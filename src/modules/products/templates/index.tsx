@@ -28,19 +28,25 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   if (!product || !product.id) {
     return notFound()
   }
-
   return (
     <>
       <div
         className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
         data-testid="product-container"
       >
+        {/* Mobile: horizontal strip above product info */}
+        <div className="block small:hidden w-full relative">
+          <ImageGallery images={images} layout="horizontal" />
+        </div>
+
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
           <ProductInfo product={product} />
           <ProductTabs product={product} />
         </div>
-        <div className="block w-full relative">
-          <ImageGallery images={images} />
+
+        {/* Desktop: vertical gallery between info columns */}
+        <div className="hidden small:block w-full relative">
+          <ImageGallery images={images} layout="vertical" />
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
           <ProductOnboardingCta />
