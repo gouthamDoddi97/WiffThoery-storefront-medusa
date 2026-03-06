@@ -6,7 +6,7 @@ import { listCollections, listCollectionBackgrounds } from "@lib/data/collection
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
+  title: "Whiff Theory",
   description:
     "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
 }
