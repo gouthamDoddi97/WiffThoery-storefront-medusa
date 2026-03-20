@@ -2,6 +2,7 @@ import { Metadata } from "next"
 
 import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
+import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 import { listCollections, listCollectionBackgrounds } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
@@ -48,6 +49,7 @@ export default async function Home(props: {
 
   return (
     <>
+      <OrderAlertBanner />
       <Hero slides={carouselSlides} />
       <div className="py-12">
         <ul className="flex flex-col gap-x-6">

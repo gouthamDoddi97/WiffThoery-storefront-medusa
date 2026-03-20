@@ -1,5 +1,6 @@
 import React, { Suspense } from "react"
 
+import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
@@ -30,6 +31,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   }
   return (
     <>
+      <OrderAlertBanner />
       <div
         className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
         data-testid="product-container"
