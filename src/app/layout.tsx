@@ -1,4 +1,4 @@
-import { getBaseURL } from "@lib/util/env"
+import { getBaseURL, getMediaURL } from "@lib/util/env"
 import { Metadata } from "next"
 import "styles/globals.css"
 
@@ -20,9 +20,10 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   // og:video is not in Next.js's typed API — injected via `other`
+  // Upload og-video.mp4 to your R2 bucket and set MEDUSA_CLOUD_S3_HOSTNAME
   other: {
-    "og:video": `${getBaseURL()}/og-video.mp4`,
-    "og:video:secure_url": `${getBaseURL()}/og-video.mp4`,
+    "og:video": `${getMediaURL()}/og-video.mp4`,
+    "og:video:secure_url": `${getMediaURL()}/og-video.mp4`,
     "og:video:type": "video/mp4",
     "og:video:width": "1280",
     "og:video:height": "720",
