@@ -1,4 +1,4 @@
-import { getBaseURL, getMediaURL } from "@lib/util/env"
+import { getBaseURL, getMediaURL, getSiteURL } from "@lib/util/env"
 import { Metadata } from "next"
 import "styles/globals.css"
 
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "Discover luxury and artisan fragrances at Whiff Theory. Shop our curated collection of perfumes crafted for every mood and occasion.",
   openGraph: {
     type: "website",
+    url: getSiteURL(),
     siteName: "Whiff Theory",
     locale: "en_IN",
     images: [{ url: "/og-image.png", alt: "Whiff Theory – Curated Fragrance Collections", width: 1200, height: 630 }],
@@ -22,6 +23,9 @@ export const metadata: Metadata = {
   // og:video is not in Next.js's typed API — injected via `other`
   // Upload og-video.mp4 to your R2 bucket and set MEDUSA_CLOUD_S3_HOSTNAME
   other: {
+    ...(process.env.NEXT_PUBLIC_FB_APP_ID
+      ? { "fb:app_id": process.env.NEXT_PUBLIC_FB_APP_ID }
+      : {}),
     "og:video": `${getMediaURL()}/og-video.mp4`,
     "og:video:secure_url": `${getMediaURL()}/og-video.mp4`,
     "og:video:type": "video/mp4",
