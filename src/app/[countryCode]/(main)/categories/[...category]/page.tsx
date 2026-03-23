@@ -6,6 +6,7 @@ import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { getBaseURL } from "@lib/util/env"
 
 type Props = {
   params: Promise<{ category: string[]; countryCode: string }>
@@ -59,8 +60,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     return {
       title,
       description,
+      openGraph: {
+        title: `${title} | Whiff Theory`,
+        description,
+        images: [{ url: "/Wlogo.png", alt: `Whiff Theory – ${title}` }],
+        siteName: "Whiff Theory",
+      },
       alternates: {
-        canonical: `${params.category.join("/")}`,
+        canonical: `${getBaseURL()}/${params.countryCode}/categories/${params.category.join("/")}`,
       },
     }
   } catch (error) {

@@ -87,12 +87,25 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const description =
+    product.description ?? `Shop ${product.title} at Whiff Theory.`
+  const ogImages = product.images?.map((i) => ({ url: i.url, alt: product.title })) ??
+    (product.thumbnail ? [{ url: product.thumbnail, alt: product.title }] : [])
+
   return {
     title: product.title,
-    description: `${product.title}`,
+    description,
     openGraph: {
+      type: "website",
       title: `${product.title} | Whiff Theory`,
-      description: product.description ?? product.title,
+      description,
+      images: ogImages,
+      siteName: "Whiff Theory",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | Whiff Theory`,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -120,12 +133,32 @@ export default async function ProductPage(props: Props) {
     notFound()
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: pricedProduct.title,
+    description: pricedProduct.description ?? undefined,
+    image:
+      pricedProduct.images?.map((i) => i.url) ??
+      (pricedProduct.thumbnail ? [pricedProduct.thumbnail] : undefined),
+    brand: {
+      "@type": "Brand",
+      name: "Whiff Theory",
+    },
+  }
+
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }

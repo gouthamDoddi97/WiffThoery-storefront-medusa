@@ -63,9 +63,17 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const description = `Shop the ${collection.title} collection at Whiff Theory – discover unique fragrances curated for every taste.`
+
   const metadata = {
     title: collection.title,
-    description: `${collection.title} collection`,
+    description,
+    openGraph: {
+      title: `${collection.title} | Whiff Theory`,
+      description,
+      images: [{ url: "/Wlogo.png", alt: `Whiff Theory – ${collection.title}` }],
+      siteName: "Whiff Theory",
+    },
   } as Metadata
 
   return metadata

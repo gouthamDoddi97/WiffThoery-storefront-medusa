@@ -9,7 +9,13 @@ import { getRegion } from "@lib/data/regions"
 export const metadata: Metadata = {
   title: "Whiff Theory",
   description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+    "Discover luxury and artisan fragrances at Whiff Theory. Explore our curated perfume collections crafted for every mood and occasion.",
+  openGraph: {
+    title: "Whiff Theory – Curated Fragrance Collections",
+    description:
+      "Discover luxury and artisan fragrances at Whiff Theory. Explore our curated perfume collections crafted for every mood and occasion.",
+    images: [{ url: "/Wlogo.png", alt: "Whiff Theory" }],
+  },
 }
 
 export default async function Home(props: {
