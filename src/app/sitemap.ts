@@ -2,12 +2,12 @@ import { MetadataRoute } from "next"
 import { listProducts } from "@lib/data/products"
 import { listCollections } from "@lib/data/collections"
 import { listCategories } from "@lib/data/categories"
-import { getBaseURL } from "@lib/util/env"
+import { getSiteURL } from "@lib/util/env"
 
 const COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = getBaseURL()
+  const base = getSiteURL()
 
   const [productsData, collectionsData, categories] = await Promise.all([
     listProducts({
