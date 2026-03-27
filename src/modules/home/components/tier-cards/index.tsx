@@ -89,14 +89,14 @@ export default async function TierCards() {
                       src={tier.imageUrl}
                       alt=""
                       aria-hidden
-                      className="absolute inset-y-0 right-0 h-full w-[55%] object-cover object-center opacity-40 group-hover:opacity-55 transition-opacity duration-300"
+                      className="absolute inset-0 h-full w-full object-cover object-center opacity-30 group-hover:opacity-40 transition-opacity duration-300"
                     />
-                    {/* Gradient mask: solid on left sliding to transparent on right */}
+                    {/* Stronger left-to-right mask keeps copy readable and art visible on the right */}
                     <div
                       className="absolute inset-0 pointer-events-none z-10"
                       style={{
                         background:
-                          "linear-gradient(to right, #171B28 45%, rgba(23,27,40,0.85) 60%, transparent 100%)",
+                          "linear-gradient(to right, rgba(23,27,40,0.96) 0%, rgba(23,27,40,0.9) 28%, rgba(23,27,40,0.72) 52%, rgba(23,27,40,0.42) 74%, rgba(23,27,40,0.14) 100%)",
                       }}
                     />
                   </>

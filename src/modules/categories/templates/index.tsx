@@ -172,7 +172,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
             {/* Mobile: light-touch overlay so image shows through */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
             {/* Desktop: horizontal gradient — image shows on right */}
             <div
@@ -246,7 +246,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
             {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
@@ -322,7 +322,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
             {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
@@ -394,7 +394,7 @@ function GenericCategoryTemplate({
             {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
