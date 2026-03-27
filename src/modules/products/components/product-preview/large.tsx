@@ -1,6 +1,7 @@
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import CardActions from "./card-actions"
 import PreviewPrice from "./price"
 
 export default async function ProductPreviewLarge({
@@ -14,8 +15,9 @@ export default async function ProductPreviewLarge({
   const thumbnail = product.thumbnail || product.images?.[0]?.url
 
   return (
-    <LocalizedClientLink href={`/products/${product.handle}`} className="group block">
-      <div data-testid="product-wrapper">
+    <div className="group block" data-testid="product-wrapper">
+      {/* Clickable area — image + title + description */}
+      <LocalizedClientLink href={`/products/${product.handle}`} className="block">
         {/* Image — tall, borderless, no bg */}
         <div className="overflow-hidden aspect-[3/5] w-full">
           {thumbnail ? (
@@ -30,7 +32,7 @@ export default async function ProductPreviewLarge({
         </div>
 
         {/* Info */}
-        <div className="pt-6 pb-2 flex flex-col gap-3">
+        <div className="pt-6 flex flex-col gap-3">
           {/* Collection badge */}
           {product.collection && (
             <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-primary">
@@ -52,34 +54,22 @@ export default async function ProductPreviewLarge({
               {product.description}
             </p>
           )}
-
-          {/* Price + CTA row */}
-          <div className="flex items-center justify-between mt-3 gap-4">
-            {cheapestPrice && (
-              <span className="font-grotesk font-semibold text-lg text-on-surface">
-                <PreviewPrice price={cheapestPrice} />
-              </span>
-            )}
-
-            {/* Add to Collection */}
-            <span className="inline-flex items-center gap-2 border border-primary text-primary font-inter text-[9px] tracking-[0.2em] uppercase px-4 py-2.5 group-hover:bg-primary group-hover:text-surface-lowest transition-all duration-300 whitespace-nowrap flex-shrink-0">
-              ADD TO COLLECTION
-              <svg
-                width="9"
-                height="9"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="square"
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </span>
-          </div>
         </div>
+      </LocalizedClientLink>
+
+      {/* Actions row — outside the link (valid HTML: no interactive elements inside <a>) */}
+      <div className="flex items-center justify-between mt-3 pb-2 gap-4">
+        {cheapestPrice && (
+          <span className="font-grotesk font-semibold text-lg text-on-surface">
+            <PreviewPrice price={cheapestPrice} />
+          </span>
+        )}
+        <CardActions
+          product={product}
+          price={cheapestPrice?.calculated_price}
+          colorVariant="primary"
+        />
       </div>
-    </LocalizedClientLink>
+    </div>
   )
 }

@@ -247,36 +247,6 @@ const ProductTemplate = async ({
 
 
 
-      {/* ─── BRAND STORY ─── */}
-      {product.description && (
-        <section className="py-20 bg-surface-low">
-          <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-12 items-center">
-            {/* Left: grayscale product image */}
-              {artImg && (
-              <div className="hidden small:block aspect-[4/5] overflow-hidden bg-surface-container">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={artImg}
-                  alt=""
-                  className="w-full h-full object-cover object-center"
-                />
-              </div>
-            )}
-            {/* Right: quote + description */}
-            <div className="flex flex-col gap-6">
-              {perfume?.scent_story && (
-                <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface italic leading-[1.2] tracking-[-0.02em]">
-                  &ldquo;{perfume.scent_story}&rdquo;
-                </p>
-              )}
-              <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ─── OLFACTORY BLUEPRINT ─── */}
       {(perfume?.top_notes ||
         perfume?.middle_notes ||

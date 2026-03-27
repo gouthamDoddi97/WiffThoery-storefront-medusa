@@ -15,8 +15,19 @@ const LoginTemplate = () => {
 
   return (
     <div className="min-h-screen bg-surface-lowest flex">
-      {/* Left panel — decorative */}
-      <div className="hidden small:flex flex-1 bg-surface-low items-center justify-center relative overflow-hidden">
+      {/* Left panel — decorative with video bg */}
+      <div className="hidden small:flex flex-1 items-center justify-center relative overflow-hidden">
+        {/* Video background */}
+        <video
+          src="/homeHero.webm"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-surface-lowest/70 pointer-events-none" />
         {/* Ambient glows */}
         <div
           className="absolute inset-0 pointer-events-none"

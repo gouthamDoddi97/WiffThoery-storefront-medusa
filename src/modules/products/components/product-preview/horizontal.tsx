@@ -2,6 +2,7 @@ import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import CardActions from "./card-actions"
 import PreviewPrice from "./price"
 
 export default async function ProductPreviewHorizontal({
@@ -43,8 +44,9 @@ export default async function ProductPreviewHorizontal({
     </div>
   )
 
+  // Info block WITHOUT the footer actions row (pulled outside the <a> tag)
   const infoBlock = (
-    <div className="flex-1 flex flex-col justify-center px-10 py-10 small:px-14 small:py-12 gap-5">
+    <div className="flex-1 flex flex-col justify-center px-10 py-10 small:px-14 small:py-12 gap-5 pb-4 small:pb-4">
       {/* Series label */}
       <span className="font-inter text-[10px] tracking-[0.25em] uppercase text-tertiary">
         {seriesLabel}
@@ -68,34 +70,42 @@ export default async function ProductPreviewHorizontal({
           {description}
         </p>
       )}
+    </div>
+  )
 
-      {/* Footer */}
-      <div className="flex items-center gap-8 mt-2">
+  // Footer padding aligns with the info column content:
+  //   Normal  (image-left):  skip image (36%) + info left-padding (px-10/px-14)
+  //   Reversed (info-left):  just info left-padding (px-10/px-14)
+  const footerPadding = isReversed
+    ? "pl-10 small:pl-14 pr-10 small:pr-14"
+    : "pl-[calc(36%+2.5rem)] small:pl-[calc(36%+3.5rem)] pr-10 small:pr-14"
+
+  return (
+    <div className="group block">
+      {/* Clickable area — image + title + description navigate to product page */}
+      <LocalizedClientLink href={`/products/${product.handle}`} className="block">
+        <div className="flex overflow-hidden transition-colors duration-500">
+          {isReversed ? (
+            <>{infoBlock}{imageBlock}</>
+          ) : (
+            <>{imageBlock}{infoBlock}</>
+          )}
+        </div>
+      </LocalizedClientLink>
+
+      {/* Actions footer — outside the link (valid HTML: no interactive elements inside <a>) */}
+      <div className={`flex items-center gap-8 pb-10 small:pb-12 ${footerPadding}`}>
         {cheapestPrice && (
           <div className="font-grotesk font-semibold text-xl text-on-surface">
             <PreviewPrice price={cheapestPrice} />
           </div>
         )}
-        <span className="inline-flex items-center gap-2 border border-tertiary text-tertiary font-inter text-[10px] tracking-[0.2em] uppercase px-5 py-2.5 group-hover:bg-tertiary group-hover:text-surface-lowest transition-all duration-300">
-          ADD TO EXHIBITION
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </span>
+        <CardActions
+          product={product}
+          price={cheapestPrice?.calculated_price}
+          colorVariant="tertiary"
+        />
       </div>
     </div>
-  )
-
-  return (
-    <LocalizedClientLink href={`/products/${product.handle}`} className="group block">
-      <div className="flex overflow-hidden transition-colors duration-500">
-        {isReversed ? (
-          <>{infoBlock}{imageBlock}</>
-        ) : (
-          <>{imageBlock}{infoBlock}</>
-        )}
-      </div>
-    </LocalizedClientLink>
   )
 }
