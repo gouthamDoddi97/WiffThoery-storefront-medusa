@@ -159,21 +159,25 @@ type TierProps = {
 function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
   return (
     <div className="bg-surface-lowest">
-      <div className="relative py-24 small:py-32 bg-surface-low overflow-hidden">
+      <div className="relative py-24 small:py-32 bg-surface-low overflow-hidden min-h-[300px] small:min-h-0">
         {heroImage && (
           <>
             <img
               src={heroImage}
               alt=""
               aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-45"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ opacity: 0.5 }}
             />
+            {/* Mobile: vertical gradient — image shows in lower half */}
             <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)",
-              }}
+              className="absolute inset-0 block small:hidden"
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+            />
+            {/* Desktop: horizontal gradient — image shows on right */}
+            <div
+              className="absolute inset-0 hidden small:block"
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)" }}
             />
           </>
         )}
@@ -202,6 +206,9 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
           <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="wave" />
         </Suspense>
+      </div>
+      {meta.nextTier && (
+        <div className="bg-surface-low py-16">
           <div className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
             <div className="flex flex-col gap-2">
               <span className="eyebrow">THE JOURNEY</span>
@@ -213,6 +220,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
             </LocalizedClientLink>
           </div>
         </div>
+      )}
 
     </div>
   )
@@ -225,21 +233,25 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
 function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
   return (
     <div className="bg-surface-lowest">
-      <div className="relative py-24 small:py-32 overflow-hidden bg-surface-low">
+      <div className="relative py-24 small:py-32 overflow-hidden bg-surface-low min-h-[300px] small:min-h-0">
         {heroImage && (
           <>
             <img
               src={heroImage}
               alt=""
               aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-45"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ opacity: 0.5 }}
             />
+            {/* Mobile: vertical gradient */}
             <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)",
-              }}
+              className="absolute inset-0 block small:hidden"
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+            />
+            {/* Desktop: horizontal gradient */}
+            <div
+              className="absolute inset-0 hidden small:block"
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)" }}
             />
           </>
         )}
@@ -298,21 +310,25 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
 function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
   return (
     <div className="bg-surface-lowest">
-      <div className="relative py-28 small:py-40 bg-surface-container overflow-hidden">
+      <div className="relative py-28 small:py-40 bg-surface-container overflow-hidden min-h-[300px] small:min-h-0">
         {heroImage && (
           <>
             <img
               src={heroImage}
               alt=""
               aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-45"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ opacity: 0.5 }}
             />
+            {/* Mobile: vertical gradient */}
             <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(15,19,28,0.97) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.52) 68%, rgba(15,19,28,0.15) 100%)",
-              }}
+              className="absolute inset-0 block small:hidden"
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.97) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+            />
+            {/* Desktop: horizontal gradient */}
+            <div
+              className="absolute inset-0 hidden small:block"
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.97) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.52) 68%, rgba(15,19,28,0.15) 100%)" }}
             />
           </>
         )}
@@ -366,21 +382,25 @@ function GenericCategoryTemplate({
 }: Omit<TierProps, "meta">) {
   return (
     <div className="bg-surface-lowest">
-      <div className="relative bg-surface-low py-16 overflow-hidden">
+      <div className="relative bg-surface-low py-16 overflow-hidden min-h-[200px] small:min-h-0">
         {heroImage && (
           <>
             <img
               src={heroImage}
               alt=""
               aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-40"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ opacity: 0.5 }}
             />
+            {/* Mobile: vertical gradient */}
             <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.82) 44%, rgba(15,19,28,0.48) 68%, rgba(15,19,28,0.12) 100%)",
-              }}
+              className="absolute inset-0 block small:hidden"
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.8) 55%, rgba(15,19,28,0.3) 100%)" }}
+            />
+            {/* Desktop: horizontal gradient */}
+            <div
+              className="absolute inset-0 hidden small:block"
+              style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.82) 44%, rgba(15,19,28,0.48) 68%, rgba(15,19,28,0.12) 100%)" }}
             />
           </>
         )}

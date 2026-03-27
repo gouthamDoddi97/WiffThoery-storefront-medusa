@@ -30,10 +30,12 @@ export default function CardActions({
   product,
   price,
   colorVariant = "default",
+  vertical = false,
 }: {
   product: HttpTypes.StoreProduct
   price?: string | null
   colorVariant?: CardColorVariant
+  vertical?: boolean
 }) {
   const { countryCode } = useParams() as { countryCode: string }
   const router = useRouter()
@@ -84,14 +86,17 @@ export default function CardActions({
   }
 
   return (
-    <div className="flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto">
+    <div className={vertical
+      ? "flex flex-col items-center gap-8 flex-shrink-0"
+      : "flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto"
+    }>
       {/* Wishlist heart */}
       {mounted && (
         <button
           type="button"
           onClick={handleWishlist}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          className={`p-1 transition-colors duration-200 flex-shrink-0 ${
+          className={`${vertical ? "p-1.5" : "p-1"} transition-colors duration-200 flex-shrink-0 ${
             isWishlisted ? colors.wishActive : colors.wish
           }`}
         >
@@ -120,50 +125,60 @@ export default function CardActions({
         onClick={handleAddToCart}
         disabled={isAdding}
         aria-label="Add to cart"
-        className={`inline-flex items-center gap-2 border font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer
-          px-2.5 py-2.5 small:px-4 small:py-2.5 ${
-          added
-            ? "bg-primary border-primary text-surface-lowest"
-            : colors.btn
+        className={`inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${
+          vertical
+            ? `p-1.5 rounded-sm ${ added ? "text-primary" : colors.wish }`
+            : `small:border px-2.5 py-2.5 small:px-4 small:py-2.5 ${ added ? "bg-primary small:border-primary text-surface-lowest" : colors.btn }`
         }`}
       >
-        {/* Mobile: shopping bag icon only */}
-        <span className="flex small:hidden">
-          {isAdding ? (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+        {vertical ? (
+          // Vertical mode: always icon-only regardless of screen size
+          isAdding ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
               <circle cx="12" cy="12" r="10" />
             </svg>
           ) : added ? (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           ) : (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 01-8 0" />
             </svg>
-          )}
-        </span>
-
-        {/* Desktop: full text label */}
-        <span className="hidden small:inline">
-          {isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD TO CART"}
-        </span>
-        {!isAdding && !added && (
-          <svg
-            width="9"
-            height="9"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="square"
-            className="hidden small:block"
-          >
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
+          )
+        ) : (
+          <>
+            {/* Mobile: shopping bag icon only */}
+            <span className="flex small:hidden">
+              {isAdding ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+              ) : added ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 01-8 0" />
+                </svg>
+              )}
+            </span>
+            {/* Desktop: full text label + arrow */}
+            <span className="hidden small:inline">
+              {isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD TO CART"}
+            </span>
+            {!isAdding && !added && (
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" className="hidden small:block">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            )}
+          </>
         )}
       </button>
     </div>

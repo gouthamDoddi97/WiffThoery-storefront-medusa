@@ -11,12 +11,43 @@ import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
 import { Locale } from "@lib/data/locales"
 
-const SideMenuItems = {
-  Home: "/",
-  Store: "/store",
-  Account: "/account",
-  Cart: "/cart",
-}
+const TIERS = [
+  {
+    num: "01",
+    label: "CROWD PLEASERS",
+    sub: "Universally loved, instantly wearable",
+    href: "/categories/crowd-pleaser",
+    accent: "text-primary",
+    border: "border-primary/30",
+    bg: "hover:bg-primary/10",
+  },
+  {
+    num: "02",
+    label: "INTRO TO NICHE",
+    sub: "Your first step into something deeper",
+    href: "/categories/intro-to-niche",
+    accent: "text-tertiary",
+    border: "border-tertiary/30",
+    bg: "hover:bg-tertiary/10",
+  },
+  {
+    num: "03",
+    label: "POLARIZING ART",
+    sub: "For those who wear to provoke",
+    href: "/categories/polarizing-art",
+    accent: "text-secondary",
+    border: "border-secondary/30",
+    bg: "hover:bg-secondary/10",
+  },
+]
+
+const UTILITY_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "All Products", href: "/store" },
+  { label: "Account", href: "/account" },
+  { label: "Wishlist", href: "/wishlist" },
+  { label: "Cart", href: "/cart" },
+]
 
 type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
@@ -37,7 +68,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
               <div className="relative flex h-full">
                 <Popover.Button
                   data-testid="nav-menu-button"
-                  className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
+                  className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base font-inter text-[11px] tracking-[0.18em] uppercase"
                 >
                   Menu
                 </Popover.Button>
@@ -45,7 +76,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
 
               {open && (
                 <div
-                  className="fixed inset-0 z-[50] bg-black/0 pointer-events-auto"
+                  className="fixed inset-0 z-[50] bg-black/60 pointer-events-auto"
                   onClick={close}
                   data-testid="side-menu-backdrop"
                 />
@@ -54,43 +85,101 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
               <Transition
                 show={open}
                 as={Fragment}
-                enter="transition ease-out duration-150"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 backdrop-blur-2xl"
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 -translate-x-4"
+                enterTo="opacity-100 translate-x-0"
                 leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 backdrop-blur-2xl"
-                leaveTo="opacity-0"
+                leaveFrom="opacity-100 translate-x-0"
+                leaveTo="opacity-0 -translate-x-4"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="flex flex-col fixed top-0 left-0 w-[85vw] sm:w-[360px] h-screen z-[51] text-on-surface">
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
+                    className="flex flex-col h-full bg-surface-lowest border-r border-surface-variant/20 justify-between overflow-y-auto"
                   >
-                    <div className="flex justify-end" id="xmark">
-                      <button data-testid="close-menu-button" onClick={close}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-surface-variant/20">
+                      <span className="font-grotesk font-bold text-xs tracking-[0.22em] text-on-surface-disabled uppercase">
+                        Whiff Theory
+                      </span>
+                      <button
+                        data-testid="close-menu-button"
+                        onClick={close}
+                        className="p-1 text-on-surface-variant hover:text-on-surface transition-colors"
+                      >
                         <XMark />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
-                      {Object.entries(SideMenuItems).map(([name, href]) => {
-                        return (
-                          <li key={name}>
+
+                    {/* Tiers — the hero section */}
+                    <div className="px-4 pt-6 pb-4">
+                      <p className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled px-2 mb-3">
+                        Shop by Tier
+                      </p>
+                      <ul className="flex flex-col gap-2">
+                        {TIERS.map((tier) => (
+                          <li key={tier.href}>
                             <LocalizedClientLink
-                              href={href}
-                              className="text-3xl leading-10 hover:text-ui-fg-disabled"
+                              href={tier.href}
                               onClick={close}
-                              data-testid={`${name.toLowerCase()}-link`}
+                              className={`flex items-center gap-4 px-3 py-4 border ${tier.border} ${tier.bg} transition-colors duration-200 group`}
                             >
-                              {name}
+                              {/* Big tier number */}
+                              <span className={`font-grotesk font-bold text-3xl leading-none ${tier.accent} opacity-60 group-hover:opacity-100 transition-opacity w-10 flex-shrink-0`}>
+                                {tier.num}
+                              </span>
+                              <div className="flex flex-col gap-0.5 min-w-0">
+                                <span className={`font-grotesk font-bold text-base tracking-[-0.01em] text-on-surface`}>
+                                  {tier.label}
+                                </span>
+                                <span className="font-inter text-[10px] text-on-surface-disabled leading-tight">
+                                  {tier.sub}
+                                </span>
+                              </div>
+                              <svg
+                                className={`ml-auto flex-shrink-0 ${tier.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+                                width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"
+                              >
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                              </svg>
                             </LocalizedClientLink>
                           </li>
-                        )
-                      })}
-                    </ul>
-                    <div className="flex flex-col gap-y-6">
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mx-6 border-t border-surface-variant/20" />
+
+                    {/* Utility links */}
+                    <div className="px-6 py-5 flex-1">
+                      <p className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled mb-3">
+                        Navigate
+                      </p>
+                      <ul className="flex flex-col gap-1">
+                        {UTILITY_LINKS.map(({ label, href }) => (
+                          <li key={href}>
+                            <LocalizedClientLink
+                              href={href}
+                              onClick={close}
+                              className="flex items-center justify-between py-2.5 font-inter text-sm text-on-surface-variant hover:text-on-surface transition-colors duration-150"
+                              data-testid={`${label.toLowerCase().replace(" ", "-")}-link`}
+                            >
+                              {label}
+                              <ArrowRightMini className="opacity-40" />
+                            </LocalizedClientLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Footer — locale/country + copyright */}
+                    <div className="px-6 py-5 border-t border-surface-variant/20 flex flex-col gap-4">
                       {!!locales?.length && (
                         <div
-                          className="flex justify-between"
+                          className="flex justify-between items-center"
                           onMouseEnter={languageToggleState.open}
                           onMouseLeave={languageToggleState.close}
                         >
@@ -108,7 +197,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         </div>
                       )}
                       <div
-                        className="flex justify-between"
+                        className="flex justify-between items-center"
                         onMouseEnter={countryToggleState.open}
                         onMouseLeave={countryToggleState.close}
                       >
@@ -125,9 +214,8 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                           )}
                         />
                       </div>
-                      <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Whiff Theory. All rights
-                        reserved.
+                      <Text className="txt-compact-small text-on-surface-disabled">
+                        © {new Date().getFullYear()} Whiff Theory
                       </Text>
                     </div>
                   </div>
