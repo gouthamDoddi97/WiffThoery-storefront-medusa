@@ -2,6 +2,36 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* ─── Coastal Gallery Design System ─────────────────────────────────────────── */
+:root {
+  --surface-lowest: #0A0E1A;
+  --surface: #0F131F;
+  --surface-low: #171B28;
+  --surface-container: #1D2130;
+  --surface-high: #262A37;
+  --surface-variant: #313442;
+  --primary: #4FDBCC;
+  --primary-container: #00B4A6;
+  --secondary: #FF6B5A;
+  --tertiary: #FFB547;
+  --on-surface: #E8EAF0;
+  --on-surface-variant: #8B8FA8;
+  --on-surface-disabled: #4A4E63;
+}
+
+html {
+  background-color: var(--surface-lowest);
+  color: var(--on-surface);
+}
+
+body {
+  background-color: var(--surface-lowest);
+  color: var(--on-surface);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
@@ -35,9 +65,9 @@
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    border-bottom: 1px solid var(--surface-variant);
+    -webkit-text-fill-color: var(--on-surface);
+    -webkit-box-shadow: 0 0 0px 1000px var(--surface-low) inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -55,7 +85,36 @@
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+    @apply px-4 py-2 border border-[#4FDBCC] text-[#4FDBCC] hover:bg-[#4FDBCC] hover:text-[#0A0E1A] transition-colors duration-200 ease-in;
+  }
+
+  /* ─── Coastal Gallery Utilities ────────────────────────────────────────── */
+  .btn-primary {
+    @apply bg-gradient-cta text-surface-lowest font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:opacity-90 inline-block;
+  }
+
+  .btn-ghost {
+    @apply border border-primary text-primary bg-transparent font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:bg-primary/10 inline-block;
+  }
+
+  .btn-text {
+    @apply text-primary font-inter underline underline-offset-4 bg-transparent transition-colors duration-200 hover:text-primary-container;
+  }
+
+  .input-coastal {
+    @apply bg-transparent border-0 border-b border-surface-variant text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:outline-none pb-2 w-full font-inter transition-colors duration-200;
+  }
+
+  .card-coastal {
+    @apply bg-surface-low shadow-ambient transition-all duration-300 hover:bg-surface-high hover:shadow-card-hover;
+  }
+
+  .section-heading {
+    @apply font-grotesk font-bold tracking-[-0.02em] text-on-surface;
+  }
+
+  .eyebrow {
+    @apply font-inter text-sm tracking-[0.2em] uppercase text-primary;
   }
 
   .text-xsmall-regular {

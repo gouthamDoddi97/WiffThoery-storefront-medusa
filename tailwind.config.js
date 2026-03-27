@@ -21,6 +21,25 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Coastal Gallery design system
+        surface: {
+          lowest: "#0A0E1A",
+          DEFAULT: "#0F131F",
+          low: "#171B28",
+          container: "#1D2130",
+          high: "#262A37",
+          variant: "#313442",
+        },
+        primary: {
+          DEFAULT: "#4FDBCC",
+          container: "#00B4A6",
+        },
+        secondary: "#FF6B5A",
+        tertiary: "#FFB547",
+        "on-surface": "#E8EAF0",
+        "on-surface-variant": "#8B8FA8",
+        "on-surface-disabled": "#4A4E63",
+        // Keep grey for any legacy Medusa UI components
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -37,11 +56,19 @@ module.exports = {
       },
       borderRadius: {
         none: "0px",
-        soft: "2px",
-        base: "4px",
-        rounded: "8px",
-        large: "16px",
-        circle: "9999px",
+        soft: "0px",
+        base: "0px",
+        rounded: "0px",
+        large: "0px",
+        circle: "0px",
+        sm: "0px",
+        DEFAULT: "0px",
+        md: "0px",
+        lg: "0px",
+        xl: "0px",
+        "2xl": "0px",
+        "3xl": "0px",
+        full: "0px",
       },
       maxWidth: {
         "8xl": "100rem",
@@ -59,7 +86,10 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
+        grotesk: ["var(--font-grotesk)", "Space Grotesk", "sans-serif"],
+        inter: ["var(--font-inter)", "Inter", "sans-serif"],
         sans: [
+          "var(--font-inter)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -69,6 +99,15 @@ module.exports = {
           "Ubuntu",
           "sans-serif",
         ],
+      },
+      boxShadow: {
+        ambient: "0px 24px 48px -12px rgba(5,7,13,0.06)",
+        card: "0px 8px 24px -4px rgba(5,7,13,0.12)",
+        "card-hover": "0px 16px 40px -8px rgba(5,7,13,0.20)",
+      },
+      backgroundImage: {
+        "gradient-cta": "linear-gradient(45deg, #4FDBCC, #00B4A6)",
+        "gradient-cta-hover": "linear-gradient(45deg, #00B4A6, #4FDBCC)",
       },
       keyframes: {
         ring: {

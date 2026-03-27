@@ -1,157 +1,197 @@
-import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
 
 export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+  const { collections } = await listCollections({ fields: "*products" })
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
-      <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
+    <footer className="bg-surface-lowest border-t border-surface-variant/30 w-full">
+      <div className="content-container pt-20 pb-10">
+        {/* Main grid */}
+        <div className="grid grid-cols-1 gap-12 small:grid-cols-4 small:gap-8 mb-16">
+
+          {/* Column 1 — Brand */}
+          <div className="flex flex-col gap-6 small:col-span-1">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+              className="font-grotesk font-bold text-sm tracking-[0.2em] text-on-surface hover:text-primary transition-colors uppercase"
             >
-              Medusa Store
+              WHIFF THEORY
             </LocalizedClientLink>
+            <p className="font-inter text-[11px] tracking-[0.2em] text-on-surface-variant uppercase">
+              CRAFTED IN VIZAG. FOR THE WORLD.
+            </p>
+            <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[260px]">
+              Three tiers. One journey. No compromises.
+            </p>
+            {/* Newsletter */}
+            <div className="flex flex-col gap-2 mt-2">
+              <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                JOIN THE JOURNEY
+              </span>
+              <div className="flex items-center border-b border-surface-variant focus-within:border-primary transition-colors duration-200">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="bg-transparent flex-1 font-inter text-sm text-on-surface placeholder:text-on-surface-disabled py-2 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="text-primary hover:text-primary-container transition-colors pb-1"
+                  aria-label="Subscribe"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
 
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
+          {/* Column 2 — The Ladder (collections) */}
+          <div className="flex flex-col gap-4">
+            <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+              THE LADDER
+            </span>
+            <ul className="flex flex-col gap-3">
+              <li>
+                <LocalizedClientLink
+                  href="/categories/crowd-pleaser"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
                 >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {/* <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
-                  </a>
-                </li>
-              </ul>
-            </div> */}
+                  Crowd Pleasers
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/categories/intro-to-niche"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Intro to Niche
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/categories/polarizing-art"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Polarizing Art
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/store"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Archive
+                </LocalizedClientLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3 — Company */}
+          <div className="flex flex-col gap-4">
+            <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+              COMPANY
+            </span>
+            <ul className="flex flex-col gap-3">
+              <li>
+                <LocalizedClientLink
+                  href="/about"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Our Story
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/journey"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Scent Journal
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/account"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Account
+                </LocalizedClientLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4 — Transparency */}
+          <div className="flex flex-col gap-4">
+            <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+              TRANSPARENCY
+            </span>
+            <ul className="flex flex-col gap-3">
+              <li>
+                <LocalizedClientLink
+                  href="/about#pricing"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Pricing Philosophy
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/about#sourcing"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Ingredient Sourcing
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/account/orders"
+                  className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  Returns
+                </LocalizedClientLink>
+              </li>
+            </ul>
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Whiff Theory. All rights reserved.
-          </Text>
-          <MedusaCTA />
+
+        {/* Bottom bar */}
+        <div className="flex flex-col small:flex-row w-full pt-8 border-t border-surface-variant/30 justify-between items-center gap-4">
+          <p className="font-inter text-xs text-on-surface-disabled tracking-wide">
+            © {new Date().getFullYear()} Whiff Theory. Independent. Always.
+          </p>
+          {/* Social icons */}
+          <div className="flex items-center gap-4">
+            <a
+              href="https://instagram.com/whifftheory"
+              target="_blank"
+              rel="noreferrer"
+              className="text-on-surface-variant hover:text-primary transition-colors"
+              aria-label="Instagram"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+                <rect x="2" y="2" width="20" height="20" rx="0"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            </a>
+            <a
+              href="https://twitter.com/whifftheory"
+              target="_blank"
+              rel="noreferrer"
+              className="text-on-surface-variant hover:text-primary transition-colors"
+              aria-label="X / Twitter"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.745l7.75-8.875L2.25 2.25h6.944l4.254 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
   )
 }
+

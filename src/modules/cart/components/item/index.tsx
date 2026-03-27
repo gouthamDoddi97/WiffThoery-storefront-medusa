@@ -1,6 +1,5 @@
 "use client"
 
-import { Table, Text, clx } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
@@ -27,118 +26,85 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const changeQuantity = async (quantity: number) => {
     setError(null)
     setUpdating(true)
-
-    await updateLineItem({
-      lineId: item.id,
-      quantity,
-    })
-      .catch((err) => {
-        setError(err.message)
-      })
-      .finally(() => {
-        setUpdating(false)
-      })
+    await updateLineItem({ lineId: item.id, quantity })
+      .catch((err) => setError(err.message))
+      .finally(() => setUpdating(false))
   }
 
-  // TODO: Update this to grab the actual max inventory
   const maxQtyFromInventory = 10
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
+  if (type === "preview") {
+    return (
+      <div className="flex gap-3 items-start py-3" data-testid="product-row">
+        <LocalizedClientLink href={`/products/${item.product_handle}`} className="flex-shrink-0 w-14 aspect-[3/4] bg-surface-container overflow-hidden">
+          <Thumbnail thumbnail={item.thumbnail} images={item.variant?.product?.images} size="square" />
+        </LocalizedClientLink>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <span className="font-grotesk text-xs font-semibold text-on-surface truncate">{item.product_title}</span>
+          <LineItemOptions variant={item.variant} data-testid="product-variant" />
+          <div className="flex justify-between items-center mt-1">
+            <span className="font-inter text-xs text-on-surface-variant">{item.quantity}×</span>
+            <LineItemPrice item={item} style="tight" currencyCode={currencyCode} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 py-6 items-start" data-testid="product-row">
+      {/* Product info */}
+      <div className="flex gap-4 items-start">
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
-          className={clx("flex", {
-            "w-16": type === "preview",
-            "small:w-24 w-12": type === "full",
-          })}
+          className="flex-shrink-0 w-20 aspect-[3/4] bg-surface-container overflow-hidden"
         >
-          <Thumbnail
-            thumbnail={item.thumbnail}
-            images={item.variant?.product?.images}
-            size="square"
-          />
+          <Thumbnail thumbnail={item.thumbnail} images={item.variant?.product?.images} size="square" />
         </LocalizedClientLink>
-      </Table.Cell>
-
-      <Table.Cell className="text-left">
-        <Text
-          className="txt-medium-plus text-ui-fg-base"
-          data-testid="product-title"
-        >
-          {item.product_title}
-        </Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
-      </Table.Cell>
-
-      {type === "full" && (
-        <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
+        <div className="flex flex-col gap-1 min-w-0">
+          <LocalizedClientLink href={`/products/${item.product_handle}`}>
+            <span className="font-grotesk text-sm font-semibold text-on-surface hover:text-primary transition-colors" data-testid="product-title">
+              {item.product_title}
+            </span>
+          </LocalizedClientLink>
+          <LineItemOptions variant={item.variant} data-testid="product-variant" />
+          <div className="mt-2">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
-            <CartItemSelect
-              value={item.quantity}
-              onChange={(value) => changeQuantity(parseInt(value.target.value))}
-              className="w-14 h-10 p-4"
-              data-testid="product-select-button"
-            >
-              {/* TODO: Update this with the v2 way of managing inventory */}
-              {Array.from(
-                {
-                  length: Math.min(maxQuantity, 10),
-                },
-                (_, i) => (
-                  <option value={i + 1} key={i}>
-                    {i + 1}
-                  </option>
-                )
-              )}
-
-              <option value={1} key={1}>
-                1
-              </option>
-            </CartItemSelect>
-            {updating && <Spinner />}
           </div>
           <ErrorMessage error={error} data-testid="product-error-message" />
-        </Table.Cell>
-      )}
+        </div>
+      </div>
 
-      {type === "full" && (
-        <Table.Cell className="hidden small:table-cell">
-          <LineItemUnitPrice
-            item={item}
-            style="tight"
-            currencyCode={currencyCode}
-          />
-        </Table.Cell>
-      )}
+      {/* Qty */}
+      <div className="flex flex-col items-center gap-1 w-28">
+        <div className="flex gap-2 items-center">
+          <CartItemSelect
+            value={item.quantity}
+            onChange={(value) => changeQuantity(parseInt(value.target.value))}
+            className="w-14 h-9 bg-surface-container border border-surface-variant/40 text-on-surface font-inter text-sm px-2"
+            data-testid="product-select-button"
+          >
+            {Array.from({ length: Math.min(maxQuantity, 10) }, (_, i) => (
+              <option value={i + 1} key={i}>{i + 1}</option>
+            ))}
+          </CartItemSelect>
+          {updating && <Spinner />}
+        </div>
+      </div>
 
-      <Table.Cell className="!pr-0">
-        <span
-          className={clx("!pr-0", {
-            "flex flex-col items-end h-full justify-center": type === "preview",
-          })}
-        >
-          {type === "preview" && (
-            <span className="flex gap-x-1 ">
-              <Text className="text-ui-fg-muted">{item.quantity}x </Text>
-              <LineItemUnitPrice
-                item={item}
-                style="tight"
-                currencyCode={currencyCode}
-              />
-            </span>
-          )}
-          <LineItemPrice
-            item={item}
-            style="tight"
-            currencyCode={currencyCode}
-          />
-        </span>
-      </Table.Cell>
-    </Table.Row>
+      {/* Unit price */}
+      <div className="hidden small:flex items-start justify-end w-20">
+        <LineItemUnitPrice item={item} style="tight" currencyCode={currencyCode} />
+      </div>
+
+      {/* Total */}
+      <div className="flex items-start justify-end w-20">
+        <LineItemPrice item={item} style="tight" currencyCode={currencyCode} />
+      </div>
+    </div>
   )
 }
 
 export default Item
+

@@ -1,25 +1,28 @@
-import { Heading, Text } from "@medusajs/ui"
-
-import InteractiveLink from "@modules/common/components/interactive-link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const EmptyCartMessage = () => {
   return (
-    <div className="py-48 px-2 flex flex-col justify-center items-start" data-testid="empty-cart-message">
-      <Heading
-        level="h1"
-        className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
-      >
-        Cart
-      </Heading>
-      <Text className="text-base-regular mt-4 mb-6 max-w-[32rem]">
-        You don&apos;t have anything in your cart. Let&apos;s change that, use
-        the link below to start browsing our products.
-      </Text>
-      <div>
-        <InteractiveLink href="/store">Explore products</InteractiveLink>
+    <div className="py-40 flex flex-col gap-6 items-start" data-testid="empty-cart-message">
+      <div className="w-1 h-12 bg-primary" />
+      <span className="eyebrow text-on-surface-variant">YOUR COLLECTION</span>
+      <h1 className="font-grotesk font-bold text-4xl text-on-surface tracking-[-0.02em]">
+        Nothing here yet.
+      </h1>
+      <p className="font-inter text-sm text-on-surface-variant max-w-[400px] leading-relaxed">
+        Your curation is empty. Start your olfactory journey — begin with the crowd pleasers
+        or dive straight into niche.
+      </p>
+      <div className="flex gap-4 mt-2">
+        <LocalizedClientLink href="/collections/crowd-pleasers">
+          <button className="btn-primary">START WITH CROWD PLEASERS</button>
+        </LocalizedClientLink>
+        <LocalizedClientLink href="/store">
+          <button className="btn-ghost">BROWSE ALL</button>
+        </LocalizedClientLink>
       </div>
     </div>
   )
 }
 
 export default EmptyCartMessage
+

@@ -14,51 +14,56 @@ const Login = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="max-w-sm w-full flex flex-col items-center"
+      className="w-full max-w-[400px] flex flex-col gap-8"
       data-testid="login-page"
     >
-      <h1 className="text-large-semi uppercase mb-6">Welcome back</h1>
-      <p className="text-center text-base-regular text-ui-fg-base mb-8">
-        Sign in to access an enhanced shopping experience.
-      </p>
-      <form className="w-full" action={formAction}>
-        <div className="flex flex-col w-full gap-y-2">
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            title="Enter a valid email address."
-            autoComplete="email"
-            required
-            data-testid="email-input"
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            data-testid="password-input"
-          />
-        </div>
+      <div className="flex flex-col gap-3">
+        <span className="eyebrow">YOUR ACCOUNT</span>
+        <h1 className="font-grotesk font-bold text-3xl text-on-surface tracking-[-0.02em]">
+          WELCOME BACK.
+        </h1>
+        <p className="font-inter text-sm text-on-surface-variant">
+          Sign in to continue your olfactory journey.
+        </p>
+      </div>
+
+      <form className="w-full flex flex-col gap-5" action={formAction}>
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          title="Enter a valid email address."
+          autoComplete="email"
+          required
+          data-testid="email-input"
+        />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          data-testid="password-input"
+        />
         <ErrorMessage error={message} data-testid="login-error-message" />
-        <SubmitButton data-testid="sign-in-button" className="w-full mt-6">
-          Sign in
+        <SubmitButton data-testid="sign-in-button" className="w-full mt-2">
+          ENTER THE GALLERY
         </SubmitButton>
       </form>
-      <span className="text-center text-ui-fg-base text-small-regular mt-6">
-        Not a member?{" "}
+
+      <span className="font-inter text-xs text-on-surface-variant text-center">
+        New to Whiff Theory?{" "}
         <button
           onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)}
-          className="underline"
+          className="text-primary hover:text-primary/80 transition-colors font-medium"
           data-testid="register-button"
         >
-          Join us
+          Start your journey
         </button>
-        .
       </span>
     </div>
   )
 }
 
 export default Login
+

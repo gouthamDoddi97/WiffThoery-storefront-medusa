@@ -21,11 +21,21 @@ export default async function Checkout() {
   const customer = await retrieveCustomer()
 
   return (
-    <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
-      <PaymentWrapper cart={cart}>
-        <CheckoutForm cart={cart} customer={customer} />
-      </PaymentWrapper>
-      <CheckoutSummary cart={cart} />
+    <div className="content-container py-12">
+      {/* Page header */}
+      <div className="mb-10">
+        <span className="eyebrow">SECURE CHECKOUT</span>
+        <h1 className="font-grotesk font-bold text-3xl text-on-surface tracking-[-0.02em] mt-2">
+          FINALIZING THE ESSENCE
+        </h1>
+      </div>
+
+      <div className="grid grid-cols-1 small:grid-cols-[1fr_400px] gap-12">
+        <PaymentWrapper cart={cart}>
+          <CheckoutForm cart={cart} customer={customer} />
+        </PaymentWrapper>
+        <CheckoutSummary cart={cart} />
+      </div>
     </div>
   )
 }

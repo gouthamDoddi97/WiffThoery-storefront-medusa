@@ -3,7 +3,6 @@
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
@@ -12,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
+import Spinner from "@modules/common/icons/spinner"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -162,7 +162,7 @@ export default function ProductActions({
 
         <ProductPrice product={product} variant={selectedVariant} />
 
-        <Button
+        <button
           onClick={handleAddToCart}
           disabled={
             !inStock ||
@@ -171,17 +171,22 @@ export default function ProductActions({
             isAdding ||
             !isValidVariant
           }
-          variant="primary"
-          className="w-full h-10"
-          isLoading={isAdding}
+          className="w-full bg-gradient-cta text-surface-lowest font-grotesk font-semibold text-xs tracking-[0.15em] uppercase py-4 transition-opacity duration-300 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
           data-testid="add-product-button"
         >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
-        </Button>
+          {isAdding ? (
+            <>
+              <Spinner size="14" color="currentColor" />
+              <span>ADDING...</span>
+            </>
+          ) : !selectedVariant && !options ? (
+            "SELECT VARIANT"
+          ) : !inStock || !isValidVariant ? (
+            "OUT OF STOCK"
+          ) : (
+            "ADD TO COLLECTION"
+          )}
+        </button>
         <MobileActions
           product={product}
           variant={selectedVariant}

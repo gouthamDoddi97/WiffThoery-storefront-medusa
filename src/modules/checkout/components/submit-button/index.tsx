@@ -1,8 +1,8 @@
 "use client"
 
-import { Button } from "@medusajs/ui"
 import React from "react"
 import { useFormStatus } from "react-dom"
+import Spinner from "@modules/common/icons/spinner"
 
 export function SubmitButton({
   children,
@@ -18,15 +18,20 @@ export function SubmitButton({
   const { pending } = useFormStatus()
 
   return (
-    <Button
-      size="large"
-      className={className}
+    <button
       type="submit"
-      isLoading={pending}
-      variant={variant || "primary"}
+      disabled={pending}
       data-testid={dataTestId}
+      className={[
+        "btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
+      {pending && <Spinner />}
       {children}
-    </Button>
+    </button>
   )
 }
+

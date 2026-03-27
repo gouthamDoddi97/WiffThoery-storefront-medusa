@@ -2,8 +2,11 @@ import { Metadata } from "next"
 
 import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
+import TierCards from "@modules/home/components/tier-cards"
+import BrandValues from "@modules/home/components/brand-values"
+import UGCGallery from "@modules/home/components/ugc-gallery"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
-import { listCollections, listCollectionBackgrounds } from "@lib/data/collections"
+import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
@@ -22,13 +25,11 @@ export default async function Home(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const params = await props.params
-
   const { countryCode } = params
 
-  const [regionResult, { collections }, backgrounds] = await Promise.all([
+  const [regionResult, { collections }] = await Promise.all([
     getRegion(countryCode),
     listCollections({ fields: "id, handle, title" }),
-    listCollectionBackgrounds().catch(() => []),
   ])
 
   const region = regionResult
@@ -37,31 +38,34 @@ export default async function Home(props: {
     return null
   }
 
-  // Build carousel slides from collections that have a background video
-  const bgMap = new Map(backgrounds.map((b) => [b.collection_id, b]))
-  const carouselSlides = collections
-    .filter((c) => bgMap.has(c.id))
-    .map((c) => {
-      const bg = bgMap.get(c.id)!
-      return {
-        src: bg.file_url,
-        mobileSrc: bg.mobile_image_url ?? undefined,
-        title: c.title,
-        description: bg.description ?? "",
-        badge: bg.badge ?? "",
-        fontColorPallette: (bg.font_color_palette ?? "light") as "light" | "dark",
-      }
-    })
-
   return (
     <>
       <OrderAlertBanner />
-      <Hero slides={carouselSlides} />
-      <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
+
+      {/* 1. Hero — full viewport brand statement */}
+      <Hero />
+
+      {/* 2. Tier cards — Olfactory Evolution */}
+      <TierCards />
+
+      {/* 3. Art Objects — featured products per collection */}
+      <section className="bg-surface-lowest py-4" aria-label="Art Objects">
+        <div className="content-container pt-16 pb-4">
+          <div className="flex flex-col gap-2">
+            <span className="eyebrow">CURRENTLY FEATURED</span>
+            <h2 className="section-heading text-2xl small:text-3xl">ART OBJECTS</h2>
+          </div>
+        </div>
+        <ul className="flex flex-col divide-y divide-surface-variant/20">
           <FeaturedProducts collections={collections} region={region} />
         </ul>
-      </div>
+      </section>
+
+      {/* 4. Brand values trio */}
+      <BrandValues />
+
+      {/* 5. UGC Gallery */}
+      <UGCGallery />
     </>
   )
 }
