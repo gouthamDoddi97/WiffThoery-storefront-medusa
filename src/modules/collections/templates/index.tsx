@@ -202,6 +202,7 @@ function CrowdPleasersTemplate({
             page={page}
             collectionId={collection.id}
             countryCode={countryCode}
+            layout="wave"
           />
         </Suspense>
       </div>
@@ -317,6 +318,7 @@ function IntroToNicheTemplate({
             page={page}
             collectionId={collection.id}
             countryCode={countryCode}
+            layout="s-curve"
           />
         </Suspense>
       </div>
@@ -425,6 +427,7 @@ function PolarizingArtTemplate({
             page={page}
             collectionId={collection.id}
             countryCode={countryCode}
+            layout="scattered"
           />
         </Suspense>
       </div>

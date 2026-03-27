@@ -121,9 +121,14 @@ const ProductTemplate = async ({
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
 
-  const heroImg = images[0]?.url
-  const stripImg = images[1]?.url
+  // Classify images by filename substring
+  const regularImgs = images.filter(
+    (img) => !/art|bg/i.test(img.url ?? "")
+  )
+  const heroImg = regularImgs[0]?.url
+  const stripImg = regularImgs[1]?.url
   const artImg = images.find((img) => /art/i.test(img.url ?? ""))?.url ?? heroImg
+  const bgImg = images.find((img) => /bg/i.test(img.url ?? ""))?.url
 
   return (
     <div data-testid="product-container" className="bg-surface-lowest">
@@ -131,6 +136,18 @@ const ProductTemplate = async ({
 
       {/* ─── HERO ─── */}
       <section className="relative bg-surface-container overflow-hidden" style={{ minHeight: "72vh" }}>
+        {/* BG image */}
+        {bgImg && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `url(${bgImg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              opacity: 0.18,
+            }}
+          />
+        )}
         {/* Tier glow */}
         {tier && (
           <div
@@ -211,22 +228,24 @@ const ProductTemplate = async ({
       {/* ─── THE IMPRESSION ─── */}
       {perfume?.scent_story && (
         <section className="py-20 bg-surface-lowest">
-          <div className="content-container max-w-[580px] mx-auto flex flex-col gap-6 text-center">
-            <span className="eyebrow">THE IMPRESSION</span>
-            <p className="font-inter text-base small:text-lg italic text-on-surface-variant leading-relaxed">
-              {perfume.scent_story}
-            </p>
+          <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-12 items-center">
+            {stripImg && (
+              <div className="w-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={stripImg} alt="" className="w-full h-auto object-cover" />
+              </div>
+            )}
+            <div className="flex flex-col gap-6">
+              <span className="eyebrow">THE IMPRESSION</span>
+              <p className="font-inter text-base small:text-lg italic text-on-surface-variant leading-relaxed">
+                {perfume.scent_story}
+              </p>
+            </div>
           </div>
         </section>
       )}
 
-      {/* ─── FULL-WIDTH IMAGE STRIP ─── */}
-      {stripImg && (
-        <div className="w-full overflow-hidden" style={{ height: "45vh" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={stripImg} alt="" className="w-full h-full object-cover" />
-        </div>
-      )}
+
 
       {/* ─── BRAND STORY ─── */}
       {product.description && (
@@ -334,9 +353,9 @@ const ProductTemplate = async ({
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-12 items-center">
           {/* Left: product art image */}
           <div className="aspect-square overflow-hidden bg-surface-low">
-            {heroImg && (
+            {artImg && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={heroImg} alt="" className="w-full h-full object-cover" />
+              <img src={artImg} alt="" className="w-full h-full object-cover" />
             )}
           </div>
           {/* Right: copy */}

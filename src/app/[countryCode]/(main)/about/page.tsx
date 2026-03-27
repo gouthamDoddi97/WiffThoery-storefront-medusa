@@ -30,17 +30,23 @@ export default function AboutPage() {
           <div className="flex flex-col gap-6 flex-1 max-w-[580px]">
             <span className="eyebrow">OUR STORY</span>
             <h1 className="font-grotesk font-bold text-4xl small:text-6xl text-on-surface tracking-[-0.03em] leading-[0.9]">
-              From your first real scent to the one that stops a room.
+              One day I used the perfume which I gifted to my friend and sitting in the office I get a Whiff of the perfume and that was the moment,
             </h1>
             <p className="font-inter text-base text-on-surface-variant leading-relaxed">
-              Three tiers. One journey. An uncompromising commitment to fragrance as art.
+              Born on India&apos;s eastern coast. Built for those ready to wear something real.
             </p>
             <div className="w-12 h-[2px] bg-primary" />
           </div>
 
-          {/* Placeholder for atmospheric image */}
-          <div className="flex-shrink-0 w-full small:w-[400px] aspect-[4/5] bg-surface-container flex items-center justify-center">
-            <span className="font-grotesk font-bold text-[6rem] text-surface-variant/30 select-none">W</span>
+          <div className="flex-shrink-0 w-full small:w-[400px] aspect-[4/5] overflow-hidden bg-surface-container">
+            <video
+              src="/aboutHero.webm"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </section>
@@ -63,7 +69,7 @@ export default function AboutPage() {
               <p>
                 No investor meetings. No distribution deals. No compromises. Just a team obsessed with
                 olfactory art, transparent pricing, and building something that actually means something
-                to the people who wear it.
+                to the people who wear it. <em>Also, a few months of paychecks and credit card debt.</em>
               </p>
               <p>
                 The three-tier ladder — Crowd Pleasers, Intro to Niche, Polarizing Art — isn't a
@@ -73,12 +79,12 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Image placeholder */}
-          <div className="aspect-square bg-surface-low flex items-center justify-center sticky top-24">
-            <span className="font-grotesk font-bold text-[4rem] text-surface-variant/30 select-none">
-              VIZAG
-            </span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Vizag.jpg"
+            alt="Vizag coastline"
+            className="aspect-square w-full object-cover sticky top-24"
+          />
         </div>
       </section>
 
@@ -93,20 +99,20 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 xsmall:grid-cols-2 gap-px bg-surface-variant/20">
             {[
               {
-                label: "QUALITY OVER QUANTITY",
-                body: "We'd rather make 50 exceptional fragrances than 500 forgettable ones. Every addition to the catalog earns its place.",
+                label: "ART IS NON-NEGOTIABLE",
+                body: "Every label is an original piece of graphic art. The bottle you place on your shelf is a design object — not packaging. The art is the point.",
               },
               {
-                label: "TRANSPARENT PRICING",
-                body: "No inflated margins. No celebrity tax. You see exactly what you're paying for — ingredients, craft, packaging, and our honest markup.",
+                label: "RESPECT THE BEGINNER",
+                body: "Fragrance culture has too many gatekeepers. We write in plain language, price honestly, and meet you wherever you are on the journey.",
               },
               {
-                label: "THE LADDER MATTERS",
-                body: "We don't sell a catalog — we sell a progression. Crowd Pleasers to Polarizing Art is a journey, and we're here to guide it.",
+                label: "EARN THE NEXT PURCHASE",
+                body: "We don't lock you in. No subscriptions, no bundles you didn't ask for. Each purchase should be good enough that you come back — on your terms.",
               },
               {
-                label: "CRAFT OVER CELEBRITY",
-                body: "We've never paid an influencer to wear our fragrances. If someone recommends us, it's because the scent earned it.",
+                label: "BUILT, NOT POLISHED",
+                body: "We're an independent brand from Vizag, not a venture-backed fragrance house. What you see is real — the prices, the origins, the people behind it.",
               },
             ].map((card) => (
               <div
@@ -129,12 +135,12 @@ export default function AboutPage() {
       {/* ── 4. Vizag Section ────────────────────────────────────────────── */}
       <section className="py-24 bg-surface-container" id="sourcing">
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-center">
-          {/* Image placeholder */}
-          <div className="aspect-[16/10] bg-surface-high flex items-center justify-center">
-            <span className="font-grotesk font-bold text-[3rem] text-surface-variant/30 select-none">
-              BAY OF BENGAL
-            </span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/bayOfBengal.jpeg"
+            alt="Bay of Bengal, Vizag"
+            className="aspect-[16/10] w-full object-cover"
+          />
 
           <div className="flex flex-col gap-6">
             <span className="eyebrow">WHERE WE'RE FROM</span>

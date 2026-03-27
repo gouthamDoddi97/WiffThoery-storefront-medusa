@@ -1,8 +1,9 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import ProductPreview from "@modules/products/components/product-preview"
-import { Pagination } from "@modules/store/components/pagination"
+import ProductPreviewHorizontal from "@modules/products/components/product-preview/horizontal"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import ProductSlider from "./product-slider"
 
 const PRODUCT_LIMIT = 12
 
@@ -21,6 +22,7 @@ export default async function PaginatedProducts({
   categoryId,
   productsIds,
   countryCode,
+  layout = "default",
 }: {
   sortBy?: SortOptions
   page: number
@@ -28,21 +30,27 @@ export default async function PaginatedProducts({
   categoryId?: string
   productsIds?: string[]
   countryCode: string
+  layout?: "default" | "wave" | "s-curve" | "scattered"
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
   }
 
-  if (collectionId) {
-    queryParams["collection_id"] = [collectionId]
-  }
+  // TEST MODE: ignore filters, fetch all products across all collections, repeat 2x
+  const TEST_ALL_PRODUCTS = true
 
-  if (categoryId) {
-    queryParams["category_id"] = [categoryId]
-  }
+  if (!TEST_ALL_PRODUCTS) {
+    if (collectionId) {
+      queryParams["collection_id"] = [collectionId]
+    }
 
-  if (productsIds) {
-    queryParams["id"] = productsIds
+    if (categoryId) {
+      queryParams["category_id"] = [categoryId]
+    }
+
+    if (productsIds) {
+      queryParams["id"] = productsIds
+    }
   }
 
   if (sortBy === "created_at") {
@@ -56,37 +64,29 @@ export default async function PaginatedProducts({
   }
 
   let {
-    response: { products, count },
+    response: { products: fetchedProducts, count },
   } = await listProductsWithSort({
     page,
-    queryParams,
+    queryParams: { ...queryParams, limit: 100 },
     sortBy,
     countryCode,
   })
 
+  // Repeat 2x for testing with larger numbers
+  const products = TEST_ALL_PRODUCTS
+    ? [...fetchedProducts, ...fetchedProducts]
+    : fetchedProducts
+
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
 
-  return (
-    <>
-      <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
-        data-testid="products-list"
-      >
-        {products.map((p) => {
-          return (
-            <li key={p.id}>
-              <ProductPreview product={p} region={region} />
-            </li>
-          )
-        })}
-      </ul>
-      {totalPages > 1 && (
-        <Pagination
-          data-testid="product-pagination"
-          page={page}
-          totalPages={totalPages}
-        />
-      )}
-    </>
+  // Pre-render product cards on the server; pass as opaque nodes to the client slider
+  const productNodes = products.map((p, index) =>
+    layout === "s-curve" ? (
+      <ProductPreviewHorizontal key={`${p.id}-${index}`} product={p} index={index} region={region} />
+    ) : (
+      <ProductPreview key={`${p.id}-${index}`} product={p} region={region} />
+    )
   )
+
+  return <ProductSlider items={productNodes} layout={layout} />
 }

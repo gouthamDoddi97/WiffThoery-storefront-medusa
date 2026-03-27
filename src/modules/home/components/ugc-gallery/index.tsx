@@ -41,7 +41,7 @@ export default async function UGCGallery() {
                 href="https://instagram.com/whifftheory"
                 target="_blank"
                 rel="noreferrer"
-                className="group relative aspect-square overflow-hidden bg-surface-low"
+                className={`group relative aspect-square overflow-hidden bg-surface-low${index >= 4 ? " hidden small:block" : ""}`}
                 aria-label={item.alt_text ?? `Community photo ${index + 1}`}
               >
                 <img

@@ -200,11 +200,8 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
           <RefinementList sortBy={sort} />
         </div>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} />
+          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="wave" />
         </Suspense>
-      </div>
-      {meta.nextTier && (
-        <div className="bg-surface-low py-16">
           <div className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
             <div className="flex flex-col gap-2">
               <span className="eyebrow">THE JOURNEY</span>
@@ -216,7 +213,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
             </LocalizedClientLink>
           </div>
         </div>
-      )}
+
     </div>
   )
 }
@@ -269,7 +266,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
           <RefinementList sortBy={sort} />
         </div>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} />
+          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
       <div className="bg-surface-low py-16">
@@ -342,7 +339,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           <RefinementList sortBy={sort} />
         </div>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} />
+          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="scattered" />
         </Suspense>
       </div>
       <div className="bg-surface-container py-16">
