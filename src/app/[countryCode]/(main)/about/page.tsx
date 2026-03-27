@@ -137,7 +137,7 @@ export default function AboutPage() {
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/bayOfBengal.jpeg"
+            src="/bayOfbengal.jpeg"
             alt="Bay of Bengal, Vizag"
             className="aspect-[16/10] w-full object-cover"
           />

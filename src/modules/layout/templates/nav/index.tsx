@@ -6,6 +6,7 @@ import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
+import { getCollectionTiers } from "@lib/data/collection-tier"
 
 const NAV_LINKS = [
   { label: "CROWD PLEASERS", href: "/categories/crowd-pleaser" },
@@ -15,11 +16,18 @@ const NAV_LINKS = [
 ]
 
 export default async function Nav() {
-  const [regions, locales, currentLocale] = await Promise.all([
+  const [regions, locales, currentLocale, tierMap] = await Promise.all([
     listRegions().then((regions: StoreRegion[]) => regions),
     listLocales(),
     getLocale(),
+    getCollectionTiers(),
   ])
+
+  const tierImages = {
+    "crowd-pleaser": tierMap["crowd-pleaser"]?.image_url ?? null,
+    "intro-to-niche": tierMap["intro-to-niche"]?.image_url ?? null,
+    "polarizing-art": tierMap["polarizing-art"]?.image_url ?? null,
+  }
 
   return (
     <div className="sticky top-0 inset-x-0 z-50">
@@ -40,6 +48,7 @@ export default async function Nav() {
                 regions={regions}
                 locales={locales}
                 currentLocale={currentLocale}
+                tierImages={tierImages}
               />
             </div>
             {/* Desktop collection tier links */}

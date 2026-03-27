@@ -17,27 +17,30 @@ const TIERS = [
     label: "CROWD PLEASERS",
     sub: "Universally loved, instantly wearable",
     href: "/categories/crowd-pleaser",
+    handle: "crowd-pleaser" as const,
     accent: "text-primary",
     border: "border-primary/30",
-    bg: "hover:bg-primary/10",
+    hoverOverlay: "rgba(79,219,204,0.15)",
   },
   {
     num: "02",
     label: "INTRO TO NICHE",
     sub: "Your first step into something deeper",
     href: "/categories/intro-to-niche",
+    handle: "intro-to-niche" as const,
     accent: "text-tertiary",
     border: "border-tertiary/30",
-    bg: "hover:bg-tertiary/10",
+    hoverOverlay: "rgba(255,181,71,0.15)",
   },
   {
     num: "03",
     label: "POLARIZING ART",
     sub: "For those who wear to provoke",
     href: "/categories/polarizing-art",
+    handle: "polarizing-art" as const,
     accent: "text-secondary",
     border: "border-secondary/30",
-    bg: "hover:bg-secondary/10",
+    hoverOverlay: "rgba(255,107,90,0.15)",
   },
 ]
 
@@ -49,13 +52,20 @@ const UTILITY_LINKS = [
   { label: "Cart", href: "/cart" },
 ]
 
+type TierImages = {
+  "crowd-pleaser": string | null
+  "intro-to-niche": string | null
+  "polarizing-art": string | null
+}
+
 type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
   locales: Locale[] | null
   currentLocale: string | null
+  tierImages?: TierImages
 }
 
-const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
+const SideMenu = ({ regions, locales, currentLocale, tierImages }: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
 
@@ -117,19 +127,35 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         Shop by Tier
                       </p>
                       <ul className="flex flex-col gap-2">
-                        {TIERS.map((tier) => (
+                        {TIERS.map((tier) => {
+                          const img = tierImages?.[tier.handle]
+                          return (
                           <li key={tier.href}>
                             <LocalizedClientLink
                               href={tier.href}
                               onClick={close}
-                              className={`flex items-center gap-4 px-3 py-4 border ${tier.border} ${tier.bg} transition-colors duration-200 group`}
+                              className={`relative flex items-center gap-4 px-3 py-4 border ${tier.border} overflow-hidden transition-colors duration-200 group`}
                             >
+                              {/* Background image */}
+                              {img && (
+                                <img
+                                  src={img}
+                                  alt=""
+                                  aria-hidden
+                                  className="absolute inset-0 w-full h-full object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+                                />
+                              )}
+                              {/* Tinted hover overlay */}
+                              <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                style={{ background: tier.hoverOverlay }}
+                              />
                               {/* Big tier number */}
-                              <span className={`font-grotesk font-bold text-3xl leading-none ${tier.accent} opacity-60 group-hover:opacity-100 transition-opacity w-10 flex-shrink-0`}>
+                              <span className={`relative font-grotesk font-bold text-3xl leading-none ${tier.accent} opacity-60 group-hover:opacity-100 transition-opacity w-10 flex-shrink-0`}>
                                 {tier.num}
                               </span>
-                              <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className={`font-grotesk font-bold text-base tracking-[-0.01em] text-on-surface`}>
+                              <div className="relative flex flex-col gap-0.5 min-w-0">
+                                <span className="font-grotesk font-bold text-base tracking-[-0.01em] text-on-surface">
                                   {tier.label}
                                 </span>
                                 <span className="font-inter text-[10px] text-on-surface-disabled leading-tight">
@@ -137,7 +163,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                                 </span>
                               </div>
                               <svg
-                                className={`ml-auto flex-shrink-0 ${tier.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+                                className={`relative ml-auto flex-shrink-0 ${tier.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
                                 width="14" height="14" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"
                               >
@@ -146,7 +172,8 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                               </svg>
                             </LocalizedClientLink>
                           </li>
-                        ))}
+                          )
+                        })}
                       </ul>
                     </div>
 
