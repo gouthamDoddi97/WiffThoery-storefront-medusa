@@ -167,12 +167,12 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ opacity: 0.5 }}
+              style={{ opacity: 0.75 }}
             />
-            {/* Mobile: vertical gradient — image shows in lower half */}
+            {/* Mobile: light-touch overlay so image shows through */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
             />
             {/* Desktop: horizontal gradient — image shows on right */}
             <div
@@ -241,12 +241,12 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ opacity: 0.5 }}
+              style={{ opacity: 0.75 }}
             />
-            {/* Mobile: vertical gradient */}
+            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
@@ -255,7 +255,6 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
             />
           </>
         )}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] pointer-events-none" style={{ background: "radial-gradient(ellipse at top right, rgba(255,181,71,0.07) 0%, transparent 70%)" }} />
         <div className="content-container relative z-10">
           <div className="flex flex-col gap-6 max-w-[700px]">
           <div className="flex items-center gap-2">
@@ -318,12 +317,12 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ opacity: 0.5 }}
+              style={{ opacity: 0.75 }}
             />
-            {/* Mobile: vertical gradient */}
+            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.97) 0%, rgba(15,19,28,0.85) 55%, rgba(15,19,28,0.35) 100%)" }}
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
@@ -390,12 +389,12 @@ function GenericCategoryTemplate({
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ opacity: 0.5 }}
+              style={{ opacity: 0.75 }}
             />
-            {/* Mobile: vertical gradient */}
+            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
-              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.8) 55%, rgba(15,19,28,0.3) 100%)" }}
+              style={{ background: "linear-gradient(to bottom, rgba(15,19,28,0.6) 0%, rgba(15,19,28,0.45) 55%, rgba(15,19,28,0.2) 100%)" }}
             />
             {/* Desktop: horizontal gradient */}
             <div
