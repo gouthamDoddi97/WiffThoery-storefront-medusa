@@ -1,10 +1,10 @@
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
 
 import { getCollectionByHandle, listCollections } from "@lib/data/collections"
 import { listRegions } from "@lib/data/regions"
 import { StoreCollection, StoreRegion } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
+import StoreTemplate from "@modules/store/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 type Props = {
@@ -60,7 +60,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const collection = await getCollectionByHandle(params.handle)
 
   if (!collection) {
-    notFound()
+    return { title: "Shop | Whiff Theory", description: "Explore all of our products." }
   }
 
   const description = `Shop the ${collection.title} collection at Whiff Theory – discover unique fragrances curated for every taste.`
@@ -89,7 +89,13 @@ export default async function CollectionPage(props: Props) {
   )
 
   if (!collection) {
-    notFound()
+    return (
+      <StoreTemplate
+        sortBy={sortBy}
+        page={page}
+        countryCode={params.countryCode}
+      />
+    )
   }
 
   return (

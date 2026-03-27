@@ -84,7 +84,7 @@ export default function CardActions({
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto">
       {/* Wishlist heart */}
       {mounted && (
         <button
@@ -119,13 +119,37 @@ export default function CardActions({
         type="button"
         onClick={handleAddToCart}
         disabled={isAdding}
-        className={`inline-flex items-center gap-2 border font-inter text-[9px] tracking-[0.2em] uppercase px-4 py-2.5 transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${
+        aria-label="Add to cart"
+        className={`inline-flex items-center gap-2 border font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer
+          px-2.5 py-2.5 small:px-4 small:py-2.5 ${
           added
             ? "bg-primary border-primary text-surface-lowest"
             : colors.btn
         }`}
       >
-        {isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD TO CART"}
+        {/* Mobile: shopping bag icon only */}
+        <span className="flex small:hidden">
+          {isAdding ? (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+          ) : added ? (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+          )}
+        </span>
+
+        {/* Desktop: full text label */}
+        <span className="hidden small:inline">
+          {isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD TO CART"}
+        </span>
         {!isAdding && !added && (
           <svg
             width="9"
@@ -135,6 +159,7 @@ export default function CardActions({
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="square"
+            className="hidden small:block"
           >
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
