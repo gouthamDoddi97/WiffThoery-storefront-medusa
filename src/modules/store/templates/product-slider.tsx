@@ -2,20 +2,25 @@
 
 import { useState } from "react"
 
-const ITEMS_PER_PAGE = 4
+const ITEMS_PER_PAGE: Record<Layout, number> = {
+  wave: 3,
+  "s-curve": 4,
+  scattered: 3,
+  default: 4,
+}
 
 type Layout = "default" | "wave" | "s-curve" | "scattered"
 
 const GRID_CLASSES: Record<Layout, string> = {
-  wave: "grid grid-cols-2 w-full small:grid-cols-4 gap-x-6 gap-y-8 items-start pb-20",
+  wave: "grid grid-cols-1 w-full small:grid-cols-3 gap-x-8 gap-y-0 items-start pb-20",
   "s-curve": "flex flex-col gap-0 w-full",
-  scattered: "grid grid-cols-2 w-full small:grid-cols-3 gap-4",
+  scattered: "grid grid-cols-2 w-full gap-x-8 gap-y-8 items-start",
   default: "grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8",
 }
 
 function getItemClass(index: number, layout: Layout): string {
-  if (layout === "wave") return index % 2 === 1 ? "mt-16" : ""
-  if (layout === "scattered") return index % 3 === 0 ? "col-span-2" : ""
+  if (layout === "wave") return index % 2 === 1 ? "mt-20" : ""
+  if (layout === "scattered") return index === 2 ? "col-span-2" : ""
   return ""
 }
 
@@ -30,7 +35,8 @@ export default function ProductSlider({
   const [exiting, setExiting] = useState(false)
   const [visiblePage, setVisiblePage] = useState(0)
 
-  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE)
+  const perPage = ITEMS_PER_PAGE[layout]
+  const totalPages = Math.ceil(items.length / perPage)
 
   const navigate = (next: number) => {
     if (next < 0 || next >= totalPages || exiting) return
@@ -43,8 +49,8 @@ export default function ProductSlider({
   }
 
   const visibleItems = items.slice(
-    visiblePage * ITEMS_PER_PAGE,
-    (visiblePage + 1) * ITEMS_PER_PAGE
+    visiblePage * perPage,
+    (visiblePage + 1) * perPage
   )
 
   return (

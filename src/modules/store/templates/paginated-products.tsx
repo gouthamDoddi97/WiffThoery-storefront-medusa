@@ -2,6 +2,7 @@ import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import ProductPreview from "@modules/products/components/product-preview"
 import ProductPreviewHorizontal from "@modules/products/components/product-preview/horizontal"
+import ProductPreviewLarge from "@modules/products/components/product-preview/large"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import ProductSlider from "./product-slider"
 
@@ -37,7 +38,7 @@ export default async function PaginatedProducts({
   }
 
   // TEST MODE: ignore filters, fetch all products across all collections, repeat 2x
-  const TEST_ALL_PRODUCTS = true
+  const TEST_ALL_PRODUCTS = false;
 
   if (!TEST_ALL_PRODUCTS) {
     if (collectionId) {
@@ -83,6 +84,15 @@ export default async function PaginatedProducts({
   const productNodes = products.map((p, index) =>
     layout === "s-curve" ? (
       <ProductPreviewHorizontal key={`${p.id}-${index}`} product={p} index={index} region={region} />
+    ) : layout === "wave" ? (
+      <ProductPreviewLarge key={`${p.id}-${index}`} product={p} region={region} />
+    ) : layout === "scattered" ? (
+      // Per triplet: positions 0 & 1 = large vertical, position 2 = full-width horizontal
+      index % 3 === 2 ? (
+        <ProductPreviewHorizontal key={`${p.id}-${index}`} product={p} index={Math.floor(index / 3)} region={region} />
+      ) : (
+        <ProductPreviewLarge key={`${p.id}-${index}`} product={p} region={region} />
+      )
     ) : (
       <ProductPreview key={`${p.id}-${index}`} product={p} region={region} />
     )
