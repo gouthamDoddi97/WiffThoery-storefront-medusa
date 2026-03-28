@@ -38,7 +38,7 @@ export default async function PaginatedProducts({
   }
 
   // TEST MODE: ignore filters, fetch all products across all collections, repeat 2x
-  const TEST_ALL_PRODUCTS = true;
+  const TEST_ALL_PRODUCTS = false;
 
   if (!TEST_ALL_PRODUCTS) {
     if (collectionId) {
