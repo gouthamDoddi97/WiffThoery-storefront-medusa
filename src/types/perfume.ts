@@ -13,4 +13,6 @@ export type PerfumeDetails = {
   license_no: string | null
   expiry_info: string | null
   customer_care: string | null
+  sillage: string | null
+  longevity: string | null
 }

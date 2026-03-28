@@ -11,6 +11,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tier"
+import PerformanceChart from "@modules/products/components/performance-chart"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -284,12 +285,15 @@ const ProductTemplate = async ({
               </div>
             )}
 
-            {/* Sillage / longevity placeholder */}
-            <div className="border-t border-surface-variant/30 py-4">
-              <p className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.05em]">
-                SILLAGE &amp; LONGEVITY
-              </p>
-            </div>
+            {/* Sillage / Longevity */}
+            {(perfume?.sillage || perfume?.longevity) && (
+              <div className="border-t border-surface-variant/30 py-6">
+                <p className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.05em] mb-4">
+                  SILLAGE &amp; LONGEVITY
+                </p>
+                <PerformanceChart sillage={perfume.sillage} longevity={perfume.longevity} />
+              </div>
+            )}
 
             {/* Application */}
             {perfume.usage_tips && (

@@ -7,9 +7,11 @@ import PreviewPrice from "./price"
 export default async function ProductPreviewLarge({
   product,
   region,
+  compact = false,
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
+  compact?: boolean
 }) {
   const { cheapestPrice } = getProductPrice({ product })
   const thumbnail = product.thumbnail || product.images?.[0]?.url
@@ -19,7 +21,7 @@ export default async function ProductPreviewLarge({
       {/* Clickable area — image + title + description */}
       <LocalizedClientLink href={`/products/${product.handle}`} className="block">
         {/* Image — tall, borderless, no bg */}
-        <div className="overflow-hidden aspect-[3/5] w-full">
+        <div className={`overflow-hidden w-full ${compact ? "aspect-square max-h-[380px]" : "aspect-[3/5]"}`}>
           {thumbnail ? (
             <img
               src={thumbnail}
@@ -42,7 +44,7 @@ export default async function ProductPreviewLarge({
 
           {/* Title */}
           <h3
-            className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface tracking-[-0.02em] leading-[0.92] uppercase"
+            className={`font-grotesk font-bold text-on-surface tracking-[-0.02em] leading-[0.92] uppercase ${compact ? "text-base small:text-lg" : "text-2xl small:text-3xl"}`}
             data-testid="product-title"
           >
             {product.title}

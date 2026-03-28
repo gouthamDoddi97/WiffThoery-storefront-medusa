@@ -1,9 +1,10 @@
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
-import { convertToLocale } from "@lib/util/money"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductPreview from "@modules/products/components/product-preview"
+import ProductPreviewLarge from "@modules/products/components/product-preview/large"
+import ProductSlider from "@modules/store/templates/product-slider"
 
 export default async function ProductRail({
   collection,
@@ -25,6 +26,10 @@ export default async function ProductRail({
   if (!pricedProducts || pricedProducts.length === 0) {
     return null
   }
+
+  const productNodes = pricedProducts.map((product, index) => (
+    <ProductPreviewLarge key={`${product.id}-${index}`} product={product} region={region} compact />
+  ))
 
   return (
     <div className="content-container py-16">
@@ -48,14 +53,21 @@ export default async function ProductRail({
         </LocalizedClientLink>
       </div>
 
-      {/* Product grid */}
-      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-px bg-surface-variant/10">
-        {pricedProducts.slice(0, 4).map((product) => (
-          <li key={product.id} className="bg-surface-lowest">
-            <ProductPreview product={product} region={region} isFeatured />
-          </li>
-        ))}
-      </ul>
+      {/* Mobile: 2-col static grid */}
+      <div className="small:hidden">
+        <ul className="grid grid-cols-2 gap-[26px] bg-surface-variant/10">
+          {pricedProducts.slice(0, 4).map((product) => (
+            <li key={product.id} className="bg-surface-lowest">
+              <ProductPreview product={product} region={region} isFeatured />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Desktop: wave slider matching crowd pleaser page */}
+      <div className="hidden small:block">
+        <ProductSlider items={productNodes} layout="wave" />
+      </div>
     </div>
   )
 }

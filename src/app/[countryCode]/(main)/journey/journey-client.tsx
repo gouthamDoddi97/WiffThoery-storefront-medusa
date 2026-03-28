@@ -20,7 +20,7 @@ function inferTier(item: HttpTypes.StoreOrderLineItem): "crowd-pleasers" | "intr
 }
 
 const TIER_META = {
-  "crowd-pleasers": { label: "CROWD PLEASERS", color: "#4FDBCC", desc: "The universal loved" },
+  "crowd-pleasers": { label: "CROWD PLEASERS", color: "#4FDBCC", desc: "The universally loved" },
   "intro-to-niche": { label: "INTRO TO NICHE", color: "#D4AF37", desc: "The curious explorer" },
   "polarizing-art": { label: "POLARIZING ART", color: "#FF6B6B", desc: "The daring connoisseur" },
   unknown: { label: "ARCHIVE", color: "#7B7FA6", desc: "Mixed collection" },

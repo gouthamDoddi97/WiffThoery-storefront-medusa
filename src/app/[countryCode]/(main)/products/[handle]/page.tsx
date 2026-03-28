@@ -61,7 +61,7 @@ function getImagesForVariant(
   }
 
   const variant = product.variants!.find((v) => v.id === selectedVariantId)
-  if (!variant || !variant.images.length) {
+  if (!variant || !variant?.images?.length) {
     return product.images
   }
 
@@ -153,12 +153,13 @@ export default async function ProductPage(props: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      { images && images.length > 0 && (
       <ProductTemplate
         product={pricedProduct}
         region={region}
         countryCode={params.countryCode}
         images={images}
-      />
+      />)}
     </>
   )
 }
