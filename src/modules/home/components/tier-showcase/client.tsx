@@ -20,11 +20,29 @@ const SPRING_CSS = "cubic-bezier(0.34, 1.22, 0.64, 1)"
 const MAX_PEEK = 20   // max % of viewport height for rubber-band drag
 const THRESHOLD = 0.28 // 28% of vh triggers snap
 const LOCK_MS = 850    // lock scrolling during animation
+const SHOWCASE_SEEN_KEY = "whiff-home-tier-showcase-seen"
+
+function shouldStartDismissed() {
+  if (typeof window === "undefined") return false
+
+  if (window.sessionStorage.getItem(SHOWCASE_SEEN_KEY) === "true") {
+    return true
+  }
+
+  const referrer = window.document.referrer
+  if (!referrer) return false
+
+  try {
+    return new URL(referrer).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
 
 export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
   // active is React state only for breadcrumb re-render; all position logic uses activeRef
   const [active, setActive] = useState(0)
-  const [dismissed, setDismissed] = useState(false)
+  const [dismissed, setDismissed] = useState(shouldStartDismissed)
   const activeRef = useRef(0)
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
   const isLocked = useRef(false)
@@ -53,9 +71,10 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
 
   // Lock body scroll while showcase is active so the page behind doesn't drift
   useEffect(() => {
+    if (dismissed) return
     document.body.style.overflow = "hidden"
     return () => { document.body.style.overflow = "" }
-  }, [])
+  }, [dismissed])
 
   // Exit the showcase — just unlock body scroll, dismiss instantly
   const exitShowcase = useCallback(() => {
@@ -64,6 +83,7 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
     accDelta.current = 0
     isLocked.current = false
     document.body.style.overflow = ""
+    window.sessionStorage.setItem(SHOWCASE_SEEN_KEY, "true")
     setDismissed(true)
   }, [])
 
