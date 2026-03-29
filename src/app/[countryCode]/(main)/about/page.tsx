@@ -29,9 +29,19 @@ export default function AboutPage() {
         <div className="content-container relative z-10 flex flex-col small:flex-row gap-16 items-center">
           <div className="flex flex-col gap-6 flex-1 max-w-[580px]">
             <span className="eyebrow">OUR STORY</span>
-            <h1 className="font-grotesk font-bold text-4xl small:text-6xl text-on-surface tracking-[-0.03em] leading-[0.9]">
-              One day I used the perfume which I gifted to my friend and sitting in the office I get a Whiff of the perfume and that was the moment,
-            </h1>
+              <h1 className="font-grotesk font-bold text-4xl small:text-6xl text-on-surface tracking-[-0.03em] leading-[0.95]">
+                I once gifted a perfume.
+              </h1>
+
+              <p className="text-lg text-on-surface/70 leading-relaxed">
+                Days later, in a quiet office, I caught its trail again — unexpectedly.
+                It lingered in the air, but the moment stayed with me.
+              </p>
+
+              <p className="text-xl text-on-surface font-medium">
+                That was the beginning.
+              </p>
+
             <p className="font-inter text-base text-on-surface-variant leading-relaxed">
               Born on India&apos;s eastern coast. Built for those ready to wear something real.
             </p>

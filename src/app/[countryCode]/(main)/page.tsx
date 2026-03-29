@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import FeaturedProducts from "@modules/home/components/featured-products"
+import TierShowcase from "@modules/home/components/tier-showcase"
 import Hero from "@modules/home/components/hero"
 import TierCards from "@modules/home/components/tier-cards"
 import BrandValues from "@modules/home/components/brand-values"
@@ -8,6 +9,7 @@ import UGCGallery from "@modules/home/components/ugc-gallery"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
+
 
 export const metadata: Metadata = {
   title: "Whiff Theory",
@@ -40,15 +42,18 @@ export default async function Home(props: {
 
   return (
     <>
+      {/* Fixed overlay showcase — sits above the page, dismisses to reveal content below */}
+      <TierShowcase />
+
       <OrderAlertBanner />
 
-      {/* 1. Hero — full viewport brand statement */}
+      {/* Hero */}
       <Hero />
 
-      {/* 2. Tier cards — Olfactory Evolution */}
+      {/* Tier cards */}
       <TierCards />
 
-      {/* 3. Art Objects — featured products per collection */}
+      {/* Art Objects — featured products per collection */}
       <section className="bg-surface-lowest py-4" aria-label="Art Objects">
         <div className="content-container pt-16 pb-4">
           <div className="flex flex-col gap-2">
@@ -61,10 +66,10 @@ export default async function Home(props: {
         </ul>
       </section>
 
-      {/* 4. Brand values trio */}
+      {/* Brand values trio */}
       <BrandValues />
 
-      {/* 5. UGC Gallery */}
+      {/* UGC Gallery */}
       <UGCGallery />
     </>
   )
