@@ -16,4 +16,5 @@ export type PerfumeDetails = {
   sillage: string | null
   longevity: string | null
   occasions: string | null
+  scent_weight: number | null
 }

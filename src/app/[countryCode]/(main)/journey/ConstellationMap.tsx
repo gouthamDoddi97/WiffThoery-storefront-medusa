@@ -1,10 +1,36 @@
 "use client"
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ConstellationMap — zone-based layout with live animated stars
+//
+// Star visual properties derived from perfume data:
+//   size       ← scent_weight (1–10)  heavy = big, light = small
+//   brightness ← sillage              high projection = brighter
+//   trail      ← longevity            longer lasting = longer comet tail
+//
+// Each star drifts on a small deterministic tilted ellipse orbit around
+// its zone base position. The trail is rendered as a gradient line pointing
+// backward along the instantaneous velocity vector.
+//
+// Zones:
+//   CROWD PLEASERS  — top-left   (cx 182, cy 155)
+//   INTRO TO NICHE  — centre     (cx 415, cy 265)
+//   POLARIZING ART  — btm-right  (cx 648, cy 375)
+//   ARCHIVE/UNKNOWN — btm-left   (cx 168, cy 400)
+//
+// Imported via next/dynamic ssr:false — no hydration concerns.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { useState, useEffect } from "react"
+
 export type ConstellationNode = {
   productId: string
   title: string
   tier: string
   handle: string
+  scentWeight?: number | null  // 1–10, null defaults to 5
+  sillage?: string | null      // "low" | "medium" | "high"
+  longevity?: string | null    // "low" | "medium" | "high"
 }
 
 type Props = {
@@ -14,76 +40,239 @@ type Props = {
   onSelect: (node: ConstellationNode) => void
 }
 
-const TIER_COLORS: Record<string, string> = {
-  "crowd-pleaser":  "#4FDBCC",
-  "intro-to-niche": "#D4AF37",
-  "polarizing-art": "#FF6B6B",
-  unknown:          "#7B7FA6",
+// ── Zone definitions ──────────────────────────────────────────────────────────
+
+const ZONES: Record<string, {
+  cx: number; cy: number; r: number
+  color: string; label: string
+  lx: number; ly: number
+}> = {
+  "crowd-pleaser": {
+    cx: 182, cy: 155, r: 90,
+    color: "#4FDBCC", label: "CROWD PLEASERS",
+    lx: 182, ly: 263,
+  },
+  "intro-to-niche": {
+    cx: 415, cy: 265, r: 88,
+    color: "#D4AF37", label: "INTRO TO NICHE",
+    lx: 415, ly: 369,
+  },
+  "polarizing-art": {
+    cx: 648, cy: 375, r: 90,
+    color: "#FF6B6B", label: "POLARIZING ART",
+    lx: 648, ly: 480,
+  },
+  unknown: {
+    cx: 168, cy: 400, r: 66,
+    color: "#7B7FA6", label: "ARCHIVE",
+    lx: 168, ly: 480,
+  },
 }
 
-const TIER_RADII: Record<string, number> = {
-  "crowd-pleaser":  88,
-  "intro-to-niche": 162,
-  "polarizing-art": 240,
-  unknown:          305,
-}
-
-const ZONE_LABELS: Record<string, string> = {
-  "crowd-pleaser":  "CROWD PLEASER",
-  "intro-to-niche": "INTRO TO NICHE",
-  "polarizing-art": "POLARIZING ART",
-}
-
-function deterministicAngle(id: string, index: number, total: number) {
-  const spread = total > 1 ? (2 * Math.PI) / total : 0
-  const base = -Math.PI / 2 + index * spread
-  let h = 0
-  for (let i = 0; i < id.length; i++) {
-    h = ((h << 5) - h + id.charCodeAt(i)) | 0
-  }
-  const jitter = ((Math.abs(h) % 1000) / 1000 - 0.5) * 0.28
-  return base + jitter
-}
-
-// Stable background star field — values pre-rounded to avoid SSR/client float mismatch
-const r4 = (n: number) => Math.round(n * 10000) / 10000
-const STARS: { x: number; y: number; r: number; o: number }[] = Array.from(
-  { length: 55 },
-  (_, i) => {
-    const ang = i * 137.508 * (Math.PI / 180)
-    const rad = 18 + (i % 7) * 52
-    return {
-      x: r4(400 + Math.cos(ang) * rad),
-      y: r4(260 + Math.sin(ang) * rad),
-      r: r4(0.5 + (i % 4) * 0.35),
-      o: r4(0.04 + (i % 6) * 0.018),
-    }
-  }
+const TIER_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(ZONES).map(([k, v]) => [k, v.color])
 )
 
-export default function ConstellationMap({ nodes, featuredId, selectedId, onSelect }: Props) {
-  const cx = 400, cy = 260
+// ── Hash util ─────────────────────────────────────────────────────────────────
 
-  // Group nodes per tier for even angular spread
-  const tierGroups: Record<string, ConstellationNode[]> = {}
+function h32(s: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 0x01000193) >>> 0
+  }
+  return h
+}
+function hf(s: string, salt: number): number {
+  return (h32(s + String(salt)) % 100000) / 100000
+}
+function safeId(id: string): string {
+  return id.replace(/[^a-zA-Z0-9]/g, "")
+}
+
+// ── Zone placement (base positions) ──────────────────────────────────────────
+
+const GOLDEN_ANGLE = 2.39996323
+
+type PlacedNode = ConstellationNode & {
+  bx: number; by: number   // base position (zone centre + spread)
+  color: string; tierKey: string
+}
+
+function computePlaced(nodes: ConstellationNode[]): PlacedNode[] {
+  const groups: Record<string, ConstellationNode[]> = {}
   for (const n of nodes) {
-    const t = n.tier in TIER_RADII ? n.tier : "unknown"
-    ;(tierGroups[t] ??= []).push(n)
+    const t = n.tier in ZONES ? n.tier : "unknown"
+    ;(groups[t] ??= []).push(n)
   }
 
-  const placed = nodes.map((n) => {
-    const tier = n.tier in TIER_RADII ? n.tier : "unknown"
-    const grp = tierGroups[tier]
-    const angle = deterministicAngle(n.productId, grp.indexOf(n), grp.length)
-    const r = TIER_RADII[tier]
+  return nodes.map((n) => {
+    const tierKey = n.tier in ZONES ? n.tier : "unknown"
+    const zone = ZONES[tierKey]
+    const grp = groups[tierKey]
+    const i = grp.findIndex((g) => g.productId === n.productId)
+    const count = grp.length
+
+    let bx: number, by: number
+    if (count === 1) {
+      const angle = hf(n.productId, 1) * 2 * Math.PI
+      const rad = 12 + Math.floor(hf(n.productId, 2) * 26)
+      bx = zone.cx + Math.cos(angle) * rad
+      by = zone.cy + Math.sin(angle) * rad
+    } else {
+      const angle = i * GOLDEN_ANGLE + hf(n.productId, 3) * 0.4
+      const rad = zone.r * 0.76 * Math.sqrt((i + 1) / count)
+      bx = zone.cx + Math.cos(angle) * rad
+      by = zone.cy + Math.sin(angle) * rad
+    }
+
     return {
       ...n,
-      x: r4(cx + Math.cos(angle) * r),
-      y: r4(cy + Math.sin(angle) * r),
-      color: TIER_COLORS[tier] ?? "#7B7FA6",
-      tierKey: tier,
+      bx: Math.round(bx * 10) / 10,
+      by: Math.round(by * 10) / 10,
+      color: TIER_COLORS[tierKey] ?? "#7B7FA6",
+      tierKey,
     }
   })
+}
+
+// ── Star visual properties ────────────────────────────────────────────────────
+
+function starVisual(node: ConstellationNode) {
+  const weight = Math.max(1, Math.min(10, node.scentWeight ?? 5))
+  // weight 1 → r=3.5   weight 10 → r=13
+  const baseR = 3.5 + ((weight - 1) / 9) * 9.5
+
+  const siMap: Record<string, number> = { low: 0.42, medium: 0.70, high: 1.0 }
+  const brightness = siMap[node.sillage ?? ""] ?? 0.62
+
+  const trailMap: Record<string, number> = { low: 0, medium: 38, high: 78 }
+  const trailLen = trailMap[node.longevity ?? ""] ?? 0
+
+  return { baseR, brightness, trailLen }
+}
+
+// ── Orbit params (deterministic, never change per node) ───────────────────────
+
+function orbitParams(id: string) {
+  return {
+    rx:    8 + hf(id, 10) * 18,           // 8–26 px
+    ry:    5 + hf(id, 11) * 11,           // 5–16 px
+    speed: 0.055 + hf(id, 12) * 0.20,    // 0.055–0.255 rad/s (slow drift)
+    phase: hf(id, 13) * 2 * Math.PI,
+    tilt:  hf(id, 14) * Math.PI,          // orbit rotation
+  }
+}
+
+// Given orbit params + time, return current offset from base + velocity dir
+function orbitState(o: ReturnType<typeof orbitParams>, t: number) {
+  const a = o.speed * t + o.phase
+  const cosT = Math.cos(o.tilt), sinT = Math.sin(o.tilt)
+  // ellipse point
+  const ex = o.rx * Math.cos(a)
+  const ey = o.ry * Math.sin(a)
+  // derivative
+  const dvx = -o.rx * o.speed * Math.sin(a)
+  const dvy =  o.ry * o.speed * Math.cos(a)
+  return {
+    ox:  cosT * ex  - sinT * ey,
+    oy:  sinT * ex  + cosT * ey,
+    vx:  cosT * dvx - sinT * dvy,
+    vy:  sinT * dvx + cosT * dvy,
+  }
+}
+
+// ── SVG glyph path centred on (0, 0) ─────────────────────────────────────────
+
+function buildGlyphD(tier: string, r: number): string | null {
+  switch (tier) {
+    case "crowd-pleaser":
+      return null // <circle>
+    case "intro-to-niche":
+      return `M 0 ${-r} L ${r} 0 L 0 ${r} L ${-r} 0 Z`
+    case "polarizing-art": {
+      const pts: string[] = []
+      for (let k = 0; k < 6; k++) {
+        const ao = (k * Math.PI) / 3 - Math.PI / 2
+        const ai = ((k + 0.5) * Math.PI) / 3 - Math.PI / 2
+        const ox = Math.round(r * Math.cos(ao) * 100) / 100
+        const oy = Math.round(r * Math.sin(ao) * 100) / 100
+        const ix = Math.round(r * 0.46 * Math.cos(ai) * 100) / 100
+        const iy = Math.round(r * 0.46 * Math.sin(ai) * 100) / 100
+        pts.push(`${k === 0 ? "M" : "L"} ${ox} ${oy}`, `L ${ix} ${iy}`)
+      }
+      return pts.join(" ") + " Z"
+    }
+    default: {
+      const hh = Math.round(r * 0.866 * 100) / 100
+      const hf2 = Math.round(r * 0.5 * 100) / 100
+      return `M 0 ${-r} L ${hh} ${hf2} L ${-hh} ${hf2} Z`
+    }
+  }
+}
+
+// ── Background star field ─────────────────────────────────────────────────────
+
+const CANVAS_STARS = Array.from({ length: 82 }, (_, i) => {
+  const ang = (i * 137.508 * Math.PI) / 180
+  const anchors = [
+    { cx: 182, cy: 155 }, { cx: 415, cy: 265 }, { cx: 648, cy: 375 },
+    { cx: 300, cy: 120 }, { cx: 560, cy: 190 }, { cx: 230, cy: 330 },
+  ]
+  const a = anchors[i % anchors.length]
+  const rad = 30 + (i % 10) * 54
+  return {
+    x: Math.round(a.cx + Math.cos(ang) * rad),
+    y: Math.round(a.cy + Math.sin(ang) * rad),
+    r: Math.round((0.35 + (i % 6) * 0.22) * 100) / 100,
+    o: Math.round((0.02 + (i % 9) * 0.011) * 1000) / 1000,
+  }
+})
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function ConstellationMap({ nodes, featuredId, selectedId, onSelect }: Props) {
+  // Animation time in seconds
+  const [time, setTime] = useState(0)
+  useEffect(() => {
+    let rafId: number
+    let start: number | null = null
+    const loop = (ts: number) => {
+      if (start === null) start = ts
+      setTime((ts - start) / 1000)
+      rafId = requestAnimationFrame(loop)
+    }
+    rafId = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(rafId)
+  }, [])
+
+  const placed = computePlaced(nodes)
+
+  const zoneGroups: Record<string, PlacedNode[]> = {}
+  for (const p of placed) {
+    ;(zoneGroups[p.tierKey] ??= []).push(p)
+  }
+  const activeZones = new Set(placed.map((p) => p.tierKey))
+
+  // For each placed node, compute animated position
+  const animated = placed.map((n) => {
+    const orbit = orbitParams(n.productId)
+    const { ox, oy, vx, vy } = orbitState(orbit, time)
+    return { ...n, x: n.bx + ox, y: n.by + oy, vx, vy }
+  })
+
+  // Journey arc through occupied main tier zone centres
+  const arcTiers = (["crowd-pleaser", "intro-to-niche", "polarizing-art"] as const).filter(
+    (t) => activeZones.has(t)
+  )
+  let journeyPath = ""
+  if (arcTiers.length === 3) {
+    const [a, b, c] = arcTiers.map((t) => ZONES[t])
+    journeyPath = `M ${a.cx} ${a.cy} C ${(a.cx + b.cx) / 2 + 18} ${a.cy - 28}, ${(b.cx + c.cx) / 2 - 18} ${c.cy + 28}, ${c.cx} ${c.cy}`
+  } else if (arcTiers.length === 2) {
+    const [a, b] = arcTiers.map((t) => ZONES[t])
+    journeyPath = `M ${a.cx} ${a.cy} Q ${(a.cx + b.cx) / 2} ${(a.cy + b.cy) / 2 - 42} ${b.cx} ${b.cy}`
+  }
 
   return (
     <svg
@@ -93,106 +282,176 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
       aria-label="Scent constellation map"
     >
       <defs>
-        <radialGradient id="cglow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="#4FDBCC" stopOpacity={0.1} />
-          <stop offset="100%" stopColor="#4FDBCC" stopOpacity={0}   />
-        </radialGradient>
+        {/* Zone glow gradients */}
+        {Object.entries(ZONES).map(([tier, z]) => (
+          <radialGradient key={tier} id={`zg-${tier.replace(/-/g, "")}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor={z.color} stopOpacity={0.17} />
+            <stop offset="65%"  stopColor={z.color} stopOpacity={0.05} />
+            <stop offset="100%" stopColor={z.color} stopOpacity={0}    />
+          </radialGradient>
+        ))}
+        {/* Node glow filter */}
+        <filter id="ng" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.5" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        {/* Per-node trail gradients (positions update each frame) */}
+        {animated.map((node) => {
+          const { trailLen, brightness } = starVisual(node)
+          if (trailLen === 0) return null
+          const vmag = Math.sqrt(node.vx * node.vx + node.vy * node.vy)
+          if (vmag < 0.001) return null
+          const tx = node.x - (node.vx / vmag) * trailLen
+          const ty = node.y - (node.vy / vmag) * trailLen
+          return (
+            <linearGradient
+              key={`tg-${node.productId}`}
+              id={`tg-${safeId(node.productId)}`}
+              x1={node.x} y1={node.y}
+              x2={tx} y2={ty}
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%"   stopColor={node.color} stopOpacity={brightness * 0.85} />
+              <stop offset="100%" stopColor={node.color} stopOpacity={0} />
+            </linearGradient>
+          )
+        })}
       </defs>
 
-      {/* Ambient glow */}
-      <ellipse cx={cx} cy={cy} rx={360} ry={280} fill="url(#cglow)" />
-
-      {/* Background star particles */}
-      {STARS.map((s, i) => (
+      {/* Background stars */}
+      {CANVAS_STARS.map((s, i) => (
         <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
       ))}
 
-      {/* Orbital rings (dashed) */}
-      {(["crowd-pleaser", "intro-to-niche", "polarizing-art"] as const).map((tier) => (
-        <circle
-          key={tier}
-          cx={cx} cy={cy}
-          r={TIER_RADII[tier]}
-          fill="none"
-          stroke={TIER_COLORS[tier]}
-          strokeWidth={0.5}
-          strokeDasharray="3 9"
-          opacity={0.22}
-        />
-      ))}
-
-      {/* Zone labels — left side of each ring */}
-      {Object.entries(ZONE_LABELS).map(([tier, label]) => (
-        <text
-          key={tier}
-          x={cx - TIER_RADII[tier] - 12}
-          y={cy + 4}
-          fill={TIER_COLORS[tier]}
-          fontSize={6}
-          fontFamily="monospace"
-          letterSpacing={1.5}
-          textAnchor="end"
-          opacity={0.35}
-        >
-          {label}
-        </text>
-      ))}
-
-      {/* Center origin dot */}
-      <circle cx={cx} cy={cy} r={8}   fill="none" stroke="#4FDBCC" strokeWidth={0.6} opacity={0.2} />
-      <circle cx={cx} cy={cy} r={2.5} fill="#4FDBCC" opacity={0.55} />
-
-      {/* Full mesh (thin lines between all nodes) */}
-      {placed.map((a, i) =>
-        placed.slice(i + 1).map((b, j) => (
-          <line
-            key={`${i}-${j}`}
-            x1={a.x} y1={a.y}
-            x2={b.x} y2={b.y}
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth={0.7}
-          />
-        ))
+      {/* Zone nebula glows */}
+      {Object.entries(ZONES).map(([tier, z]) =>
+        activeZones.has(tier) ? (
+          <ellipse key={`nb-${tier}`} cx={z.cx} cy={z.cy} rx={z.r * 1.9} ry={z.r * 1.7}
+            fill={`url(#zg-${tier.replace(/-/g, "")})`} />
+        ) : null
       )}
 
-      {/* Nodes */}
-      {placed.map((node) => {
+      {/* Journey progression arc */}
+      {journeyPath && (
+        <path d={journeyPath} fill="none" stroke="rgba(255,255,255,0.07)"
+          strokeWidth={1} strokeDasharray="3 12" />
+      )}
+
+      {/* Zone boundary rings */}
+      {Object.entries(ZONES).map(([tier, z]) =>
+        activeZones.has(tier) ? (
+          <circle key={`br-${tier}`} cx={z.cx} cy={z.cy} r={z.r}
+            fill="none" stroke={z.color} strokeWidth={0.5} strokeDasharray="2 9" opacity={0.22} />
+        ) : null
+      )}
+
+      {/* Intra-zone constellation lines (connect base positions — stable) */}
+      {Object.entries(zoneGroups).flatMap(([tier, grp]) => {
+        if (grp.length < 2) return []
+        const color = TIER_COLORS[tier] ?? "#7B7FA6"
+        return grp.flatMap((a, i) =>
+          grp.slice(i + 1).map((b, j) => (
+            <line key={`il-${tier}-${i}-${j}`}
+              x1={a.bx} y1={a.by} x2={b.bx} y2={b.by}
+              stroke={color} strokeWidth={0.6} opacity={0.15} />
+          ))
+        )
+      })}
+
+      {/* Cross-zone filaments (base positions — stable) */}
+      {placed.flatMap((a, i) =>
+        placed.slice(i + 1)
+          .filter((b) => b.tierKey !== a.tierKey)
+          .map((b, j) => (
+            <line key={`cl-${i}-${j}`}
+              x1={a.bx} y1={a.by} x2={b.bx} y2={b.by}
+              stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
+          ))
+      )}
+
+      {/* Zone labels */}
+      {Object.entries(ZONES).map(([tier, z]) =>
+        activeZones.has(tier) ? (
+          <text key={`lbl-${tier}`} x={z.lx} y={z.ly} fill={z.color}
+            fontSize={5.5} fontFamily="ui-monospace, monospace" letterSpacing={2}
+            textAnchor="middle" opacity={0.28}>
+            {z.label}
+          </text>
+        ) : null
+      )}
+
+      {/* ── Animated nodes ─────────────────────────────────────────────────── */}
+      {animated.map((node) => {
         const isFeatured = node.productId === featuredId
         const isSelected = node.productId === selectedId
-        const r = isFeatured ? 7.5 : 4.5
+        const isActive = isFeatured || isSelected
+        const { baseR, brightness, trailLen } = starVisual(node)
+        const { color, tierKey, x, y, vx, vy } = node
+
+        const vmag = Math.sqrt(vx * vx + vy * vy)
+        const hasTrail = trailLen > 0 && vmag > 0.001
+
+        const tx = hasTrail ? x - (vx / vmag) * trailLen : 0
+        const ty = hasTrail ? y - (vy / vmag) * trailLen : 0
+
+        const glyphD = buildGlyphD(tierKey, baseR)
+        const label = node.title.length > 15 ? node.title.slice(0, 14) + "…" : node.title
+
+        // Trail stroke width tapers with star size
+        const trailW = baseR * 0.45
+
         return (
-          <g key={node.productId} onClick={() => onSelect(node)} style={{ cursor: "pointer" }}>
+          <g key={node.productId} onClick={() => onSelect(node)} style={{ cursor: "pointer" }}
+            filter={isActive ? "url(#ng)" : undefined}>
+
+            {/* Comet trail */}
+            {hasTrail && (
+              <line
+                x1={x} y1={y} x2={tx} y2={ty}
+                stroke={`url(#tg-${safeId(node.productId)})`}
+                strokeWidth={trailW}
+                strokeLinecap="round"
+                opacity={brightness}
+              />
+            )}
+
+            {/* Halo */}
+            <circle cx={x} cy={y} r={baseR + 14} fill={color} opacity={isActive ? 0.1 : 0.045} />
+
             {/* Featured rings */}
             {isFeatured && (
               <>
-                <circle cx={node.x} cy={node.y} r={24} fill="none" stroke={node.color} strokeWidth={0.4} opacity={0.18} />
-                <circle cx={node.x} cy={node.y} r={14} fill="none" stroke={node.color} strokeWidth={0.7} opacity={0.38} />
+                <circle cx={x} cy={y} r={baseR + 22} fill="none" stroke={color} strokeWidth={0.4} opacity={0.15} />
+                <circle cx={x} cy={y} r={baseR + 13} fill="none" stroke={color} strokeWidth={0.7} opacity={0.35} />
               </>
             )}
+
             {/* Selected ring */}
             {isSelected && !isFeatured && (
-              <circle cx={node.x} cy={node.y} r={11} fill="none" stroke={node.color} strokeWidth={0.8} opacity={0.6} />
+              <circle cx={x} cy={y} r={baseR + 9} fill="none" stroke={color} strokeWidth={0.8} opacity={0.5} />
             )}
-            {/* Halo */}
-            <circle cx={node.x} cy={node.y} r={r + 6} fill={node.color} opacity={0.08} />
-            {/* Dot */}
-            <circle
-              cx={node.x} cy={node.y} r={r}
-              fill={node.color}
-              opacity={isSelected || isFeatured ? 1 : 0.68}
-            />
-            {/* Label */}
-            <text
-              x={node.x}
-              y={node.y - r - 8}
-              fill="white"
-              fontSize={isFeatured ? 10 : 8}
+
+            {/* Glyph */}
+            {glyphD === null ? (
+              <circle cx={x} cy={y} r={baseR} fill={color} opacity={brightness * (isActive ? 1 : 0.9)} />
+            ) : (
+              <g transform={`translate(${x},${y})`}>
+                <path d={glyphD} fill={color} opacity={brightness * (isActive ? 1 : 0.9)} />
+              </g>
+            )}
+
+            {/* Inner gleam */}
+            <circle cx={x - baseR * 0.2} cy={y - baseR * 0.25} r={baseR * 0.28}
+              fill="white" opacity={0.18 + brightness * 0.10} />
+
+            {/* Name label */}
+            <text x={x} y={y + baseR + 14} fill="white"
+              fontSize={isActive ? 7.5 : 6.5}
+              fontFamily="ui-sans-serif, sans-serif"
+              letterSpacing={0.5}
               textAnchor="middle"
-              fontFamily="'Space Grotesk', sans-serif"
-              fontWeight={isFeatured ? "600" : "400"}
-              opacity={isSelected || isFeatured ? 1 : 0.58}
-            >
-              {node.title}
+              opacity={isActive ? 0.9 : 0.45}>
+              {label.toUpperCase()}
             </text>
           </g>
         )
@@ -200,3 +459,5 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
     </svg>
   )
 }
+
+

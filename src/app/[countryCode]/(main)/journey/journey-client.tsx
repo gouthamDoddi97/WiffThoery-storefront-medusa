@@ -1,12 +1,26 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import type { CSSProperties } from "react"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { PerfumeDetails } from "@/types/perfume"
-import ConstellationMap, { ConstellationNode } from "./ConstellationMap"
+import type { ConstellationNode } from "./ConstellationMap"
 import ScentRadar, { RadarScores } from "./ScentRadar"
+import { generatePersonaQuote } from "./scent-quotes"
+
+// Dynamic import with ssr:false eliminates all SSR/hydration float concerns
+const ConstellationMap = dynamic(() => import("./ConstellationMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <span className="font-inter text-[9px] tracking-[0.25em] text-on-surface-disabled uppercase">
+        mapping your constellation…
+      </span>
+    </div>
+  ),
+})
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -119,7 +133,11 @@ function buildJourneyData(
     personaDesc = "A single signature scent in your arsenal. The collection begins here."
   }
 
-  return { tierCounts, total, timeline, persona, personaDesc, longevitySummary }
+  const personaQuote = total > 0
+    ? generatePersonaQuote({ timeline, perfumeMap, tierCounts })
+    : ""
+
+  return { tierCounts, total, timeline, persona, personaDesc, longevitySummary, personaQuote }
 }
 
 function computeRadarScores(
@@ -161,7 +179,7 @@ function computeRadarScores(
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function JourneyClient({ customer, orders, perfumeMap, productTierMap }: Props) {
-  const { tierCounts, total, timeline, persona, personaDesc, longevitySummary } =
+  const { tierCounts, total, timeline, persona, personaDesc, longevitySummary, personaQuote } =
     buildJourneyData(orders, perfumeMap, productTierMap)
 
   const featuredId = timeline[0]?.productId ?? null
@@ -173,12 +191,18 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
 
   const radarScores = computeRadarScores(timeline, perfumeMap)
 
-  const nodes: ConstellationNode[] = timeline.map((e) => ({
-    productId: e.productId,
-    title: e.productTitle,
-    tier: e.tier,
-    handle: e.handle,
-  }))
+  const nodes: ConstellationNode[] = timeline.map((e) => {
+    const p = perfumeMap[e.productId]
+    return {
+      productId: e.productId,
+      title: e.productTitle,
+      tier: e.tier,
+      handle: e.handle,
+      scentWeight: p?.scent_weight ?? null,
+      sillage: p?.sillage ?? null,
+      longevity: p?.longevity ?? null,
+    }
+  })
 
   const nextTier =
     tierCounts["crowd-pleaser"] > 0 && tierCounts["intro-to-niche"] === 0
@@ -281,6 +305,18 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
             )}
           </div>
         </div>
+
+        {/* ── Persona quote ────────────────────────────────────────────────── */}
+        {personaQuote && (
+          <div className="py-3 border-t border-surface-variant/10 mt-1">
+            <p
+              className="font-grotesk italic text-sm text-on-surface-variant leading-relaxed max-w-[680px] opacity-70"
+              style={{ fontStyle: "italic" }}
+            >
+              &ldquo;{personaQuote}&rdquo;
+            </p>
+          </div>
+        )}
 
         {/* ── Constellation ────────────────────────────────────────────────── */}
         <div className="w-full" style={{ height: "clamp(300px, 50vh, 460px)" }}>
