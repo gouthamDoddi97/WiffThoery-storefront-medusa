@@ -6,7 +6,7 @@ import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import { getBaseURL } from "@lib/util/env"
+import { getBaseURL, getSiteURL } from "@lib/util/env"
 
 type Props = {
   params: Promise<{ category: string[]; countryCode: string }>
@@ -54,20 +54,26 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     const productCategory = await getCategoryByHandle(params.category)
 
     const title = productCategory.name
-
     const description = productCategory.description ?? `${title} category.`
 
     return {
       title,
       description,
+      alternates: {
+        canonical: `${getBaseURL()}/${params.countryCode}/categories/${params.category.join("/")}`,
+      },
       openGraph: {
         title: `${title} | Whiff Theory`,
         description,
-        images: [{ url: "/Wlogo.png", alt: `Whiff Theory – ${title}` }],
+        images: [{ url: "/og-image.png", alt: `Whiff Theory – ${title}`, width: 1200, height: 630 }],
         siteName: "Whiff Theory",
       },
-      alternates: {
-        canonical: `${getBaseURL()}/${params.countryCode}/categories/${params.category.join("/")}`,
+      twitter: {
+        card: "summary_large_image",
+        site: "@whifftheory",
+        title: `${title} | Whiff Theory`,
+        description,
+        images: ["/og-image.png"],
       },
     }
   } catch (error) {
@@ -86,12 +92,34 @@ export default async function CategoryPage(props: Props) {
     notFound()
   }
 
+  const siteUrl = getSiteURL()
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${params.countryCode}` },
+      { "@type": "ListItem", position: 2, name: "Store", item: `${siteUrl}/${params.countryCode}/store` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: productCategory.name,
+        item: `${siteUrl}/${params.countryCode}/categories/${params.category.join("/")}`,
+      },
+    ],
+  }
+
   return (
-    <CategoryTemplate
-      category={productCategory}
-      sortBy={sortBy}
-      page={page}
-      countryCode={params.countryCode}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <CategoryTemplate
+        category={productCategory}
+        sortBy={sortBy}
+        page={page}
+        countryCode={params.countryCode}
+      />
+    </>
   )
 }

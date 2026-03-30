@@ -10,6 +10,18 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: ["/checkout", "/account/", "/cart"],
       },
+      // Explicitly allow AI citation/search bots (they may also match "*" but
+      // being explicit ensures they are welcomed and not accidentally blocked
+      // by future wildcard Disallow additions).
+      { userAgent: "GPTBot", allow: "/" },
+      { userAgent: "ChatGPT-User", allow: "/" },
+      { userAgent: "PerplexityBot", allow: "/" },
+      { userAgent: "ClaudeBot", allow: "/" },
+      { userAgent: "anthropic-ai", allow: "/" },
+      { userAgent: "Google-Extended", allow: "/" },
+      { userAgent: "Bingbot", allow: "/" },
+      // Block Common Crawl — used only for AI training, does not power citations.
+      { userAgent: "CCBot", disallow: "/" },
     ],
     sitemap: `${base}/sitemap.xml`,
   }

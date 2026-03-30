@@ -1,34 +1,55 @@
 "use client"
 
+import { useState } from "react"
+import type { CSSProperties } from "react"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { PerfumeDetails } from "@/types/perfume"
+import ConstellationMap, { ConstellationNode } from "./ConstellationMap"
+import ScentRadar, { RadarScores } from "./ScentRadar"
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const TIER_META: Record<string, { label: string; color: string }> = {
+  "crowd-pleaser":  { label: "CROWD PLEASER",  color: "#4FDBCC" },
+  "intro-to-niche": { label: "INTRO TO NICHE", color: "#D4AF37" },
+  "polarizing-art": { label: "POLARIZING ART", color: "#FF6B6B" },
+  unknown:          { label: "ARCHIVE",        color: "#7B7FA6" },
+}
+
+const LONGEVITY_LABELS: Record<string, string> = {
+  low:    "A Few Hours",
+  medium: "Half a Day",
+  high:   "Dusk Till Dawn",
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
   customer: HttpTypes.StoreCustomer
   orders: HttpTypes.StoreOrder[]
+  perfumeMap: Record<string, PerfumeDetails>
+  productTierMap: Record<string, string>
 }
 
-// Derive tier from collection title/handle heuristics
-function inferTier(item: HttpTypes.StoreOrderLineItem): "crowd-pleasers" | "intro-to-niche" | "polarizing-art" | "unknown" {
-  const handle = (item.product as any)?.collection?.handle ?? ""
-  const title = (item.product as any)?.collection?.title ?? ""
-  const text = (handle + title).toLowerCase()
-  if (text.includes("crowd")) return "crowd-pleasers"
-  if (text.includes("intro") || text.includes("niche")) return "intro-to-niche"
-  if (text.includes("polariz") || text.includes("art")) return "polarizing-art"
-  return "unknown"
+type TimelineEntry = {
+  date: string
+  productTitle: string
+  handle: string
+  productId: string
+  tier: string
+  thumbnail: string | null
 }
 
-const TIER_META = {
-  "crowd-pleasers": { label: "CROWD PLEASERS", color: "#4FDBCC", desc: "The universally loved" },
-  "intro-to-niche": { label: "INTRO TO NICHE", color: "#D4AF37", desc: "The curious explorer" },
-  "polarizing-art": { label: "POLARIZING ART", color: "#FF6B6B", desc: "The daring connoisseur" },
-  unknown: { label: "ARCHIVE", color: "#7B7FA6", desc: "Mixed collection" },
-}
+// ─── Data helpers ─────────────────────────────────────────────────────────────
 
-function buildJourneyData(orders: HttpTypes.StoreOrder[]) {
+function buildJourneyData(
+  orders: HttpTypes.StoreOrder[],
+  perfumeMap: Record<string, PerfumeDetails>,
+  productTierMap: Record<string, string>
+) {
   const tierCounts: Record<string, number> = {
-    "crowd-pleasers": 0,
+    "crowd-pleaser": 0,
     "intro-to-niche": 0,
     "polarizing-art": 0,
     unknown: 0,
@@ -37,217 +58,350 @@ function buildJourneyData(orders: HttpTypes.StoreOrder[]) {
     date: string
     productTitle: string
     handle: string
+    productId: string
     tier: string
     thumbnail: string | null
   }> = []
+  const seen = new Set<string>()
 
   for (const order of orders) {
     for (const item of order.items ?? []) {
-      const tier = inferTier(item)
+      const resolvedProductId = (item.product as any)?.id ?? item.product_id ?? null
+      const pid = resolvedProductId ?? item.variant_id ?? item.id
+      const tier = productTierMap[resolvedProductId ?? ""] ?? "unknown"
       tierCounts[tier] = (tierCounts[tier] ?? 0) + (item.quantity ?? 1)
-      timeline.push({
-        date: String(order.created_at),
-        productTitle: item.product_title ?? "Unknown",
-        handle: item.product_handle ?? "",
-        tier,
-        thumbnail: item.thumbnail ?? null,
-      })
+      if (pid && !seen.has(pid)) {
+        seen.add(pid)
+        timeline.push({
+          date: String(order.created_at),
+          productTitle: item.product_title ?? item.title ?? "Unknown",
+          handle: item.product_handle ?? "",
+          productId: resolvedProductId ?? pid,
+          tier,
+          thumbnail: item.thumbnail ?? null,
+        })
+      }
     }
   }
 
   const total = Object.values(tierCounts).reduce((a, b) => a + b, 0)
 
-  // Determine persona
+  // Avg longevity
+  const lvMap = { low: 1, medium: 2, high: 3 } as const
+  const lvVals = timeline.map((e) => perfumeMap[e.productId]?.longevity).filter((v): v is string => !!v)
+  const lvAvg =
+    lvVals.length > 0
+      ? lvVals.reduce((a, v) => a + (lvMap[v as keyof typeof lvMap] ?? 0), 0) / lvVals.length
+      : 0
+  const longevitySummary = lvAvg >= 2.5 ? "High" : lvAvg >= 1.5 ? "Medium" : lvAvg >= 0.5 ? "Low" : null
+
+  // Persona
   let persona = "The Beginner"
-  let personaDesc = "Just starting your olfactory journey."
+  let personaDesc =
+    "Your first steps into the world of niche fragrance. Every purchase is a new chapter waiting to be written."
   if (total === 0) {
     persona = "The Unscented"
     personaDesc = "Your journey hasn't begun yet."
   } else if (tierCounts["polarizing-art"] >= 2) {
     persona = "The Connoisseur"
-    personaDesc = "You live at the edge of olfactory art."
+    personaDesc =
+      "You're drawn to the depth of the shadows — where music meets moonlight. Your selections reveal a preference for heavy base notes and enigmatic finishes that linger long after the sun sets."
   } else if (tierCounts["intro-to-niche"] >= 2) {
     persona = "The Explorer"
-    personaDesc = "Curiosity is your compass."
-  } else if (tierCounts["crowd-pleasers"] >= 2) {
+    personaDesc =
+      "Curiosity is your compass. You seek out scents that tell a story — complex narratives crafted from rare ingredients and bold artistic vision."
+  } else if (tierCounts["crowd-pleaser"] >= 2) {
     persona = "The Crowd Pleaser"
-    personaDesc = "You wear what works — confidently."
+    personaDesc =
+      "You wear what works — confidently. Your collection blends accessibility with elegance, making a statement without demanding a stage."
+  } else if (total >= 1) {
+    persona = "The Initiate"
+    personaDesc = "A single signature scent in your arsenal. The collection begins here."
   }
 
-  return { tierCounts, total, timeline: timeline.slice(0, 10), persona, personaDesc }
+  return { tierCounts, total, timeline, persona, personaDesc, longevitySummary }
 }
 
-export default function JourneyClient({ customer, orders }: Props) {
-  const { tierCounts, total, timeline, persona, personaDesc } = buildJourneyData(orders)
+function computeRadarScores(
+  timeline: TimelineEntry[],
+  perfumeMap: Record<string, PerfumeDetails>
+): RadarScores {
+  const items = timeline
+    .map((e) => perfumeMap[e.productId])
+    .filter((p): p is PerfumeDetails => !!p)
 
-  // What's next suggestion
+  if (items.length === 0) {
+    return { projection: 0.35, longevity: 0.35, richness: 0.35, versatility: 0.25, depth: 0.35 }
+  }
+
+  const lv = { low: 0.3, medium: 0.65, high: 1.0 }
+  const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0)
+
+  const deepSet = new Set(["evening", "winter", "date", "strong"])
+  let deepCount = 0, totalOcc = 0
+  items.forEach((p) => {
+    if (p.occasions) {
+      const occs = p.occasions.split(",").map((s) => s.trim()).filter(Boolean)
+      totalOcc += occs.length
+      deepCount += occs.filter((o) => deepSet.has(o)).length
+    }
+  })
+
+  return {
+    projection:  avg(items.map((p) => lv[p.sillage  as keyof typeof lv] ?? 0.3)),
+    longevity:   avg(items.map((p) => lv[p.longevity as keyof typeof lv] ?? 0.3)),
+    richness:    avg(items.map((p) =>
+      [p.top_notes, p.middle_notes, p.base_notes].filter(Boolean).length / 3
+    )),
+    versatility: Math.min(totalOcc / Math.max(items.length * 4, 1), 1),
+    depth:       totalOcc > 0 ? deepCount / totalOcc : 0.38,
+  }
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function JourneyClient({ customer, orders, perfumeMap, productTierMap }: Props) {
+  const { tierCounts, total, timeline, persona, personaDesc, longevitySummary } =
+    buildJourneyData(orders, perfumeMap, productTierMap)
+
+  const featuredId = timeline[0]?.productId ?? null
+  const [selectedId, setSelectedId] = useState<string>(featuredId ?? "")
+
+  const selectedEntry = timeline.find((e) => e.productId === selectedId) ?? timeline[0]
+  const selectedPerfume = selectedEntry ? perfumeMap[selectedEntry.productId] : null
+  const selectedTierMeta = TIER_META[selectedEntry?.tier ?? "unknown"] ?? TIER_META.unknown
+
+  const radarScores = computeRadarScores(timeline, perfumeMap)
+
+  const nodes: ConstellationNode[] = timeline.map((e) => ({
+    productId: e.productId,
+    title: e.productTitle,
+    tier: e.tier,
+    handle: e.handle,
+  }))
+
   const nextTier =
-    tierCounts["crowd-pleasers"] > 0 && tierCounts["intro-to-niche"] === 0
-      ? { label: "INTRO TO NICHE", href: "/categories/intro-to-niche", color: "#D4AF37" }
+    tierCounts["crowd-pleaser"] > 0 && tierCounts["intro-to-niche"] === 0
+      ? { label: "INTRO TO NICHE", href: "/categories/intro-to-niche" }
       : tierCounts["intro-to-niche"] > 0 && tierCounts["polarizing-art"] === 0
-      ? { label: "POLARIZING ART", href: "/categories/polarizing-art", color: "#FF6B6B" }
+      ? { label: "POLARIZING ART", href: "/categories/polarizing-art" }
       : null
 
-  return (
-    <div className="bg-surface-lowest min-h-screen py-16">
-      <div className="content-container flex flex-col gap-16">
-
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-3">
-          <span className="eyebrow">YOUR EVOLUTION</span>
-          <h1 className="font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]">
-            MY SCENT JOURNEY
+  // ── Empty state ─────────────────────────────────────────────────────────
+  if (total === 0) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 35%, rgba(20,30,38,1) 0%, rgba(7,9,13,1) 100%)",
+        }}
+      >
+        <div className="flex flex-col gap-8 max-w-[480px] px-8">
+          <span className="font-inter text-[9px] tracking-[0.25em] text-primary uppercase">
+            SCENT PERSONALITY
+          </span>
+          <h1 className="font-grotesk font-bold text-6xl text-on-surface tracking-[-0.03em] leading-[0.9]">
+            Your Scent Personality,
+            <br />
+            <em style={{ color: "#4FDBCC", fontStyle: "italic" }}>{customer.first_name}</em>
           </h1>
-          <p className="font-inter text-sm text-on-surface-variant">
-            Welcome back, {customer.first_name}.
+          <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
+            Your constellation is empty. Every fragrance you purchase places a new star in your map.
           </p>
+          <LocalizedClientLink href="/categories/crowd-pleaser">
+            <button className="btn-primary">BEGIN YOUR JOURNEY →</button>
+          </LocalizedClientLink>
+        </div>
+      </div>
+    )
+  }
+
+  const dominantNotes =
+    selectedPerfume?.base_notes ??
+    selectedPerfume?.middle_notes ??
+    selectedPerfume?.top_notes ??
+    "—"
+
+  // ── Main layout ─────────────────────────────────────────────────────────
+  return (
+    <div
+      className="min-h-screen overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 38%, rgba(18,28,36,1) 0%, rgba(7,9,13,1) 100%)",
+      }}
+    >
+      <div className="content-container pt-10 pb-16 flex flex-col gap-0">
+
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="flex items-start justify-between gap-8 pb-2">
+          <div className="flex flex-col gap-2">
+            <span className="font-inter text-[9px] tracking-[0.28em] text-primary uppercase">
+              SCENT PERSONALITY
+            </span>
+            <h1 className="font-grotesk font-bold text-5xl small:text-[3.75rem] text-on-surface tracking-[-0.03em] leading-[0.88]">
+              Your Scent Personality,
+              <br />
+              <em style={{ color: "#4FDBCC", fontStyle: "italic" }}>{customer.first_name}</em>
+            </h1>
+          </div>
+
+          {/* Floating stat card */}
+          <div
+            className="hidden small:flex flex-col gap-2 p-5 min-w-[210px] max-w-[270px] flex-shrink-0"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled">
+              {timeline.length} scent{timeline.length !== 1 ? "s" : ""} discovered
+              {" · "}
+              {orders.length} order{orders.length !== 1 ? "s" : ""}
+            </p>
+            <p className="font-inter text-xs text-on-surface-variant leading-relaxed">
+              Your evolving persona:{" "}
+              <span className="text-primary font-medium">{persona}</span>
+              {longevitySummary && (
+                <>
+                  {" "}with{" "}
+                  <span className="text-on-surface">{longevitySummary}</span>
+                  {" "}avg longevity
+                </>
+              )}.
+            </p>
+            {selectedEntry && (
+              <p className="font-inter text-[9px] text-on-surface-disabled">
+                Viewing:{" "}
+                <span className="font-medium" style={{ color: selectedTierMeta.color }}>
+                  {selectedEntry.productTitle}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
 
-        {total === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col gap-6 py-16 max-w-[480px]">
-            <div className="w-1 h-12 bg-primary" />
-            <h2 className="font-grotesk font-bold text-2xl text-on-surface">
-              Your journey is blank.
+        {/* ── Constellation ────────────────────────────────────────────────── */}
+        <div className="w-full" style={{ height: "clamp(300px, 50vh, 460px)" }}>
+          <ConstellationMap
+            nodes={nodes}
+            featuredId={featuredId}
+            selectedId={selectedId}
+            onSelect={(n) => setSelectedId(n.productId)}
+          />
+        </div>
+
+        {/* ── Bottom section ───────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 small:grid-cols-2 gap-5 pt-2">
+
+          {/* Featured scent card */}
+          <div
+            className="flex flex-col gap-5 p-8"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
+          >
+            <span
+              className="font-inter text-[8px] tracking-[0.22em] uppercase"
+              style={{ color: selectedTierMeta.color }}
+            >
+              {selectedTierMeta.label}
+            </span>
+
+            <h2 className="font-grotesk font-bold text-3xl text-on-surface tracking-[-0.02em] leading-[1.05]">
+              {selectedEntry?.productTitle ?? persona}
             </h2>
-            <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
-              Every fragrance you purchase shapes your olfactory persona. Place your first order to
-              see your journey mapped here.
+
+            <p
+              className="font-inter text-sm italic text-on-surface-disabled leading-relaxed"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              } as CSSProperties}
+            >
+              &ldquo;{selectedPerfume?.scent_story ?? personaDesc}&rdquo;
             </p>
-            <LocalizedClientLink href="/categories/crowd-pleaser">
-              <button className="btn-primary">START WITH CROWD PLEASERS</button>
-            </LocalizedClientLink>
-          </div>
-        ) : (
-          <>
-            {/* ── Persona card ──────────────────────────────────────────── */}
-            <div className="bg-surface-low p-8 flex flex-col small:flex-row gap-8 items-start">
-              <div className="w-16 h-16 bg-surface-container flex items-center justify-center flex-shrink-0">
-                <span className="font-grotesk font-bold text-2xl text-primary">
-                  {persona.charAt(0)}
+
+            <div
+              className="flex gap-8 pt-4"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <div className="flex flex-col gap-1">
+                <span className="font-inter text-[8px] tracking-[0.2em] uppercase text-on-surface-disabled">
+                  DOMINANT NOTES
+                </span>
+                <span className="font-grotesk text-sm text-on-surface-variant">
+                  {dominantNotes}
                 </span>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className="eyebrow text-primary">YOUR PERSONA</span>
-                <h2 className="font-grotesk font-bold text-2xl text-on-surface">{persona}</h2>
-                <p className="font-inter text-sm text-on-surface-variant">{personaDesc}</p>
-                <p className="font-inter text-xs text-on-surface-disabled mt-2">
-                  Based on {total} fragrance{total !== 1 ? "s" : ""} across {orders.length} order{orders.length !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-
-            {/* ── Tier breakdown ─────────────────────────────────────────── */}
-            <div className="flex flex-col gap-6">
-              <h2 className="font-grotesk font-bold text-xs tracking-[0.2em] text-on-surface-variant">
-                TIER BREAKDOWN
-              </h2>
-              <div className="flex flex-col gap-4">
-                {(["crowd-pleasers", "intro-to-niche", "polarizing-art"] as const).map((tier) => {
-                  const meta = TIER_META[tier]
-                  const count = tierCounts[tier] ?? 0
-                  const pct = total > 0 ? Math.round((count / total) * 100) : 0
-                  return (
-                    <div key={tier} className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-px" style={{ backgroundColor: meta.color, height: 2 }} />
-                          <span className="font-grotesk text-[10px] tracking-[0.15em] text-on-surface">
-                            {meta.label}
-                          </span>
-                        </div>
-                        <span className="font-inter text-xs" style={{ color: meta.color }}>
-                          {count} · {pct}%
-                        </span>
-                      </div>
-                      <div className="h-px bg-surface-variant/30 relative">
-                        <div
-                          className="absolute left-0 top-0 h-px transition-all duration-700"
-                          style={{ width: `${pct}%`, backgroundColor: meta.color }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* ── Discovery timeline ──────────────────────────────────────── */}
-            {timeline.length > 0 && (
-              <div className="flex flex-col gap-6">
-                <h2 className="font-grotesk font-bold text-xs tracking-[0.2em] text-on-surface-variant">
-                  DISCOVERY TIMELINE
-                </h2>
-                <div className="relative flex flex-col gap-0">
-                  {/* Vertical line */}
-                  <div className="absolute left-[7px] top-4 bottom-4 w-px bg-surface-variant/30" />
-                  {timeline.map((entry, i) => {
-                    const meta = TIER_META[entry.tier as keyof typeof TIER_META] ?? TIER_META.unknown
-                    return (
-                      <div key={i} className="flex gap-6 items-start py-4">
-                        {/* Dot */}
-                        <div
-                          className="w-4 h-4 flex-shrink-0 mt-0.5 flex items-center justify-center"
-                          style={{ position: "relative", zIndex: 1 }}
-                        >
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: meta.color }}
-                          />
-                        </div>
-                        {/* Content */}
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <LocalizedClientLink href={`/products/${entry.handle}`}>
-                            <span className="font-grotesk text-sm font-semibold text-on-surface hover:text-primary transition-colors">
-                              {entry.productTitle}
-                            </span>
-                          </LocalizedClientLink>
-                          <div className="flex gap-3 items-center">
-                            <span className="font-grotesk text-[9px] tracking-[0.15em]" style={{ color: meta.color }}>
-                              {meta.label}
-                            </span>
-                            <span className="font-inter text-[10px] text-on-surface-disabled">
-                              {new Date(entry.date).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ── Next step CTA ───────────────────────────────────────────── */}
-            {nextTier && (
-              <div
-                className="p-8 flex flex-col small:flex-row items-start small:items-center justify-between gap-6"
-                style={{ borderLeft: `2px solid ${nextTier.color}` }}
-              >
-                <div className="flex flex-col gap-2">
-                  <span className="font-grotesk text-[9px] tracking-[0.2em] text-on-surface-variant">
-                    YOUR NEXT CHAPTER
+              {selectedPerfume?.longevity && (
+                <div className="flex flex-col gap-1">
+                  <span className="font-inter text-[8px] tracking-[0.2em] uppercase text-on-surface-disabled">
+                    LONGEVITY
                   </span>
-                  <h3 className="font-grotesk font-bold text-xl text-on-surface">
-                    Ready for {nextTier.label}?
-                  </h3>
-                  <p className="font-inter text-sm text-on-surface-variant">
-                    You&apos;ve mastered the previous tier. Evolve to the next level of your journey.
-                  </p>
+                  <span className="font-grotesk text-sm text-on-surface-variant">
+                    {LONGEVITY_LABELS[selectedPerfume.longevity] ?? selectedPerfume.longevity}
+                  </span>
                 </div>
-                <LocalizedClientLink href={nextTier.href}>
-                  <button className="btn-primary flex-shrink-0">
-                    EXPLORE {nextTier.label}
-                  </button>
-                </LocalizedClientLink>
-              </div>
+              )}
+            </div>
+
+            {selectedEntry && (
+              <LocalizedClientLink href={`/products/${selectedEntry.handle}`}>
+                <button
+                  className="font-inter text-[9px] tracking-[0.2em] uppercase px-6 py-3 transition-opacity hover:opacity-80"
+                  style={{
+                    background: "rgba(79,219,204,0.1)",
+                    border: "1px solid rgba(79,219,204,0.38)",
+                    color: "#4FDBCC",
+                  }}
+                >
+                  EXPLORE {selectedEntry.productTitle.toUpperCase()} →
+                </button>
+              </LocalizedClientLink>
             )}
-          </>
+          </div>
+
+          {/* Scent DNA radar */}
+          <div className="flex flex-col items-center justify-center gap-5 py-6 px-4">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <h3 className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.04em]">
+                Scent DNA Breakdown
+              </h3>
+              <p className="font-inter text-[8px] tracking-[0.15em] uppercase text-on-surface-disabled">
+                BUILT ON YOUR {timeline.length}-SCENT MAPPING
+              </p>
+            </div>
+            <ScentRadar scores={radarScores} />
+          </div>
+        </div>
+
+        {/* ── Next tier CTA ────────────────────────────────────────────────── */}
+        {nextTier && (
+          <div
+            className="mt-5 px-6 py-5 flex items-center justify-between gap-6"
+            style={{ borderLeft: "2px solid rgba(79,219,204,0.35)" }}
+          >
+            <div className="flex flex-col gap-1">
+              <span className="font-inter text-[8px] tracking-[0.2em] text-on-surface-disabled uppercase">
+                YOUR NEXT CHAPTER
+              </span>
+              <span className="font-grotesk text-base text-on-surface">
+                Ready for <strong>{nextTier.label}</strong>?
+              </span>
+            </div>
+            <LocalizedClientLink href={nextTier.href}>
+              <button className="btn-ghost text-xs flex-shrink-0">
+                EXPLORE {nextTier.label} →
+              </button>
+            </LocalizedClientLink>
+          </div>
         )}
+
       </div>
     </div>
   )

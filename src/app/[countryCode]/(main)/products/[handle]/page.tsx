@@ -4,6 +4,7 @@ import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
+import { getSiteURL } from "@lib/util/env"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
@@ -92,9 +93,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const ogImages = product.images?.map((i) => ({ url: i.url, alt: product.title })) ??
     (product.thumbnail ? [{ url: product.thumbnail, alt: product.title }] : [])
 
+  const siteUrl = getSiteURL()
   return {
     title: product.title,
     description,
+    alternates: {
+      canonical: `${siteUrl}/${params.countryCode}/products/${handle}`,
+    },
     openGraph: {
       type: "website",
       title: `${product.title} | Whiff Theory`,
@@ -104,6 +109,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
+      site: "@whifftheory",
       title: `${product.title} | Whiff Theory`,
       description,
       images: product.thumbnail ? [product.thumbnail] : [],
@@ -133,19 +139,68 @@ export default async function ProductPage(props: Props) {
     notFound()
   }
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: pricedProduct.title,
-    description: pricedProduct.description ?? undefined,
-    image:
-      pricedProduct.images?.map((i) => i.url) ??
-      (pricedProduct.thumbnail ? [pricedProduct.thumbnail] : undefined),
-    brand: {
-      "@type": "Brand",
-      name: "Whiff Theory",
+  const siteUrl = getSiteURL()
+
+  // Build Offers array from variants that have a calculated price
+  const offers = pricedProduct.variants
+    ?.filter((v) => (v as any).calculated_price?.calculated_amount != null)
+    .map((v) => ({
+      "@type": "Offer",
+      name: v.title ?? pricedProduct.title,
+      price: ((v as any).calculated_price.calculated_amount / 100).toFixed(2),
+      priceCurrency:
+        (v as any).calculated_price.currency_code?.toUpperCase() ?? "INR",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/${params.countryCode}/products/${params.handle}?v_id=${v.id}`,
+      seller: { "@type": "Organization", name: "Whiff Theory" },
+    }))
+
+  const productImages =
+    pricedProduct.images?.map((i) => i.url) ??
+    (pricedProduct.thumbnail ? [pricedProduct.thumbnail] : undefined)
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": `${siteUrl}/${params.countryCode}/products/${params.handle}#product`,
+      name: pricedProduct.title,
+      description: pricedProduct.description ?? undefined,
+      image: productImages,
+      sku: pricedProduct.variants?.[0]?.sku ?? undefined,
+      brand: {
+        "@type": "Brand",
+        name: "Whiff Theory",
+      },
+      ...(offers && offers.length > 0
+        ? { offers: offers.length === 1 ? offers[0] : offers }
+        : {}),
     },
-  }
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: `${siteUrl}/${params.countryCode}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Store",
+          item: `${siteUrl}/${params.countryCode}/store`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: pricedProduct.title,
+          item: `${siteUrl}/${params.countryCode}/products/${params.handle}`,
+        },
+      ],
+    },
+  ]
 
   return (
     <>

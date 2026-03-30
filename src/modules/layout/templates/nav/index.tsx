@@ -8,11 +8,15 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import { getCollectionTiers } from "@lib/data/collection-tier"
 
-const NAV_LINKS = [
+const LEFT_LINKS = [
   { label: "CROWD PLEASERS", href: "/categories/crowd-pleaser" },
   { label: "INTRO TO NICHE", href: "/categories/intro-to-niche" },
   { label: "POLARIZING ART", href: "/categories/polarizing-art" },
-  { label: "ARCHIVE", href: "/store" },
+]
+
+const RIGHT_LINKS = [
+  { label: "CATALOG", href: "/store" },
+  { label: "SCENT PERSONALITY", href: "/journey" },
 ]
 
 export default async function Nav() {
@@ -53,7 +57,7 @@ export default async function Nav() {
             </div>
             {/* Desktop collection tier links */}
             <div className="hidden small:flex items-center gap-x-8 h-full">
-              {NAV_LINKS.map((link) => (
+              {LEFT_LINKS.map((link) => (
                 <LocalizedClientLink
                   key={link.href}
                   href={link.href}
@@ -76,8 +80,20 @@ export default async function Nav() {
             </LocalizedClientLink>
           </div>
 
-          {/* Right — account, wishlist, cart */}
+          {/* Right — catalog/personality links + account, wishlist, cart */}
           <div className="flex items-center gap-x-5 h-full flex-1 basis-0 justify-end">
+            {/* Desktop right nav links */}
+            <div className="hidden small:flex items-center gap-x-6 h-full mr-2">
+              {RIGHT_LINKS.map((link) => (
+                <LocalizedClientLink
+                  key={link.href}
+                  href={link.href}
+                  className="font-inter font-medium text-[11px] tracking-[0.18em] text-on-surface-variant hover:text-primary transition-colors duration-200"
+                >
+                  {link.label}
+                </LocalizedClientLink>
+              ))}
+            </div>
             <LocalizedClientLink
               href="/account"
               className="hidden small:flex text-on-surface-variant hover:text-primary transition-colors duration-200"

@@ -15,4 +15,5 @@ export type PerfumeDetails = {
   customer_care: string | null
   sillage: string | null
   longevity: string | null
+  occasions: string | null
 }

@@ -184,7 +184,7 @@ export default function ProductActions({
           ) : !inStock || !isValidVariant ? (
             "OUT OF STOCK"
           ) : (
-            "ADD TO COLLECTION"
+            "ADD TO CART"
           )}
         </button>
         <MobileActions

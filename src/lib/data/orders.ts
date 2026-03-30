@@ -32,13 +32,14 @@ export const retrieveOrder = async (id: string) => {
 export const listOrders = async (
   limit: number = 10,
   offset: number = 0,
-  filters?: Record<string, any>
+  filters?: Record<string, any>,
+  noCache?: boolean
 ) => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  const next = {
+  const next = noCache ? {} : {
     ...(await getCacheOptions("orders")),
   }
 
@@ -49,12 +50,13 @@ export const listOrders = async (
         limit,
         offset,
         order: "-created_at",
-        fields: "*items,+items.metadata,*items.variant,*items.product",
+        fields:
+          "*items,+items.product_id,+items.variant_id,+items.product_title,+items.product_handle,+items.thumbnail,+items.metadata,*items.variant,*items.product",
         ...filters,
       },
       headers,
       next,
-      cache: "force-cache",
+      cache: noCache ? "no-store" : "force-cache",
     })
     .then(({ orders }) => orders)
     .catch((err) => medusaError(err))

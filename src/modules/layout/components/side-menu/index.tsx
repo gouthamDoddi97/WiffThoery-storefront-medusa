@@ -46,7 +46,8 @@ const TIERS = [
 
 const UTILITY_LINKS = [
   { label: "Home", href: "/" },
-  { label: "All Products", href: "/store" },
+  { label: "Catalog", href: "/store" },
+  { label: "Scent Personality", href: "/journey" },
   { label: "Account", href: "/account" },
   { label: "Wishlist", href: "/wishlist" },
   { label: "Cart", href: "/cart" },

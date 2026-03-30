@@ -180,7 +180,7 @@ const ProductTemplate = async ({
                 {perfume.certifications}
               </p>
             )}
-            <p className="font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-disabled">
+            <p className="font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
               EAU DE PARFUM · EXTRAIT · CRAFTED IN INDIA
             </p>
           </div>
@@ -253,7 +253,8 @@ const ProductTemplate = async ({
         perfume?.middle_notes ||
         perfume?.base_notes ||
         perfume?.usage_tips ||
-        perfume?.ingredients) && (
+        perfume?.ingredients ||
+        perfume?.occasions) && (
         <section className="py-16 bg-surface-lowest border-t border-surface-variant/20">
           <div className="content-container max-w-[720px]">
             <span className="eyebrow block mb-8">OLFACTORY BLUEPRINT</span>
@@ -292,6 +293,40 @@ const ProductTemplate = async ({
                   SILLAGE &amp; LONGEVITY
                 </p>
                 <PerformanceChart sillage={perfume.sillage} longevity={perfume.longevity} />
+              </div>
+            )}
+
+            {/* When to Wear */}
+            {perfume?.occasions && (
+              <div className="border-t border-surface-variant/30 py-6">
+                <p className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.05em] mb-4">
+                  WHEN TO WEAR
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {perfume.occasions.split(",").map((occ) => occ.trim()).filter(Boolean).map((occ) => {
+                    const OCCASION_META: Record<string, { label: string; icon: string }> = {
+                      day:     { label: "Day",         icon: "☀" },
+                      evening: { label: "Evening",     icon: "🌙" },
+                      summer:  { label: "Summer",      icon: "🌿" },
+                      winter:  { label: "Winter",      icon: "❄" },
+                      rainy:   { label: "Rainy Day",   icon: "🌧" },
+                      office:  { label: "Office",      icon: "💼" },
+                      date:    { label: "Date Night",  icon: "✦" },
+                      gentle:  { label: "Gentle",      icon: "◇" },
+                      strong:  { label: "Strong / Bold", icon: "◆" },
+                    }
+                    const meta = OCCASION_META[occ] ?? { label: occ, icon: "·" }
+                    return (
+                      <span
+                        key={occ}
+                        className="inline-flex items-center gap-1.5 font-inter text-[9px] tracking-[0.15em] uppercase bg-surface-low border border-surface-variant/40 text-on-surface-variant px-3 py-2 hover:border-primary/50 hover:text-primary transition-colors"
+                      >
+                        <span className="text-[11px] leading-none">{meta.icon}</span>
+                        {meta.label}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             )}
 

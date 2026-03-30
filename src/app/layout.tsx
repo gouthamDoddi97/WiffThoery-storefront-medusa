@@ -32,6 +32,15 @@ export const metadata: Metadata = {
     locale: "en_IN",
     images: [{ url: "/og-image.png", alt: "Whiff Theory – Curated Fragrance Collections", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@whifftheory",
+    creator: "@whifftheory",
+    title: "Whiff Theory – Curated Fragrance Collections",
+    description:
+      "Discover luxury and artisan fragrances at Whiff Theory. Shop perfumes crafted for every mood and occasion.",
+    images: ["/og-image.png"],
+  },
   icons: {
     icon: "/favicon.svg",
   },
@@ -49,6 +58,58 @@ export const metadata: Metadata = {
   },
 }
 
+// ── Sitewide structured data ──────────────────────────────────────────────────
+// Organization + WebSite schema helps search engines and AI models understand
+// brand identity, location, and site search capabilities.
+const siteUrl = getSiteURL()
+
+const sitewideSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Whiff Theory",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/Wlogo.png`,
+        width: 512,
+        height: 512,
+      },
+      description:
+        "Whiff Theory is India's most transparent artisan fragrance brand, handcrafting luxury perfumes in Visakhapatnam, Andhra Pradesh.",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Visakhapatnam",
+        addressRegion: "Andhra Pradesh",
+        addressCountry: "IN",
+      },
+      sameAs: [
+        "https://www.instagram.com/whifftheory",
+        "https://www.facebook.com/whifftheory",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "Whiff Theory",
+      description:
+        "Discover luxury and artisan fragrances at Whiff Theory. Curated perfume collections crafted for every mood and occasion.",
+      publisher: { "@id": `${siteUrl}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${siteUrl}/in/store?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
+}
+
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
@@ -56,6 +117,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`${spaceGrotesk.variable} ${inter.variable} dark`}
     >
       <body className="bg-surface-lowest text-on-surface">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(sitewideSchema) }}
+        />
         <main className="relative">{props.children}</main>
       </body>
     </html>

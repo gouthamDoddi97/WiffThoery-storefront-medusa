@@ -1,20 +1,62 @@
 import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { getSiteURL } from "@lib/util/env"
 
 export const metadata: Metadata = {
   title: "Our Story | Whiff Theory",
   description:
-    "The Whiff Theory story — crafted in Vizag, built on transparency, driven by a love of fragrance as art.",
+    "The Whiff Theory story — crafted in Vizag, built on transparency, driven by a love of fragrance as art. India's most honest artisan perfume brand.",
+  alternates: {
+    canonical: `${getSiteURL()}/in/about`,
+  },
   openGraph: {
     title: "Our Story | Whiff Theory",
     description:
       "Independent. Transparent. Crafted in Vizag. Learn how Whiff Theory became India's most honest fragrance brand.",
+    images: [{ url: "/og-image.png", alt: "Whiff Theory – Our Story", width: 1200, height: 630 }],
+    siteName: "Whiff Theory",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@whifftheory",
+    title: "Our Story | Whiff Theory",
+    description:
+      "Independent. Transparent. Crafted in Vizag. India's most honest artisan fragrance brand.",
+    images: ["/og-image.png"],
   },
 }
 
 export default function AboutPage() {
+  const siteUrl = getSiteURL()
+
+  const aboutSchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "@id": `${siteUrl}/in/about#page`,
+      name: "Our Story | Whiff Theory",
+      description:
+        "Whiff Theory is India's most transparent artisan fragrance brand, handcrafting luxury Eau de Parfum and Extrait perfumes in Visakhapatnam, Andhra Pradesh.",
+      url: `${siteUrl}/in/about`,
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/in` },
+        { "@type": "ListItem", position: 2, name: "Our Story", item: `${siteUrl}/in/about` },
+      ],
+    },
+  ]
+
   return (
-    <div className="bg-surface-lowest">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }}
+      />
+      <div className="bg-surface-lowest">
 
       {/* ── 1. Origin Hero ──────────────────────────────────────────────── */}
       <section className="relative py-28 small:py-40 bg-surface-low overflow-hidden">
@@ -247,5 +289,6 @@ export default function AboutPage() {
       </section>
 
     </div>
+    </>
   )
 }

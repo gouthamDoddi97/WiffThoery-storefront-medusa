@@ -4,8 +4,8 @@ const SEGMENTS = ["low", "medium", "high"] as const
 
 const SILLAGE_LABELS: Record<string, string> = {
   low: "Arm's Length",
-  medium: "Room Filling",
-  high: "Crowd Turning",
+  medium: "Moderate",
+  high: "Room-Filling",
 }
 
 const LONGEVITY_LABELS: Record<string, string> = {

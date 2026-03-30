@@ -6,6 +6,7 @@ import { StoreCollection, StoreRegion } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
 import StoreTemplate from "@modules/store/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { getSiteURL } from "@lib/util/env"
 
 type Props = {
   params: Promise<{ handle: string; countryCode: string }>
@@ -58,6 +59,7 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const collection = await getCollectionByHandle(params.handle)
+  const siteUrl = getSiteURL()
 
   if (!collection) {
     return { title: "Shop | Whiff Theory", description: "Explore all of our products." }
@@ -65,18 +67,26 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const description = `Shop the ${collection.title} collection at Whiff Theory – discover unique fragrances curated for every taste.`
 
-  const metadata = {
+  return {
     title: collection.title,
     description,
+    alternates: {
+      canonical: `${siteUrl}/${params.countryCode}/collections/${params.handle}`,
+    },
     openGraph: {
       title: `${collection.title} | Whiff Theory`,
       description,
-      images: [{ url: "/Wlogo.png", alt: `Whiff Theory – ${collection.title}` }],
+      images: [{ url: "/og-image.png", alt: `Whiff Theory – ${collection.title}`, width: 1200, height: 630 }],
       siteName: "Whiff Theory",
     },
-  } as Metadata
-
-  return metadata
+    twitter: {
+      card: "summary_large_image",
+      site: "@whifftheory",
+      title: `${collection.title} | Whiff Theory`,
+      description,
+      images: ["/og-image.png"],
+    },
+  }
 }
 
 export default async function CollectionPage(props: Props) {
@@ -98,12 +108,34 @@ export default async function CollectionPage(props: Props) {
     )
   }
 
+  const siteUrl = getSiteURL()
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${params.countryCode}` },
+      { "@type": "ListItem", position: 2, name: "Store", item: `${siteUrl}/${params.countryCode}/store` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: collection.title,
+        item: `${siteUrl}/${params.countryCode}/collections/${params.handle}`,
+      },
+    ],
+  }
+
   return (
-    <CollectionTemplate
-      collection={collection}
-      page={page}
-      sortBy={sortBy}
-      countryCode={params.countryCode}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <CollectionTemplate
+        collection={collection}
+        page={page}
+        sortBy={sortBy}
+        countryCode={params.countryCode}
+      />
+    </>
   )
 }

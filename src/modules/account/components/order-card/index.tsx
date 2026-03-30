@@ -24,11 +24,11 @@ const OrderCard = ({ order }: OrderCardProps) => {
   }, [order])
 
   return (
-    <div className="bg-white flex flex-col" data-testid="order-card">
-      <div className="uppercase text-large-semi mb-1">
+    <div className="bg-surface-low border border-surface-variant/20 flex flex-col p-4" data-testid="order-card">
+      <div className="uppercase text-large-semi mb-1 text-on-surface">
         #<span data-testid="order-display-id">{order.display_id}</span>
       </div>
-      <div className="flex items-center divide-x divide-gray-200 text-small-regular text-ui-fg-base">
+      <div className="flex items-center divide-x divide-surface-variant/40 text-small-regular text-on-surface-variant">
         <span className="pr-2" data-testid="order-created-at">
           {new Date(order.created_at).toDateString()}
         </span>
@@ -51,9 +51,9 @@ const OrderCard = ({ order }: OrderCardProps) => {
               data-testid="order-item"
             >
               <Thumbnail thumbnail={i.thumbnail} images={[]} size="full" />
-              <div className="flex items-center text-small-regular text-ui-fg-base">
+              <div className="flex items-center text-small-regular text-on-surface-variant">
                 <span
-                  className="text-ui-fg-base font-semibold"
+                  className="text-on-surface font-semibold"
                   data-testid="item-title"
                 >
                   {i.title}
