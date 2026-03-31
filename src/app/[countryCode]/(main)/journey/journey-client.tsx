@@ -44,6 +44,7 @@ type Props = {
   orders: HttpTypes.StoreOrder[]
   perfumeMap: Record<string, PerfumeDetails>
   productTierMap: Record<string, string>
+  productTagsMap: Record<string, string[]>
 }
 
 type TimelineEntry = {
@@ -176,9 +177,76 @@ function computeRadarScores(
   }
 }
 
+function buildTagCounts(
+  timeline: TimelineEntry[],
+  productTagsMap: Record<string, string[]>
+): { tag: string; count: number }[] {
+  const counts = new Map<string, number>()
+  for (const e of timeline) {
+    for (const tag of productTagsMap[e.productId] ?? []) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1)
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+}
+
+function TagProfileChart({ tagCounts }: { tagCounts: { tag: string; count: number }[] }) {
+  if (tagCounts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4 text-center h-full">
+        <h3 className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.04em]">
+          Scent Character
+        </h3>
+        <p className="font-inter text-[9px] text-on-surface-disabled leading-relaxed">
+          Tag your products in the admin to reveal your scent character profile.
+        </p>
+      </div>
+    )
+  }
+  const max = tagCounts[0].count
+  const top = tagCounts.slice(0, 7)
+  return (
+    <div className="flex flex-col items-center gap-5 py-6 px-4">
+      <div className="flex flex-col items-center gap-1 text-center">
+        <h3 className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.04em]">
+          Scent Character
+        </h3>
+        <p className="font-inter text-[8px] tracking-[0.15em] uppercase text-on-surface-disabled">
+          YOUR TAG SIGNATURE
+        </p>
+      </div>
+      <div className="flex flex-col gap-3.5 w-full max-w-[260px]">
+        {top.map(({ tag, count }) => (
+          <div key={tag} className="flex flex-col gap-1.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-variant truncate">
+                {tag}
+              </span>
+              <span className="font-grotesk text-[10px] text-on-surface-disabled flex-shrink-0">
+                {count}
+              </span>
+            </div>
+            <div className="relative h-[2px] w-full bg-white/[0.06] rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full rounded-full"
+                style={{
+                  width: `${(count / max) * 100}%`,
+                  background: "linear-gradient(90deg, rgba(79,219,204,0.4), #4FDBCC)",
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function JourneyClient({ customer, orders, perfumeMap, productTierMap }: Props) {
+export default function JourneyClient({ customer, orders, perfumeMap, productTierMap, productTagsMap }: Props) {
   const { tierCounts, total, timeline, persona, personaDesc, longevitySummary, personaQuote } =
     buildJourneyData(orders, perfumeMap, productTierMap)
 
@@ -190,6 +258,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
   const selectedTierMeta = TIER_META[selectedEntry?.tier ?? "unknown"] ?? TIER_META.unknown
 
   const radarScores = computeRadarScores(timeline, perfumeMap)
+  const tagCounts = buildTagCounts(timeline, productTagsMap)
 
   const nodes: ConstellationNode[] = timeline.map((e) => {
     const p = perfumeMap[e.productId]
@@ -252,10 +321,16 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
     <div
       className="min-h-screen overflow-hidden"
       style={{
-        background:
-          "radial-gradient(ellipse at 50% 38%, rgba(18,28,36,1) 0%, rgba(7,9,13,1) 100%)",
+        backgroundImage: "url('/constilation.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundColor: "rgba(7,9,13,1)",
       }}
     >
+      {/* Dark overlay so text and UI stay readable over the photo */}
+      <div className="min-h-screen" style={{ background: "rgba(7,9,13,0.68)" }}>
       <div className="content-container pt-10 pb-16 flex flex-col gap-0">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -319,7 +394,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
         )}
 
         {/* ── Constellation ────────────────────────────────────────────────── */}
-        <div className="w-full" style={{ height: "clamp(300px, 50vh, 460px)" }}>
+        <div className="w-full" style={{ height: "clamp(300px, 52vh, 520px)" }}>
           <ConstellationMap
             nodes={nodes}
             featuredId={featuredId}
@@ -329,7 +404,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
         </div>
 
         {/* ── Bottom section ───────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 small:grid-cols-2 gap-5 pt-2">
+        <div className="grid grid-cols-1 small:grid-cols-3 gap-5 pt-2">
 
           {/* Featured scent card */}
           <div
@@ -414,6 +489,11 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
             </div>
             <ScentRadar scores={radarScores} />
           </div>
+
+          {/* Tag signature */}
+          <div className="flex flex-col items-center justify-center">
+            <TagProfileChart tagCounts={tagCounts} />
+          </div>
         </div>
 
         {/* ── Next tier CTA ────────────────────────────────────────────────── */}
@@ -438,6 +518,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
           </div>
         )}
 
+      </div>
       </div>
     </div>
   )

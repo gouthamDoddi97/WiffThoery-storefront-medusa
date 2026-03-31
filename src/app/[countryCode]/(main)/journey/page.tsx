@@ -9,23 +9,24 @@ import JourneyClient from "./journey-client"
 const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
 const TIER_HANDLES = ["crowd-pleaser", "intro-to-niche", "polarizing-art"]
 
-async function getProductTier(productId: string): Promise<string> {
+async function getProductInfo(productId: string): Promise<{ tier: string; tags: string[] }> {
   try {
     const res = await fetch(
-      `${MEDUSA_BACKEND_URL}/store/products/${productId}?fields=*categories`,
+      `${MEDUSA_BACKEND_URL}/store/products/${productId}?fields=*categories,+tags`,
       {
         headers: { "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "" },
         next: { revalidate: 300 },
       }
     )
-    if (!res.ok) return "unknown"
+    if (!res.ok) return { tier: "unknown", tags: [] }
     const { product } = await res.json()
     const tierCat = (product?.categories ?? []).find((c: { handle: string }) =>
       TIER_HANDLES.includes(c.handle)
     )
-    return tierCat?.handle ?? "unknown"
+    const tags = (product?.tags ?? []).map((t: { value: string }) => t.value)
+    return { tier: tierCat?.handle ?? "unknown", tags }
   } catch {
-    return "unknown"
+    return { tier: "unknown", tags: [] }
   }
 }
 
@@ -65,8 +66,8 @@ export default async function JourneyPage() {
     ),
     Promise.all(
       productIds.map(async (id) => {
-        const tier = await getProductTier(id)
-        return [id, tier] as [string, string]
+        const info = await getProductInfo(id)
+        return [id, info] as [string, { tier: string; tags: string[] }]
       })
     ),
   ])
@@ -75,7 +76,13 @@ export default async function JourneyPage() {
     perfumeEntries.filter(([, v]) => v !== null)
   ) as Record<string, PerfumeDetails>
 
-  const productTierMap = Object.fromEntries(tierEntries) as Record<string, string>
+  const productTierMap = Object.fromEntries(
+    tierEntries.map(([id, info]) => [id, info.tier])
+  ) as Record<string, string>
+
+  const productTagsMap = Object.fromEntries(
+    tierEntries.map(([id, info]) => [id, info.tags])
+  ) as Record<string, string[]>
 
   return (
     <JourneyClient
@@ -83,6 +90,7 @@ export default async function JourneyPage() {
       orders={orders ?? []}
       perfumeMap={perfumeMap}
       productTierMap={productTierMap}
+      productTagsMap={productTagsMap}
     />
   )
 }

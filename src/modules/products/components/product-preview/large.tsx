@@ -1,3 +1,4 @@
+import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -14,7 +15,12 @@ export default async function ProductPreviewLarge({
   compact?: boolean
 }) {
   const { cheapestPrice } = getProductPrice({ product })
+  const details = await getPerfumeDetails(product.id)
   const thumbnail = product.thumbnail || product.images?.[0]?.url
+
+  const allNotes = [details?.top_notes, details?.middle_notes, details?.base_notes]
+    .filter(Boolean)
+    .join(" · ")
 
   return (
     <div className="group block" data-testid="product-wrapper">
@@ -33,8 +39,22 @@ export default async function ProductPreviewLarge({
           )}
         </div>
 
+        {/* Character tags */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-4">
+            {product.tags.slice(0, 5).map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center px-2.5 py-1 rounded-sm border border-white/10 font-inter text-[9px] tracking-[0.2em] uppercase text-on-surface-disabled whitespace-nowrap"
+              >
+                {tag.value}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Info */}
-        <div className="pt-6 flex flex-col gap-3">
+        <div className="pt-4 flex flex-col gap-3">
           {/* Collection badge */}
           {product.collection && (
             <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-primary">
@@ -50,10 +70,10 @@ export default async function ProductPreviewLarge({
             {product.title}
           </h3>
 
-          {/* Description */}
-          {product.description && (
-            <p className="font-inter text-xs text-on-surface-disabled leading-relaxed line-clamp-2 max-w-[320px]">
-              {product.description}
+          {/* Notes — dot-separated */}
+          {allNotes && (
+            <p className="font-inter text-[10px] tracking-[0.18em] uppercase text-on-surface-disabled leading-relaxed line-clamp-2 max-w-[320px]">
+              {allNotes}
             </p>
           )}
         </div>

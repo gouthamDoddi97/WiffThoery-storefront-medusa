@@ -17,7 +17,10 @@ export default async function ProductPreview({
 }) {
   const { cheapestPrice } = getProductPrice({ product })
   const details = await getPerfumeDetails(product.id)
-  const impression = details?.scent_story || product.description
+
+  const allNotes = [details?.top_notes, details?.middle_notes, details?.base_notes]
+    .filter(Boolean)
+    .join(" · ")
 
   return (
     <div className="group block" data-testid="product-wrapper">
@@ -32,6 +35,20 @@ export default async function ProductPreview({
           />
         </div>
       </LocalizedClientLink>
+
+      {/* Character tags */}
+      {product.tags && product.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-4 py-2 bg-surface-low border-t border-white/[0.04]">
+          {product.tags.slice(0, 5).map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center px-2 py-0.5 rounded-sm border border-white/10 font-inter text-[9px] tracking-[0.2em] uppercase text-on-surface-disabled whitespace-nowrap"
+            >
+              {tag.value}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Info + actions row */}
       <div className="flex items-start gap-3 p-4 bg-surface-low group-hover:bg-surface-container transition-colors duration-300">
@@ -55,10 +72,10 @@ export default async function ProductPreview({
             {product.title}
           </h3>
 
-          {/* Scent impression */}
-          {impression && (
-            <p className="font-inter text-[10px] text-on-surface-disabled leading-relaxed line-clamp-2">
-              {impression}
+          {/* Notes — dot-separated */}
+          {allNotes && (
+            <p className="font-inter text-[10px] tracking-[0.18em] uppercase text-on-surface-disabled leading-relaxed line-clamp-2">
+              {allNotes}
             </p>
           )}
 

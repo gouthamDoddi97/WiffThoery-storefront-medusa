@@ -211,23 +211,7 @@ function buildGlyphD(tier: string, r: number): string | null {
   }
 }
 
-// ── Background star field ─────────────────────────────────────────────────────
-
-const CANVAS_STARS = Array.from({ length: 82 }, (_, i) => {
-  const ang = (i * 137.508 * Math.PI) / 180
-  const anchors = [
-    { cx: 182, cy: 155 }, { cx: 415, cy: 265 }, { cx: 648, cy: 375 },
-    { cx: 300, cy: 120 }, { cx: 560, cy: 190 }, { cx: 230, cy: 330 },
-  ]
-  const a = anchors[i % anchors.length]
-  const rad = 30 + (i % 10) * 54
-  return {
-    x: Math.round(a.cx + Math.cos(ang) * rad),
-    y: Math.round(a.cy + Math.sin(ang) * rad),
-    r: Math.round((0.35 + (i % 6) * 0.22) * 100) / 100,
-    o: Math.round((0.02 + (i % 9) * 0.011) * 1000) / 1000,
-  }
-})
+// Background image replaces programmatic star field — see /public/constilation.webp
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -317,11 +301,6 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
           )
         })}
       </defs>
-
-      {/* Background stars */}
-      {CANVAS_STARS.map((s, i) => (
-        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
-      ))}
 
       {/* Zone nebula glows */}
       {Object.entries(ZONES).map(([tier, z]) =>

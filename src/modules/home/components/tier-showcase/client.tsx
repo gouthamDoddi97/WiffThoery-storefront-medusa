@@ -42,7 +42,7 @@ function shouldStartDismissed() {
 export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
   // active is React state only for breadcrumb re-render; all position logic uses activeRef
   const [active, setActive] = useState(0)
-  const [dismissed, setDismissed] = useState(shouldStartDismissed)
+  const [dismissed, setDismissed] = useState(false)
   const activeRef = useRef(0)
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
   const isLocked = useRef(false)
@@ -68,6 +68,18 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
   useEffect(() => {
     setSlidePositions(0, false, 0)
   }, [setSlidePositions])
+
+  // Resolve SSR/client mismatch — always render on server, dismiss after hydration if already seen.
+  // Must NOT use shouldStartDismissed() in useState() because sessionStorage is unavailable on server,
+  // causing the initial state to differ between SSR and client hydration.
+  useEffect(() => {
+    if (shouldStartDismissed()) {
+      exitedRef.current = true
+      document.body.style.overflow = ""
+      setDismissed(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Lock body scroll while showcase is active so the page behind doesn't drift
   useEffect(() => {

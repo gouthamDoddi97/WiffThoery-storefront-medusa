@@ -70,6 +70,20 @@ export default async function ProductPreviewHorizontal({
         </p>
       )}
 
+      {/* Character tags */}
+      {product.tags && product.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {product.tags.slice(0, 5).map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center px-2.5 py-1 rounded-sm border border-white/10 font-inter text-[9px] tracking-[0.2em] uppercase text-on-surface-disabled whitespace-nowrap"
+            >
+              {tag.value}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Description / scent story — desktop only (mobile version is full-width below) */}
       {description && (
         <p className="hidden small:block font-inter text-sm text-on-surface-variant leading-relaxed line-clamp-6">
@@ -100,13 +114,9 @@ export default async function ProductPreviewHorizontal({
     </div>
   )
 
-  // Footer padding aligns with the info column content:
-  //   Normal  (image-left):  skip image (36%) + info left-padding (px-10/px-14)
-  //   Reversed (info-left):  just info left-padding (px-10/px-14)
-  const footerPadding = isReversed
-    ? "pl-10 small:pl-14 pr-10 small:pr-14"
-    : "pl-[calc(36%+2.5rem)] small:pl-[calc(36%+3.5rem)] pr-10 small:pr-14"
-
+  // Footer aligns with the info column in both orientations.
+  // The info column is always 64% wide (flex-1 against 36% image).
+  // We replicate that structure: a 36% spacer (omitted when reversed) + info-width container.
   return (
     <div className="group block">
       {/* Clickable area — image + title + description navigate to product page */}
@@ -127,18 +137,27 @@ export default async function ProductPreviewHorizontal({
         </p>
       )}
 
-      {/* Actions footer — outside the link (valid HTML: no interactive elements inside <a>) */}
-      <div className={`flex items-center gap-8 pb-10 small:pb-12 ${footerPadding}`}>
-        {cheapestPrice && (
-          <div className="font-grotesk font-semibold text-xl text-on-surface">
-            <PreviewPrice price={cheapestPrice} />
-          </div>
-        )}
-        <CardActions
-          product={product}
-          price={cheapestPrice?.calculated_price}
-          colorVariant="tertiary"
-        />
+      {/* Actions footer — mirrors the info column position in both orientations */}
+      <div className="flex pb-10 small:pb-12">
+        {/* Spacer matches image width (36%) — only when image is on the left */}
+        {!isReversed && <div className="w-[36%] flex-shrink-0" />}
+
+        {/* Content aligns with info column, using same horizontal padding as infoBlock */}
+        <div className="flex-1 flex items-center gap-8 px-10 small:px-14">
+          {cheapestPrice && (
+            <div className="font-grotesk font-semibold text-xl text-on-surface">
+              <PreviewPrice price={cheapestPrice} />
+            </div>
+          )}
+          <CardActions
+            product={product}
+            price={cheapestPrice?.calculated_price}
+            colorVariant="tertiary"
+          />
+        </div>
+
+        {/* Spacer matches image width (36%) — only when image is on the right */}
+        {isReversed && <div className="w-[36%] flex-shrink-0" />}
       </div>
     </div>
   )
