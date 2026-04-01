@@ -213,36 +213,77 @@ function buildGlyphD(tier: string, r: number): string | null {
 
 // Background image replaces programmatic star field — see /public/constilation.webp
 
-// ── Ghost stars — vacant positions, more to come ─────────────────────────────
+// ── Ghost stars — vacant positions ──────────────────────────────────────────
 
-const GHOST_STARS: { x: number; y: number; r: number; op: number }[] = [
-  // Outer field
-  { x: 105, y:  75, r: 1.8, op: 0.20 },
-  { x: 248, y:  90, r: 2.3, op: 0.15 },
-  { x:  68, y: 185, r: 1.5, op: 0.18 },
-  { x: 295, y: 155, r: 2.0, op: 0.22 },
-  { x: 330, y: 200, r: 1.7, op: 0.16 },
-  { x: 490, y: 155, r: 2.5, op: 0.20 },
-  { x: 545, y: 205, r: 1.8, op: 0.17 },
-  { x: 590, y: 150, r: 2.2, op: 0.21 },
-  { x: 682, y: 198, r: 1.6, op: 0.15 },
-  { x: 730, y: 258, r: 2.0, op: 0.19 },
-  { x: 748, y: 362, r: 1.8, op: 0.16 },
-  { x: 733, y: 455, r: 2.1, op: 0.17 },
-  { x: 350, y: 418, r: 2.4, op: 0.20 },
-  { x: 270, y: 462, r: 1.7, op: 0.15 },
-  { x:  80, y: 456, r: 2.0, op: 0.18 },
-  { x: 432, y: 488, r: 1.6, op: 0.14 },
-  { x: 558, y: 472, r: 2.2, op: 0.18 },
-  { x: 620, y: 490, r: 1.5, op: 0.15 },
-  { x: 312, y: 312, r: 1.9, op: 0.17 },
-  { x: 480, y: 412, r: 1.8, op: 0.16 },
-  { x: 598, y: 314, r: 2.3, op: 0.21 },
-  { x: 148, y: 312, r: 1.8, op: 0.17 },
+const GHOST_STARS: { x: number; y: number; r: number; op: number; blur?: boolean }[] = [
+  // Outer field — original
+  { x: 105, y:  75, r: 2.2, op: 0.45 },
+  { x: 248, y:  90, r: 2.8, op: 0.40 },
+  { x:  68, y: 185, r: 2.0, op: 0.42 },
+  { x: 295, y: 155, r: 2.5, op: 0.48 },
+  { x: 330, y: 200, r: 2.2, op: 0.38 },
+  { x: 490, y: 155, r: 3.0, op: 0.44 },
+  { x: 545, y: 205, r: 2.3, op: 0.40 },
+  { x: 590, y: 150, r: 2.7, op: 0.46 },
+  { x: 682, y: 198, r: 2.1, op: 0.38 },
+  { x: 730, y: 258, r: 2.5, op: 0.42 },
+  { x: 748, y: 362, r: 2.3, op: 0.39 },
+  { x: 733, y: 455, r: 2.6, op: 0.40 },
+  { x: 350, y: 418, r: 2.9, op: 0.44 },
+  { x: 270, y: 462, r: 2.2, op: 0.38 },
+  { x:  80, y: 456, r: 2.5, op: 0.41 },
+  { x: 432, y: 488, r: 2.1, op: 0.36 },
+  { x: 558, y: 472, r: 2.7, op: 0.41 },
+  { x: 620, y: 490, r: 2.0, op: 0.37 },
+  { x: 312, y: 312, r: 2.4, op: 0.40 },
+  { x: 480, y: 412, r: 2.3, op: 0.39 },
+  { x: 598, y: 314, r: 2.8, op: 0.46 },
+  { x: 148, y: 312, r: 2.3, op: 0.40 },
   // Slightly larger — "almost occupied"
-  { x: 192, y: 242, r: 3.0, op: 0.26 },
-  { x: 512, y: 342, r: 3.1, op: 0.24 },
-  { x: 388, y:  98, r: 2.8, op: 0.22 },
+  { x: 192, y: 242, r: 3.4, op: 0.52 },
+  { x: 512, y: 342, r: 3.5, op: 0.50 },
+  { x: 388, y:  98, r: 3.2, op: 0.48 },
+  // Upper-right void
+  { x: 650, y:  44, r: 2.0, op: 0.34, blur: true },
+  { x: 695, y:  82, r: 2.5, op: 0.42 },
+  { x: 740, y:  52, r: 1.8, op: 0.30, blur: true },
+  { x: 775, y: 118, r: 2.3, op: 0.40 },
+  { x: 718, y: 155, r: 2.7, op: 0.44 },
+  { x: 785, y: 195, r: 2.0, op: 0.33, blur: true },
+  { x: 630, y: 112, r: 2.4, op: 0.43 },
+  { x: 758, y:  78, r: 1.9, op: 0.32, blur: true },
+  // Mid-right fill
+  { x: 700, y: 300, r: 2.0, op: 0.33, blur: true },
+  { x: 775, y: 328, r: 2.7, op: 0.43 },
+  { x: 760, y: 440, r: 2.1, op: 0.36, blur: true },
+  // Upper-centre bridge
+  { x: 355, y:  40, r: 2.2, op: 0.38 },
+  { x: 450, y:  55, r: 2.5, op: 0.41 },
+  { x: 522, y:  38, r: 1.9, op: 0.31, blur: true },
+  { x: 578, y:  78, r: 2.4, op: 0.41 },
+  // Centre field between zones
+  { x: 302, y: 220, r: 2.2, op: 0.35, blur: true },
+  { x: 365, y: 292, r: 2.6, op: 0.43 },
+  { x: 508, y: 222, r: 2.0, op: 0.33, blur: true },
+  { x: 452, y: 318, r: 2.7, op: 0.43 },
+  { x: 555, y: 288, r: 2.3, op: 0.37, blur: true },
+  // Lower area between archive and polarizing
+  { x: 405, y: 448, r: 2.2, op: 0.36, blur: true },
+  { x: 472, y: 506, r: 1.9, op: 0.33 },
+  { x: 535, y: 512, r: 2.3, op: 0.36, blur: true },
+  { x: 245, y: 510, r: 2.0, op: 0.34 },
+  { x: 142, y: 514, r: 1.9, op: 0.30, blur: true },
+  { x:  88, y: 502, r: 1.8, op: 0.31 },
+  // Left edge
+  { x:  38, y: 102, r: 2.1, op: 0.34, blur: true },
+  { x:  44, y: 228, r: 2.4, op: 0.40 },
+  { x:  28, y: 342, r: 2.0, op: 0.32, blur: true },
+  { x:  52, y: 448, r: 2.2, op: 0.38 },
+  // Larger blurred — future zones hinted
+  { x: 535, y: 178, r: 3.4, op: 0.44, blur: true },
+  { x: 278, y: 375, r: 3.6, op: 0.46, blur: true },
+  { x: 692, y: 468, r: 3.3, op: 0.43, blur: true },
+  { x: 132, y:  58, r: 3.1, op: 0.42, blur: true },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -299,6 +340,39 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
     journeyPath = `M ${a.cx} ${a.cy} Q ${(a.cx + b.cx) / 2} ${(a.cy + b.cy) / 2 - 42} ${b.cx} ${b.cy}`
   }
 
+  // Constellation web: nearest-neighbour graph — max 2 edges per star, sorted by distance.
+  // This creates isolated chain/cluster groups instead of one crowded mesh.
+  const CONNECT_DIST = 95   // max distance to even consider connecting
+  const MAX_DEGREE   = 2    // max edges per star (keeps constellations sparse)
+  type StarPt = { x: number; y: number; key: string }
+  const allStarPts: StarPt[] = [
+    ...GHOST_STARS.map((gs, i) => ({ x: gs.x, y: gs.y, key: `g${i}` })),
+    ...placed.map((n) => ({ x: n.bx, y: n.by, key: `p${n.productId}` })),
+  ]
+  // collect all candidate pairs within distance, then sort nearest-first
+  const candidates: { i: number; j: number; d2: number }[] = []
+  for (let i = 0; i < allStarPts.length; i++) {
+    for (let j = i + 1; j < allStarPts.length; j++) {
+      const dx = allStarPts[i].x - allStarPts[j].x
+      const dy = allStarPts[i].y - allStarPts[j].y
+      const d2 = dx * dx + dy * dy
+      if (d2 <= CONNECT_DIST * CONNECT_DIST) candidates.push({ i, j, d2 })
+    }
+  }
+  candidates.sort((a, b) => a.d2 - b.d2)
+  // greedy: add edge only if both endpoints have degree < MAX_DEGREE
+  const degrees = new Map<string, number>()
+  const webLines: { x1: number; y1: number; x2: number; y2: number; k: string }[] = []
+  for (const { i, j } of candidates) {
+    const ki = allStarPts[i].key, kj = allStarPts[j].key
+    if ((degrees.get(ki) ?? 0) >= MAX_DEGREE) continue
+    if ((degrees.get(kj) ?? 0) >= MAX_DEGREE) continue
+    degrees.set(ki, (degrees.get(ki) ?? 0) + 1)
+    degrees.set(kj, (degrees.get(kj) ?? 0) + 1)
+    const a = allStarPts[i], b = allStarPts[j]
+    webLines.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, k: `${ki}-${kj}` })
+  }
+
   return (
     <svg
       viewBox="0 0 800 520"
@@ -319,6 +393,10 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
         <filter id="ng" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="2.5" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        {/* Ghost-star blur filter */}
+        <filter id="ghost-blur" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="1.8" />
         </filter>
         {/* Per-node trail gradients (positions update each frame) */}
         {animated.map((node) => {
@@ -389,6 +467,17 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
           ))
       )}
 
+      {/* Constellation web — dotted lines connecting all stars (ghost + product) */}
+      {webLines.map((l) => (
+        <line key={`sw-${l.k}`}
+          x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+          stroke="white"
+          strokeWidth={0.7}
+          strokeDasharray="2 5"
+          opacity={0.30}
+        />
+      ))}
+
       {/* Zone labels */}
       {Object.entries(ZONES).map(([tier, z]) =>
         activeZones.has(tier) ? (
@@ -402,9 +491,14 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
 
       {/* Ghost stars — vacant, unoccupied positions */}
       {GHOST_STARS.map((gs, i) => (
-        <g key={`ghost-${i}`}>
-          <circle cx={gs.x} cy={gs.y} r={gs.r * 2.2}
-            fill="none" stroke="white" strokeWidth={0.5} opacity={gs.op * 0.5} />
+        <g key={`ghost-${i}`} filter={gs.blur ? "url(#ghost-blur)" : undefined}>
+          {/* outer glow ring */}
+          <circle cx={gs.x} cy={gs.y} r={gs.r * 3.2}
+            fill="white" opacity={gs.op * 0.12} />
+          {/* halo ring */}
+          <circle cx={gs.x} cy={gs.y} r={gs.r * 2.0}
+            fill="none" stroke="white" strokeWidth={0.8} opacity={gs.op * 0.70} />
+          {/* core */}
           <circle cx={gs.x} cy={gs.y} r={gs.r}
             fill="white" opacity={gs.op} />
         </g>
