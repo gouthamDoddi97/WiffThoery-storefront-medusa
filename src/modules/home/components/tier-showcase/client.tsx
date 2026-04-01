@@ -230,6 +230,19 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
         </div>
       ))}
 
+      {/* Skip to store — top-right */}
+      <div className="absolute top-5 right-16 small:top-7 small:right-24 z-50">
+        <button
+          onClick={exitShowcase}
+          className="font-inter text-[10px] tracking-[0.18em] uppercase font-semibold flex items-center gap-2 px-4 py-2 border border-white/25 text-white/70 hover:border-white/60 hover:text-white transition-all duration-200 backdrop-blur-sm bg-white/5"
+        >
+          <span>SKIP TO STORE</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
       {/* Vertical breadcrumb — right edge */}
       <div className="absolute right-6 small:right-10 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-4">
         {tiers.map((tier, i) => (

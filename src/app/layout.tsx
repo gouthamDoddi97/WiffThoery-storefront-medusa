@@ -42,7 +42,12 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   // og:video is not in Next.js's typed API — injected via `other`
   // Upload og-video.mp4 to your R2 bucket and set MEDUSA_CLOUD_S3_HOSTNAME
