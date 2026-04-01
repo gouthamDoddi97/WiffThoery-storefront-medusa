@@ -15,7 +15,7 @@ const GRID_CLASSES: Record<Layout, string> = {
   wave: "grid grid-cols-1 w-full small:grid-cols-3 gap-x-8 gap-y-0 items-start pb-20",
   "s-curve": "flex flex-col gap-0 w-full",
   scattered: "grid grid-cols-2 w-full gap-x-8 gap-y-8 items-start",
-  default: "grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8",
+  default: "grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-6 items-stretch",
 }
 
 function getItemClass(index: number, layout: Layout): string {

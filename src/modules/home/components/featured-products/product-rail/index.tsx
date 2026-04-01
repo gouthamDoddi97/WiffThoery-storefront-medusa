@@ -4,7 +4,6 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductPreview from "@modules/products/components/product-preview"
 import ProductPreviewLarge from "@modules/products/components/product-preview/large"
-import ProductSlider from "@modules/store/templates/product-slider"
 
 export default async function ProductRail({
   collection,
@@ -26,10 +25,6 @@ export default async function ProductRail({
   if (!pricedProducts || pricedProducts.length === 0) {
     return null
   }
-
-  const productNodes = pricedProducts.map((product, index) => (
-    <ProductPreviewLarge key={`${product.id}-${index}`} product={product} region={region} compact />
-  ))
 
   return (
     <div className="content-container py-16">
@@ -64,9 +59,15 @@ export default async function ProductRail({
         </ul>
       </div>
 
-      {/* Desktop: wave slider matching crowd pleaser page */}
+      {/* Desktop: 4-col grid */}
       <div className="hidden small:block">
-        <ProductSlider items={productNodes} layout="wave" />
+        <ul className="grid grid-cols-4 gap-x-8 items-start">
+          {pricedProducts.slice(0, 4).map((product, index) => (
+            <li key={product.id} >
+              <ProductPreviewLarge product={product} region={region} compact />
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )

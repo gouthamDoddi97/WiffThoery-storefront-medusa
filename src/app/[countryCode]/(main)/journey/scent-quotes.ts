@@ -16,6 +16,7 @@ export type QuoteInput = {
     occasions?: string | null
   }>
   tierCounts: Record<string, number>
+  productTagsMap?: Record<string, string[]>
 }
 
 // ── Hash helpers ─────────────────────────────────────────────────────────────
@@ -542,10 +543,86 @@ function detectNoteFamily(notes: string[]): string | null {
   return top && top[1] > 0 ? top[0] : null
 }
 
+// ── Tag-specific descriptor words ────────────────────────────────────────────
+// adj  = how the tag smells / feels (used inline with the tag name)
+// adv  = how it behaves / how strongly it reads (used to colour the sentence)
+
+const TAG_DESCRIPTORS: Record<string, { adj: string[]; adv: string[] }> = {
+  oriental: {
+    adj: ["deep", "resinous", "amber-lit", "smoky", "spiced", "molten", "incense-heavy", "ink-dark"],
+    adv: ["densely", "slowly", "warmly", "heavily", "richly"],
+  },
+  woody: {
+    adj: ["dry", "earthy", "cedar-edged", "rooted", "architectural", "weathered", "lacquered", "bark-deep"],
+    adv: ["quietly", "grounded", "solidly", "cleanly", "steadily"],
+  },
+  leather: {
+    adj: ["raw", "worn", "smoky", "animalic", "dark", "burnished", "austere", "feral"],
+    adv: ["boldly", "starkly", "unapologetically", "sharply", "clearly"],
+  },
+  floral: {
+    adj: ["blooming", "soft", "powdery-white", "luminous", "petal-clean", "green-stemmed", "alive"],
+    adv: ["delicately", "openly", "brightly", "lightly", "softly"],
+  },
+  aromatic: {
+    adj: ["herbal", "crisp", "green-sharp", "medicinal-cool", "fresh-cut", "spare", "botanical"],
+    adv: ["cleanly", "crisply", "precisely", "directly", "deliberately"],
+  },
+  fruity: {
+    adj: ["vibrant", "sun-bright", "lush", "ripe", "juicy", "vivid", "saturated", "warm-sweet"],
+    adv: ["brightly", "vividly", "openly", "generously", "warmly"],
+  },
+  green: {
+    adj: ["fresh", "watery-clean", "leafy", "cool", "cut-grass sharp", "raw", "spring-like"],
+    adv: ["crisply", "cleanly", "lightly", "quietly", "freshly"],
+  },
+  citrus: {
+    adj: ["sharp", "electric", "sparkling", "frost-bright", "clean-edged", "zesty", "luminous"],
+    adv: ["sharply", "brightly", "cleanly", "swiftly", "directly"],
+  },
+  aquatic: {
+    adj: ["open", "cool", "crystalline", "salt-clean", "tidal", "oceanic", "transparent", "breathing"],
+    adv: ["freely", "openly", "cleanly", "widely", "lightly"],
+  },
+  gourmand: {
+    adj: ["warm", "sweet-dense", "skin-close", "amber-warm", "comforting", "rich", "velvety", "domestic"],
+    adv: ["warmly", "closely", "softly", "richly", "intimately"],
+  },
+  musk: {
+    adj: ["skin-close", "diffusive", "soft-edged", "intimate", "clean-warm", "spectral", "body-close"],
+    adv: ["quietly", "softly", "closely", "subtly", "smoothly"],
+  },
+  powdery: {
+    adj: ["soft", "vintage", "iris-clean", "velvet-dry", "nostalgic", "pale", "ceremonial", "muted"],
+    adv: ["softly", "gently", "delicately", "quietly", "drily"],
+  },
+}
+
+// Fallback descriptors when tag isn't in the map
+const FALLBACK_DESCRIPTORS = {
+  adj: MOOD_ADJECTIVES,
+  adv: ["distinctly", "consistently", "clearly", "steadily", "unmistakably"],
+}
+
+function tagAdj(tag: string, seed: number, salt: number): string {
+  const d = TAG_DESCRIPTORS[tag] ?? FALLBACK_DESCRIPTORS
+  return pickFrom(d.adj, seed, salt)
+}
+function tagAdv(tag: string, seed: number, salt: number): string {
+  const d = TAG_DESCRIPTORS[tag] ?? FALLBACK_DESCRIPTORS
+  return pickFrom(d.adv, seed, salt)
+}
+
+// Pick from pool, avoiding any word already in `used`
+function pickUnique(pool: string[], seed: number, salt: number, used: Set<string>): string {
+  const filtered = pool.filter((w) => !used.has(w))
+  return pickFrom(filtered.length > 0 ? filtered : pool, seed, salt)
+}
+
 // ── Main export: generate a unique persona quote ──────────────────────────────
 
 export function generatePersonaQuote(input: QuoteInput): string {
-  const { timeline, perfumeMap, tierCounts } = input
+  const { timeline, tierCounts, productTagsMap } = input
 
   if (timeline.length === 0) return ""
 
@@ -553,44 +630,98 @@ export function generatePersonaQuote(input: QuoteInput): string {
   const sortedIds = [...timeline.map((e) => e.productId)].sort().join("|")
   const seed = hash32(sortedIds)
 
-  // Determine tier key
-  const nonUnknownCounts = Object.entries(tierCounts)
-    .filter(([k]) => k !== "unknown")
+  // ── Top tags ──────────────────────────────────────────────────────────────
+  const tagCounts = new Map<string, number>()
+  for (const e of timeline) {
+    for (const tag of productTagsMap?.[e.productId] ?? []) {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1)
+    }
+  }
+  const topTags = Array.from(tagCounts.entries())
     .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([tag]) => tag.toLowerCase())
 
-  const dominantTier = nonUnknownCounts[0]?.[0]
-  const hasMultipleTiers =
-    nonUnknownCounts.filter(([, v]) => v > 0).length >= 2
+  // ── Dominant tier ──────────────────────────────────────────────────────────
+  // ── Per-tag descriptors (deduplicated across slots) ──────────────────────
+  const t0 = topTags[0] ?? ""
+  const t1 = topTags[1] ?? ""
+  const t2 = topTags[2] ?? ""
 
-  const tierKey: string = hasMultipleTiers
-    ? "mixed"
-    : dominantTier ?? "unknown"
+  const usedAdj = new Set<string>()
+  const usedAdv = new Set<string>()
 
-  // Collect notes from all perfumes
-  const allNotes = timeline.flatMap((e) => {
-    const p = perfumeMap[e.productId]
-    if (!p) return []
-    return [p.top_notes, p.middle_notes, p.base_notes].filter(
-      (n): n is string => typeof n === "string" && n.length > 0
-    )
-  })
+  const d0 = TAG_DESCRIPTORS[t0] ?? FALLBACK_DESCRIPTORS
+  const d1 = TAG_DESCRIPTORS[t1] ?? FALLBACK_DESCRIPTORS
+  const d2 = TAG_DESCRIPTORS[t2] ?? FALLBACK_DESCRIPTORS
 
-  const detectedFamily = detectNoteFamily(allNotes)
+  const a0 = pickUnique(d0.adj, seed, 20, usedAdj); usedAdj.add(a0)
+  const v0 = pickUnique(d0.adv, seed, 21, usedAdv); usedAdv.add(v0)
 
-  // Pick fragments
-  const opener = pickFrom(OPENERS, seed, 0)
-  const tierPhrase = pickFrom(
-    TIER_PHRASES[tierKey] ?? TIER_PHRASES.unknown,
-    seed,
-    1
-  )
-  const metaphor = pickFrom(JOURNEY_METAPHORS, seed, 2)
-  const closer = pickFrom(CLOSERS, seed, 3)
+  const a1 = pickUnique(d1.adj, seed, 22, usedAdj); usedAdj.add(a1)
+  const v1 = pickUnique(d1.adv, seed, 23, usedAdv); usedAdv.add(v1)
 
-  const notePhrase =
-    detectedFamily && NOTE_FAMILY_PHRASES[detectedFamily]
-      ? " " + pickFrom(NOTE_FAMILY_PHRASES[detectedFamily], seed, 4) + "."
-      : ""
+  const a2 = pickUnique(d2.adj, seed, 24, usedAdj); usedAdj.add(a2)
 
-  return `${opener} ${tierPhrase}.${notePhrase} ${metaphor} ${closer}`
+  // ── Sentence 1 templates ──────────────────────────────────────────────────
+  const s1Templates3 = [
+    `${a0} ${t0} is the anchor — ${a1} ${t1} and ${a2} ${t2} orbit around it.`,
+    `There's a pattern here: ${a0} ${t0} at the core, ${a1} ${t1} for contrast, ${a2} ${t2} to finish.`,
+    `You keep returning to ${a0} ${t0}. ${a1} ${t1} and ${a2} ${t2} fill the space around it.`,
+    `${a0} ${t0} runs through everything — with ${a1} ${t1} and ${a2} ${t2} as the undertow.`,
+    `Your nose moves ${v0} through ${t0}, ${v1} through ${t1}, and settles on ${a2} ${t2}.`,
+    `${a0} ${t0} first. Then ${a1} ${t1}. Then the ${a2} pull of ${t2} that keeps it interesting.`,
+  ]
+  const s1Templates2 = [
+    `You keep coming back to ${a0} ${t0} — ${a1} ${t1} is the counterweight.`,
+    `There's a push and pull here: ${a0} ${t0} and ${a1} ${t1}, over and over.`,
+    `${a0} ${t0} is your anchor. ${a1} ${t1} is what keeps it from being predictable.`,
+    `Two notes define the whole thing: ${a0} ${t0} and ${a1} ${t1}. Your nose doesn't stray far from either.`,
+  ]
+  const s1Templates1 = [
+    `Everything here reads ${a0} ${t0}. Your nose knows what it wants.`,
+    `${a0} ${t0} is the constant — your collection doesn't stray.`,
+    `Your nose has a type: ${a0} ${t0}, ${v0} and without apology.`,
+    `The whole collection converges on ${a0} ${t0}. That's not an accident.`,
+  ]
+  const s1Fallback = [
+    `Your profile is still forming — ${pickFrom(MOOD_ADJECTIVES, seed, 25)} potential ahead.`,
+    `Nothing dominant yet. Your nose is still making up its mind.`,
+  ]
+
+  let s1 = ""
+  if (topTags.length >= 3) {
+    s1 = pickFrom(s1Templates3, seed, 30)
+  } else if (topTags.length === 2) {
+    s1 = pickFrom(s1Templates2, seed, 30)
+  } else if (topTags.length === 1) {
+    s1 = pickFrom(s1Templates1, seed, 30)
+  } else {
+    s1 = pickFrom(s1Fallback, seed, 30)
+  }
+
+  // ── Sentence 2: personality read from dominant tag ────────────────────────
+  const TAG_CHARACTER: Record<string, string[]> = {
+    oriental:  ["You're drawn to warmth over freshness, depth over display.", "You prefer things that take time to reveal themselves.", "Subtlety isn't your language — presence is."],
+    woody:     ["You value things that last.", "Your taste skews grounded — structure over spectacle.", "You're not chasing trends. You know what you like."],
+    leather:   ["You wear what most people are afraid to consider.", "There's an edge to your taste that you don't try to hide.", "Your choices make a statement without asking for permission."],
+    floral:    ["You find complexity where others see simplicity.", "Your taste is refined without being difficult.", "You're drawn to the living, the blooming, the quietly beautiful."],
+    aromatic:  ["You value clarity — in what you wear and probably in how you think.", "Your taste is precise. Nothing accidental.", "You prefer the sharp over the soft, the direct over the layered."],
+    fruity:    ["You wear fragrance as mood, not armour.", "There's an openness to your taste — inviting, warm, unapologetic.", "You're not trying to intimidate anyone. You're just enjoying yourself."],
+    green:     ["Your instinct is for the natural over the constructed.", "You keep things light on purpose.", "There's a simplicity to your taste that isn't simple at all."],
+    citrus:    ["You favour the immediate over the lingering.", "Your relationships with fragrance are honest — bright, clean, nothing to prove.", "You wear what wakes you up, not what weighs you down."],
+    aquatic:   ["You prefer open space to closed rooms.", "Your taste is clean by conviction, not by default.", "You're drawn to air and light over depth and shadow."],
+    gourmand:  ["You wear fragrance for yourself first, others second.", "Your taste is unapologetically sensory.", "You lean into comfort without making it an apology."],
+    musk:      ["You understand the power of what isn't immediately obvious.", "Your taste is intimate in the best way — made for closeness.", "You choose the quiet over the loud and it works every time."],
+    powdery:   ["Your taste has a softness to it that takes confidence to carry.", "You're drawn to the nostalgic, the quiet, the considered.", "You wear things that feel like a second skin."],
+  }
+
+  const dominantTag = topTags[0] ?? ""
+  const charOptions = TAG_CHARACTER[dominantTag]
+  const s2 = charOptions ? pickFrom(charOptions, seed, 41) : ""
+
+  // Capitalise first letter
+  const capitalised = s1.charAt(0).toUpperCase() + s1.slice(1)
+
+  return s2 ? `${capitalised} ${s2}` : capitalised
 }

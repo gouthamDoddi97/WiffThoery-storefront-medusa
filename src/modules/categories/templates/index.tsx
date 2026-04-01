@@ -204,7 +204,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
           <RefinementList sortBy={sort} />
         </div>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="wave" />
+          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
       {meta.nextTier && (
@@ -354,7 +354,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           <RefinementList sortBy={sort} />
         </div>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="scattered" />
+          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
       <div className="bg-surface-container py-16">

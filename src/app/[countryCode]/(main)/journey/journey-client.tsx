@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import type { CSSProperties } from "react"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { PerfumeDetails } from "@/types/perfume"
+import { PerfumeDetails } from "../../../../types/perfume"
 import type { ConstellationNode } from "./ConstellationMap"
 import ScentRadar, { RadarScores } from "./ScentRadar"
 import { generatePersonaQuote } from "./scent-quotes"
@@ -134,11 +134,7 @@ function buildJourneyData(
     personaDesc = "A single signature scent in your arsenal. The collection begins here."
   }
 
-  const personaQuote = total > 0
-    ? generatePersonaQuote({ timeline, perfumeMap, tierCounts })
-    : ""
-
-  return { tierCounts, total, timeline, persona, personaDesc, longevitySummary, personaQuote }
+  return { tierCounts, total, timeline, persona, personaDesc, longevitySummary }
 }
 
 function computeRadarScores(
@@ -244,11 +240,23 @@ function TagProfileChart({ tagCounts }: { tagCounts: { tag: string; count: numbe
   )
 }
 
+// ─── Radar summary ────────────────────────────────────────────────────────────
+
+function radarSummary(scores: RadarScores): string {
+  const lv = scores.longevity  >= 0.7 ? "High"     : scores.longevity  >= 0.45 ? "Moderate" : "Light"
+  const pr = scores.projection >= 0.7 ? "strong"   : scores.projection >= 0.45 ? "moderate" : "light"
+  return `${lv} longevity and ${pr} projection`
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function JourneyClient({ customer, orders, perfumeMap, productTierMap, productTagsMap }: Props) {
-  const { tierCounts, total, timeline, persona, personaDesc, longevitySummary, personaQuote } =
+  const { tierCounts, total, timeline, persona, personaDesc, longevitySummary } =
     buildJourneyData(orders, perfumeMap, productTierMap)
+
+  const personaQuote = total > 0
+    ? generatePersonaQuote({ timeline, perfumeMap, tierCounts, productTagsMap })
+    : ""
 
   const featuredId = timeline[0]?.productId ?? null
   const [selectedId, setSelectedId] = useState<string>(featuredId ?? "")
@@ -403,6 +411,27 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
           />
         </div>
 
+        {/* ── Constellation legend + interpretation ───────────────────────── */}
+        <div className="flex flex-col gap-1.5 pt-1 pb-1">
+          <p className="font-inter text-[8px] tracking-[0.1em] text-on-surface-disabled italic">
+            Stars map your collection by tier — tap to explore.
+          </p>
+          <div className="flex gap-5 flex-wrap">
+            {(
+              [
+                { label: "Size",       value: "depth"      },
+                { label: "Brightness", value: "projection" },
+                { label: "Tail",       value: "longevity"  },
+              ] as const
+            ).map(({ label, value }) => (
+              <span key={label} className="font-inter text-[8.5px] tracking-[0.12em] text-on-surface">
+                <span className="font-semibold uppercase">{label}</span>
+                <span className="font-normal" style={{ color: "rgba(255,255,255,0.5)" }}> · {value}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* ── Bottom section ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 small:grid-cols-3 gap-5 pt-2">
 
@@ -488,6 +517,9 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
               </p>
             </div>
             <ScentRadar scores={radarScores} />
+            <p className="font-inter text-[8px] tracking-[0.12em] text-on-surface-disabled text-center">
+              {radarSummary(radarScores)}
+            </p>
           </div>
 
           {/* Tag signature */}

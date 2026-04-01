@@ -31,11 +31,13 @@ export default function CardActions({
   price,
   colorVariant = "default",
   vertical = false,
+  overlay = false,
 }: {
   product: HttpTypes.StoreProduct
   price?: string | null
   colorVariant?: CardColorVariant
   vertical?: boolean
+  overlay?: boolean
 }) {
   const { countryCode } = useParams() as { countryCode: string }
   const router = useRouter()
@@ -86,7 +88,9 @@ export default function CardActions({
   }
 
   return (
-    <div className={vertical
+    <div className={overlay
+      ? "flex flex-col items-center gap-2"
+      : vertical
       ? "flex flex-col items-center gap-8 flex-shrink-0"
       : "flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto"
     }>
@@ -96,7 +100,7 @@ export default function CardActions({
           type="button"
           onClick={handleWishlist}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          className={`${vertical ? "p-1.5" : "p-1"} transition-colors duration-200 flex-shrink-0 ${
+          className={`${ overlay ? "p-1.5" : vertical ? "p-1.5" : "p-1"} transition-colors duration-200 flex-shrink-0 ${
             isWishlisted ? colors.wishActive : colors.wish
           }`}
         >
@@ -126,12 +130,12 @@ export default function CardActions({
         disabled={isAdding}
         aria-label="Add to cart"
         className={`inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${
-          vertical
+          overlay || vertical
             ? `p-1.5 rounded-sm ${ added ? "text-primary" : colors.wish }`
             : `small:border px-2.5 py-2.5 small:px-4 small:py-2.5 ${ added ? "bg-primary small:border-primary text-surface-lowest" : colors.btn }`
         }`}
       >
-        {vertical ? (
+        {overlay || vertical ? (
           // Vertical mode: always icon-only regardless of screen size
           isAdding ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">

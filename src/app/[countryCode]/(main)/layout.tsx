@@ -7,6 +7,7 @@ import { StoreCartShippingOption } from "@medusajs/types"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
+import NavigationProgress from "@modules/layout/components/navigation-progress"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
 
   return (
     <>
+      <NavigationProgress />
       <Nav />
       {customer && cart && (
         <CartMismatchBanner customer={customer} cart={cart} />

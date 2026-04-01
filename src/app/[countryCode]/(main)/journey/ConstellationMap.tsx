@@ -138,10 +138,10 @@ function computePlaced(nodes: ConstellationNode[]): PlacedNode[] {
 
 // ── Star visual properties ────────────────────────────────────────────────────
 
-function starVisual(node: ConstellationNode) {
+function starVisual(node: ConstellationNode, scale = 1) {
   const weight = Math.max(1, Math.min(10, node.scentWeight ?? 5))
   // weight 1 → r=3.5   weight 10 → r=13
-  const baseR = 3.5 + ((weight - 1) / 9) * 9.5
+  const baseR = (3.5 + ((weight - 1) / 9) * 9.5) * scale
 
   const siMap: Record<string, number> = { low: 0.42, medium: 0.70, high: 1.0 }
   const brightness = siMap[node.sillage ?? ""] ?? 0.62
@@ -213,6 +213,38 @@ function buildGlyphD(tier: string, r: number): string | null {
 
 // Background image replaces programmatic star field — see /public/constilation.webp
 
+// ── Ghost stars — vacant positions, more to come ─────────────────────────────
+
+const GHOST_STARS: { x: number; y: number; r: number; op: number }[] = [
+  // Outer field
+  { x: 105, y:  75, r: 1.8, op: 0.20 },
+  { x: 248, y:  90, r: 2.3, op: 0.15 },
+  { x:  68, y: 185, r: 1.5, op: 0.18 },
+  { x: 295, y: 155, r: 2.0, op: 0.22 },
+  { x: 330, y: 200, r: 1.7, op: 0.16 },
+  { x: 490, y: 155, r: 2.5, op: 0.20 },
+  { x: 545, y: 205, r: 1.8, op: 0.17 },
+  { x: 590, y: 150, r: 2.2, op: 0.21 },
+  { x: 682, y: 198, r: 1.6, op: 0.15 },
+  { x: 730, y: 258, r: 2.0, op: 0.19 },
+  { x: 748, y: 362, r: 1.8, op: 0.16 },
+  { x: 733, y: 455, r: 2.1, op: 0.17 },
+  { x: 350, y: 418, r: 2.4, op: 0.20 },
+  { x: 270, y: 462, r: 1.7, op: 0.15 },
+  { x:  80, y: 456, r: 2.0, op: 0.18 },
+  { x: 432, y: 488, r: 1.6, op: 0.14 },
+  { x: 558, y: 472, r: 2.2, op: 0.18 },
+  { x: 620, y: 490, r: 1.5, op: 0.15 },
+  { x: 312, y: 312, r: 1.9, op: 0.17 },
+  { x: 480, y: 412, r: 1.8, op: 0.16 },
+  { x: 598, y: 314, r: 2.3, op: 0.21 },
+  { x: 148, y: 312, r: 1.8, op: 0.17 },
+  // Slightly larger — "almost occupied"
+  { x: 192, y: 242, r: 3.0, op: 0.26 },
+  { x: 512, y: 342, r: 3.1, op: 0.24 },
+  { x: 388, y:  98, r: 2.8, op: 0.22 },
+]
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConstellationMap({ nodes, featuredId, selectedId, onSelect }: Props) {
@@ -228,6 +260,15 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
     }
     rafId = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(rafId)
+  }, [])
+
+  // Larger stars on mobile (SVG viewBox 800×520 shrinks hard on narrow screens)
+  const [starBoost, setStarBoost] = useState(1)
+  useEffect(() => {
+    const update = () => setStarBoost(window.innerWidth < 640 ? 1.7 : 1)
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
   }, [])
 
   const placed = computePlaced(nodes)
@@ -281,7 +322,7 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
         </filter>
         {/* Per-node trail gradients (positions update each frame) */}
         {animated.map((node) => {
-          const { trailLen, brightness } = starVisual(node)
+          const { trailLen, brightness } = starVisual(node, starBoost)
           if (trailLen === 0) return null
           const vmag = Math.sqrt(node.vx * node.vx + node.vy * node.vy)
           if (vmag < 0.001) return null
@@ -359,12 +400,22 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
         ) : null
       )}
 
+      {/* Ghost stars — vacant, unoccupied positions */}
+      {GHOST_STARS.map((gs, i) => (
+        <g key={`ghost-${i}`}>
+          <circle cx={gs.x} cy={gs.y} r={gs.r * 2.2}
+            fill="none" stroke="white" strokeWidth={0.5} opacity={gs.op * 0.5} />
+          <circle cx={gs.x} cy={gs.y} r={gs.r}
+            fill="white" opacity={gs.op} />
+        </g>
+      ))}
+
       {/* ── Animated nodes ─────────────────────────────────────────────────── */}
       {animated.map((node) => {
         const isFeatured = node.productId === featuredId
         const isSelected = node.productId === selectedId
         const isActive = isFeatured || isSelected
-        const { baseR, brightness, trailLen } = starVisual(node)
+        const { baseR, brightness, trailLen } = starVisual(node, starBoost)
         const { color, tierKey, x, y, vx, vy } = node
 
         const vmag = Math.sqrt(vx * vx + vy * vy)

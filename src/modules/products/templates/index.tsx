@@ -5,12 +5,14 @@ import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
+import ProductReviews from "@modules/products/components/product-reviews"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tier"
+import { getProductReviews } from "@lib/data/reviews"
 import PerformanceChart from "@modules/products/components/performance-chart"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
@@ -110,9 +112,10 @@ const ProductTemplate = async ({
     return notFound()
   }
 
-  const [perfume, tierMap] = await Promise.all([
+  const [perfume, tierMap, reviewsData] = await Promise.all([
     getPerfumeDetails(product.id),
     getCollectionTiers(),
+    getProductReviews(product.id),
   ])
   const tierHandle =
     product.categories?.find((c) => TIER_HANDLES.includes(c.handle ?? ""))
@@ -421,6 +424,13 @@ const ProductTemplate = async ({
       <div className="content-container py-10 max-w-[720px]">
         <ProductTabs product={product} />
       </div>
+
+      {/* ─── REVIEWS ─── */}
+      <ProductReviews
+        productId={product.id}
+        initialReviews={reviewsData.reviews}
+        initialStats={reviewsData.stats}
+      />
 
       {/* ─── RELATED PRODUCTS ─── */}
       <div
