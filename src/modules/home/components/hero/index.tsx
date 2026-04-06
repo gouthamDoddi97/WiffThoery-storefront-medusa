@@ -25,45 +25,45 @@ const Hero = () => {
         }}
       />
 
-      {/* Ambient teal glow — bottom-left */}
+      {/* Ambient primary glow — bottom-left */}
       <div
         className="absolute bottom-0 left-0 w-[600px] h-[600px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at bottom left, rgba(79,219,204,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--primary) 7%, transparent) 0%, transparent 70%)",
         }}
       />
-      {/* Ambient coral glow — top-right */}
+      {/* Ambient secondary glow — top-right */}
       <div
         className="absolute top-0 right-0 w-[400px] h-[400px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at top right, rgba(255,107,90,0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse at top right, color-mix(in srgb, var(--secondary) 5%, transparent) 0%, transparent 70%)",
         }}
       />
 
       <div className="content-container relative z-10">
         <div className="flex flex-col gap-8 max-w-[680px]">
-        <span className="eyebrow">COASTAL GALLERY COLLECTION</span>
+        <span className="eyebrow">WHIFF THEORY — EXTRAIT DE PARFUM</span>
 
         <h1
-          className="font-grotesk font-bold text-[clamp(2.8rem,6vw,5.5rem)] text-on-surface leading-[0.9] tracking-[-0.03em]"
+          className="font-garamond font-bold text-[clamp(2.8rem,6vw,5.5rem)] text-on-surface leading-[0.9] tracking-[-0.02em]"
         >
-          Your first real&nbsp;scent.{" "}
-          <span className="text-primary">The end of&nbsp;ordinary.</span>
+          Every fragrance,{" "}
+          <span className="text-primary italic">a chapter.</span>
         </h1>
 
         <p className="font-inter text-lg text-on-surface-variant leading-relaxed max-w-[420px]">
-          Three tiers. One journey. No compromises. Extrait-concentration
-          fragrances crafted and bottled in Vizag.
+          Three tiers. One journey. Extrait-concentration fragrances crafted
+          and bottled in Vizag.
         </p>
 
         <div className="flex flex-col xsmall:flex-row items-start gap-4">
           <LocalizedClientLink href="/categories/crowd-pleaser">
-            <button className="btn-primary">START YOUR JOURNEY</button>
+            <button className="btn-primary">BEGIN THE STORY</button>
           </LocalizedClientLink>
           <LocalizedClientLink href="/store">
-            <button className="btn-ghost">EXPLORE COLLECTION</button>
+            <button className="btn-ghost">EXPLORE THE WARDROBE</button>
           </LocalizedClientLink>
         </div>
 
@@ -92,7 +92,7 @@ const Hero = () => {
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{
           background:
-            "linear-gradient(to right, transparent, rgba(79,219,204,0.3), transparent)",
+            "linear-gradient(to right, transparent, color-mix(in srgb, var(--primary) 30%, transparent), transparent)",
         }}
       />
     </section>

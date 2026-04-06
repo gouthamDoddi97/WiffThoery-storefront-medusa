@@ -18,4 +18,7 @@ export type PerfumeDetails = {
   occasions: string | null
   scent_weight: number | null
   caption: string | null
+  animation_preset: string | null
+  fg_preset: string | null
+  bg2_preset: string | null
 }

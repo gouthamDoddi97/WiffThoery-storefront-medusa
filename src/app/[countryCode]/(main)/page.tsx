@@ -121,10 +121,10 @@ export default async function Home(props: {
       {/* Art Objects — featured products per collection */}
       <section className="bg-surface-lowest py-4" aria-label="Art Objects">
         <div className="content-container pt-16 pb-4">
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <span className="eyebrow">CURRENTLY FEATURED</span>
             <h2 className="section-heading text-2xl small:text-3xl">ART OBJECTS</h2>
-          </div>
+          </div> */}
         </div>
         <ul className="flex flex-col divide-y divide-surface-variant/20">
           <FeaturedProducts collections={collections} region={region} />

@@ -21,8 +21,8 @@ export default async function Footer() {
             <p className="font-inter text-[11px] tracking-[0.2em] text-on-surface-variant uppercase">
               CRAFTED IN VIZAG. FOR THE WORLD.
             </p>
-            <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[260px]">
-              Three tiers. One journey. No compromises.
+            <p className="font-garamond italic text-base text-on-surface-variant leading-relaxed max-w-[260px]">
+              Each perfume carries a character, a mood, and a reason to exist.
             </p>
             {/* Newsletter */}
             <div className="flex flex-col gap-2 mt-2">

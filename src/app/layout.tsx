@@ -1,7 +1,15 @@
 import { getBaseURL, getMediaURL, getSiteURL } from "@lib/util/env"
 import { Metadata } from "next"
-import { Space_Grotesk, Inter } from "next/font/google"
+import { Space_Grotesk, Inter, Cormorant_Garamond } from "next/font/google"
 import "styles/globals.css"
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-garamond",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+})
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -119,7 +127,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} dark`}
+      className={`${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable} dark`}
     >
       <body className="bg-surface-lowest text-on-surface">
         <script

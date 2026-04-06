@@ -16,6 +16,8 @@ import { getProductReviews } from "@lib/data/reviews"
 import PerformanceChart from "@modules/products/components/performance-chart"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
+import ScentStory from "@modules/products/components/scent-story"
+import ImageCarousel from "@modules/products/components/image-carousel"
 
 // ─── Tier metadata ───────────────────────────────────────────────────────────
 
@@ -124,83 +126,45 @@ const ProductTemplate = async ({
     tierHandle ? tierMap[tierHandle] : undefined,
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
+  const sceneImages = images.slice(0, 3).map((image) => image.url ?? "")
+  const carouselImages = images.slice(3)
 
-  // Classify images by filename substring
-  const regularImgs = images.filter(
-    (img) => !/art|bg/i.test(img.url ?? "")
-  )
-  const heroImg = regularImgs[0]?.url
-  const stripImg = regularImgs[1]?.url
-  const artImg = images.find((img) => /art/i.test(img.url ?? ""))?.url ?? heroImg
-  const bgImg = images.find((img) => /bg/i.test(img.url ?? ""))?.url
+  // Classify images by filename substring, sorted numerically (1, 2, 3 … first)
+  const regularImgs = images
+    .filter((img) => !/art|bg/i.test(img.url ?? ""))
+    .sort((a, b) => {
+      const num = (url: string) => {
+        const match = url.split("/").pop()?.match(/^(\d+)/)
+        return match ? parseInt(match[1], 10) : Infinity
+      }
+      return num(a.url ?? "") - num(b.url ?? "")
+    })
 
   return (
     <div data-testid="product-container" className="bg-surface-lowest">
       <OrderAlertBanner />
 
-      {/* ─── HERO ─── */}
-      <section className="relative bg-surface-container overflow-hidden" style={{ minHeight: "72vh" }}>
-        {/* BG image */}
-        {bgImg && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: `url(${bgImg})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              opacity: 0.18,
-            }}
-          />
-        )}
-        {/* Tier glow */}
-        {tier && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at 70% 40%, ${tier.glowColor} 0%, transparent 65%)`,
-            }}
-          />
-        )}
-
-        <div
-          className="content-container relative z-10 flex flex-col small:flex-row items-center justify-between gap-10 py-20 small:py-28"
-          style={{ minHeight: "72vh" }}
-        >
-          {/* Left: text */}
-          <div className="flex flex-col gap-5 flex-1">
-            {tier && (
-              <span
-                className={`font-inter text-[11px] tracking-[0.25em] uppercase ${tier.accentClass}`}
-              >
-                {tier.badge}
-              </span>
-            )}
-            <h1 className="font-grotesk font-bold text-5xl small:text-[5.5rem] text-on-surface tracking-[-0.03em] leading-[0.88]">
-              {product.title}
-            </h1>
-            {perfume?.certifications && (
-              <p className="font-inter text-sm italic text-on-surface-variant">
-                {perfume.certifications}
-              </p>
-            )}
-            <p className="font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
-              EAU DE PARFUM · EXTRAIT · CRAFTED IN INDIA
-            </p>
-          </div>
-
-          {/* Right: product image */}
-          {heroImg && (
-            <div className="flex-shrink-0 w-full small:w-[360px] flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroImg}
-                alt={product.title || "Product"}
-                className="h-[300px] small:h-[460px] w-full object-contain drop-shadow-2xl"
-              />
-            </div>
-          )}
-        </div>
-      </section>
+      {/* ─── SCENT STORY (3-panel cinematic scroll) ─── */}
+      <ScentStory
+        productTitle={product.title ?? ""}
+        caption={perfume?.caption}
+        scentStory={perfume?.scent_story}
+        topNotes={perfume?.top_notes}
+        middleNotes={perfume?.middle_notes}
+        baseNotes={perfume?.base_notes}
+        occasions={perfume?.occasions}
+        sceneImages={sceneImages as [string?, string?, string?]}
+        fgPreset={perfume?.fg_preset as
+          | "rise-up" | "drift-in" | "slide-in"
+          | "sweep-in" | "bloom-up" | "swing-in"
+          | undefined}
+        bg2Preset={perfume?.bg2_preset as
+          | "dissolve-over" | "veil-fall"
+          | "zoom-through" | "push-over"
+          | undefined}
+        tierBadge={tier?.badge}
+        accentClass={tier?.accentClass}
+      />
 
       {/* ─── ADD TO CART ─── */}
       <section className="bg-surface-low py-8 border-b border-surface-variant/20">
@@ -229,25 +193,7 @@ const ProductTemplate = async ({
         </div>
       </section>
 
-      {/* ─── THE IMPRESSION ─── */}
-      {perfume?.scent_story && (
-        <section className="py-20 bg-surface-lowest">
-          <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-12 items-center">
-            {stripImg && (
-              <div className="w-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={stripImg} alt="" className="w-full h-auto object-cover" />
-              </div>
-            )}
-            <div className="flex flex-col gap-6">
-              <span className="eyebrow">THE IMPRESSION</span>
-              <p className="font-inter text-base small:text-lg italic text-on-surface-variant leading-relaxed">
-                {perfume.scent_story}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+
 
 
 
@@ -259,7 +205,19 @@ const ProductTemplate = async ({
         perfume?.ingredients ||
         perfume?.occasions) && (
         <section className="py-16 bg-surface-lowest border-t border-surface-variant/20">
-          <div className="content-container max-w-[720px]">
+          <div className="content-container">
+            <div className="grid grid-cols-1 small:grid-cols-2 gap-12 items-start">
+              {/* Left: bottle images carousel */}
+              <div className="sticky top-8">
+                <ImageCarousel
+                  images={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
+                    url: img.url ?? "",
+                    alt: product.title ?? "",
+                  }))}
+                />
+              </div>
+              {/* Right: blueprint content */}
+              <div>
             <span className="eyebrow block mb-8">OLFACTORY BLUEPRINT</span>
 
             {/* Notes row */}
@@ -356,41 +314,11 @@ const ProductTemplate = async ({
                 </p>
               </div>
             )}
+              </div>
+            </div>
           </div>
         </section>
       )}
-
-      {/* ─── ART YOU WEAR ─── */}
-      <section className="py-20 bg-surface-container overflow-hidden">
-        <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-12 items-center">
-          {/* Left: product art image */}
-          <div className="aspect-square overflow-hidden bg-surface-low">
-            {artImg && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={artImg} alt="" className="w-full h-full object-cover" />
-            )}
-          </div>
-          {/* Right: copy */}
-          <div className="flex flex-col gap-6">
-            <h2 className="font-grotesk font-bold text-4xl small:text-5xl text-on-surface leading-[0.95] tracking-[-0.03em]">
-              Art you wear.
-              <br />
-              Scent that speaks.
-            </h2>
-            <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
-              Each Whiff Theory label is a commissioned piece of digital abstract
-              art. The artist explored the tension between form and fragrance —
-              mirroring the scent&apos;s journey from its sharp, immediate opening
-              to its soft, lingering dry-down.
-            </p>
-            <LocalizedClientLink href="/about">
-              <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-primary hover:opacity-75 transition-opacity cursor-pointer">
-                MEET THE ARTIST →
-              </span>
-            </LocalizedClientLink>
-          </div>
-        </div>
-      </section>
 
       {/* ─── TIER UPGRADE CTA ─── */}
       {tier?.nextHref && (
@@ -438,8 +366,10 @@ const ProductTemplate = async ({
         data-testid="related-products-container"
       >
         <div className="flex flex-col gap-2 mb-10">
-          <span className="eyebrow">YOU MAY ALSO LIKE</span>
-          <h2 className="section-heading text-2xl">Complete Your Collection</h2>
+          <span className="eyebrow">YOUR NEXT CHAPTER</span>
+          <h2 className="font-garamond font-semibold text-2xl text-on-surface">
+            There is always a next chapter waiting.
+          </h2>
         </div>
         <Suspense fallback={<SkeletonRelatedProducts />}>
           <RelatedProducts product={product} countryCode={countryCode} />

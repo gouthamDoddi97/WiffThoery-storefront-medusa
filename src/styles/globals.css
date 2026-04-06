@@ -10,8 +10,8 @@
   --surface-container: #1D2130;
   --surface-high: #262A37;
   --surface-variant: #313442;
-  --primary: #4FDBCC;
-  --primary-container: #00B4A6;
+  --primary: #C9A84C;
+  --primary-container: #8B6914;
   --secondary: #FF6B5A;
   --tertiary: #FFB547;
   --on-surface: #E8EAF0;
@@ -85,7 +85,7 @@ body {
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-[#4FDBCC] text-[#4FDBCC] hover:bg-[#4FDBCC] hover:text-[#0A0E1A] transition-colors duration-200 ease-in;
+    @apply px-4 py-2 border border-[rgb(79,137,219)] text-[#4f5bdb] hover:bg-[#4f9cdb] hover:text-[#0A0E1A] transition-colors duration-200 ease-in;
   }
 
   /* ─── Coastal Gallery Utilities ────────────────────────────────────────── */
@@ -94,7 +94,10 @@ body {
   }
 
   .btn-ghost {
-    @apply border border-primary text-primary bg-transparent font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:bg-primary/10 inline-block;
+    @apply border border-primary text-primary bg-transparent font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 inline-block;
+    &:hover {
+      background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    }
   }
 
   .btn-text {

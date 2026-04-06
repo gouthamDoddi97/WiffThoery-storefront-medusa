@@ -2,23 +2,24 @@ const VALUES = [
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-        <path d="M2 17l10 5 10-5"/>
-        <path d="M2 12l10 5 10-5"/>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
       </svg>
     ),
-    heading: "ART YOU WEAR",
-    copy: "Every bottle is a graphic art object designed in Vizag. The packaging is part of the experience.",
+    eyebrow: "01",
+    heading: "Every fragrance, a chapter.",
+    copy: "Each scent in our collection carries its own story, mood, and reason to exist. We craft the narrative, you wear it.",
   },
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        <path d="M12 22c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z"/>
+        <path d="M12 8v4l3 3"/>
       </svg>
     ),
-    heading: "SCENT THAT SPEAKS",
-    copy: "Extrait concentration. No watered-down compromises. Maximum projection. Real longevity.",
+    eyebrow: "02",
+    heading: "Made to be worn.",
+    copy: "Extrait concentration. No watered-down compromises. Real projection, real longevity — designed for skin, not a bottle shelf.",
   },
   {
     icon: (
@@ -26,8 +27,9 @@ const VALUES = [
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
       </svg>
     ),
-    heading: "JOURNEY NOT CATALOG",
-    copy: "Three tiers that evolve with your nose. We don't sell hundreds of options — we sell a progression.",
+    eyebrow: "03",
+    heading: "A wardrobe, not a dump.",
+    copy: "Three deliberate tiers that evolve with your nose. Start anywhere. Follow the progression. Build your story.",
   },
 ]
 
@@ -41,8 +43,11 @@ export default function BrandValues() {
               key={value.heading}
               className="bg-surface-low px-8 py-12 flex flex-col gap-5"
             >
-              <div className="text-primary">{value.icon}</div>
-              <h3 className="font-grotesk font-bold text-sm tracking-[0.15em] text-on-surface uppercase">
+              <div className="flex items-center gap-3">
+                <div className="text-primary">{value.icon}</div>
+                <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled">{value.eyebrow}</span>
+              </div>
+              <h3 className="font-garamond font-semibold text-xl text-on-surface leading-snug">
                 {value.heading}
               </h3>
               <p className="font-inter text-sm text-on-surface-variant leading-relaxed">

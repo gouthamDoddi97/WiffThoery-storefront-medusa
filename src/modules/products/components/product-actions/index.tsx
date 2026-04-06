@@ -10,7 +10,6 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
-import { useRouter } from "next/navigation"
 import Spinner from "@modules/common/icons/spinner"
 
 type ProductActionsProps = {
@@ -32,7 +31,6 @@ export default function ProductActions({
   product,
   disabled,
 }: ProductActionsProps) {
-  const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -89,7 +87,7 @@ export default function ProductActions({
       params.delete("v_id")
     }
 
-    router.replace(pathname + "?" + params.toString())
+    window.history.replaceState(null, "", pathname + "?" + params.toString())
   }, [selectedVariant, isValidVariant])
 
   // check if the selected variant is in stock
