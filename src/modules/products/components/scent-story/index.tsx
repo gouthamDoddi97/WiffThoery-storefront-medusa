@@ -166,26 +166,30 @@ function PerfumeScene({
           <div
             ref={bg1Ref}
             className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${bg1})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              willChange: "opacity, filter",
-            }}
-          />
+            style={{ willChange: "opacity, filter" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bg1}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
         )}
 
         {bg2 && (
           <div
             ref={bg2Ref}
             className="absolute inset-0 opacity-0"
-            style={{
-              backgroundImage: `url(${bg2})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              willChange: "opacity",
-            }}
-          />
+            style={{ willChange: "opacity" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bg2}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
         )}
 
         {fg && (
