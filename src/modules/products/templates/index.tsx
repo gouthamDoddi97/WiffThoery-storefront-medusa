@@ -125,18 +125,11 @@ const ProductTemplate = async ({
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
 
-  // Sort images numerically (1.jpg, 2.jpg, 3.jpg …) then skip the
-  // first 3 which are reserved as scene images for the cinematic scroll branch.
-  const sortedImages = [...images].sort((a, b) => {
-    const num = (url: string) => {
-      const match = url.split("/").pop()?.match(/^(\d+)/)
-      return match ? parseInt(match[1], 10) : Infinity
-    }
-    return num(a.url ?? "") - num(b.url ?? "")
-  })
-  const nonSceneImages = sortedImages.slice(3)
+  // All images are shown on this branch — scene image filtering is handled via
+  // the admin-assigned scene_image_1/2/3 fields on the story-mode branch only.
+  const nonSceneImages = images
 
-  // Classify remaining images by filename substring
+  // Classify images by filename substring
   const regularImgs = nonSceneImages.filter(
     (img) => !/art|bg/i.test(img.url ?? "")
   )
