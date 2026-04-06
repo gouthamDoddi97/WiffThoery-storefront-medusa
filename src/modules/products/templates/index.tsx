@@ -125,14 +125,25 @@ const ProductTemplate = async ({
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
 
-  // Classify images by filename substring
-  const regularImgs = images.filter(
+  // Sort images numerically (1.jpg, 2.jpg, 3.jpg …) then skip the
+  // first 3 which are reserved as scene images for the cinematic scroll branch.
+  const sortedImages = [...images].sort((a, b) => {
+    const num = (url: string) => {
+      const match = url.split("/").pop()?.match(/^(\d+)/)
+      return match ? parseInt(match[1], 10) : Infinity
+    }
+    return num(a.url ?? "") - num(b.url ?? "")
+  })
+  const nonSceneImages = sortedImages.slice(3)
+
+  // Classify remaining images by filename substring
+  const regularImgs = nonSceneImages.filter(
     (img) => !/art|bg/i.test(img.url ?? "")
   )
   const heroImg = regularImgs[0]?.url
   const stripImg = regularImgs[1]?.url
-  const artImg = images.find((img) => /art/i.test(img.url ?? ""))?.url ?? heroImg
-  const bgImg = images.find((img) => /bg/i.test(img.url ?? ""))?.url
+  const artImg = nonSceneImages.find((img) => /art/i.test(img.url ?? ""))?.url ?? heroImg
+  const bgImg = nonSceneImages.find((img) => /bg/i.test(img.url ?? ""))?.url
 
   return (
     <div data-testid="product-container" className="bg-surface-lowest">
@@ -306,7 +317,7 @@ const ProductTemplate = async ({
                   WHEN TO WEAR
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {perfume.occasions.split(",").map((occ) => occ.trim()).filter(Boolean).map((occ) => {
+                  {perfume.occasions.split(",").map((occ: string) => occ.trim()).filter(Boolean).map((occ : string) => {
                     const OCCASION_META: Record<string, { label: string; icon: string }> = {
                       day:     { label: "Day",         icon: "☀" },
                       evening: { label: "Evening",     icon: "🌙" },
