@@ -16,7 +16,7 @@ import { getProductReviews } from "@lib/data/reviews"
 import PerformanceChart from "@modules/products/components/performance-chart"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
-import ScentStory from "@modules/products/components/scent-story"
+import ScentStory, { FgPreset, Bg2Preset } from "@modules/products/components/scent-story"
 import ImageCarousel from "@modules/products/components/image-carousel"
 
 // ─── Tier metadata ───────────────────────────────────────────────────────────
@@ -126,8 +126,14 @@ const ProductTemplate = async ({
     tierHandle ? tierMap[tierHandle] : undefined,
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
-  const sceneImages = images.slice(0, 3).map((image) => image.url ?? "")
-  const carouselImages = images.slice(3)
+  // Use admin-designated scene images; fall back to first 3 product images if not set
+  const sceneImages: [string?, string?, string?] = [
+    perfume?.scene_image_1 ?? images[0]?.url ?? undefined,
+    perfume?.scene_image_2 ?? images[1]?.url ?? undefined,
+    perfume?.scene_image_3 ?? images[2]?.url ?? undefined,
+  ]
+  const sceneUrlSet = new Set(sceneImages.filter(Boolean) as string[])
+  const carouselImages = images.filter((img) => !sceneUrlSet.has(img.url ?? ""))
 
   // Classify images by filename substring, sorted numerically (1, 2, 3 … first)
   const regularImgs = images
@@ -153,15 +159,9 @@ const ProductTemplate = async ({
         middleNotes={perfume?.middle_notes}
         baseNotes={perfume?.base_notes}
         occasions={perfume?.occasions}
-        sceneImages={sceneImages as [string?, string?, string?]}
-        fgPreset={perfume?.fg_preset as
-          | "rise-up" | "drift-in" | "slide-in"
-          | "sweep-in" | "bloom-up" | "swing-in"
-          | undefined}
-        bg2Preset={perfume?.bg2_preset as
-          | "dissolve-over" | "veil-fall"
-          | "zoom-through" | "push-over"
-          | undefined}
+        sceneImages={sceneImages}
+        fgPreset={perfume?.fg_preset as FgPreset | undefined}
+        bg2Preset={perfume?.bg2_preset as Bg2Preset | undefined}
         tierBadge={tier?.badge}
         accentClass={tier?.accentClass}
       />
@@ -253,7 +253,7 @@ const ProductTemplate = async ({
                 <p className="font-grotesk font-semibold text-sm text-on-surface tracking-[0.05em] mb-4">
                   SILLAGE &amp; LONGEVITY
                 </p>
-                <PerformanceChart sillage={perfume.sillage} longevity={perfume.longevity} />
+                <PerformanceChart sillage={perfume.sillage as any} longevity={perfume.longevity as any} />
               </div>
             )}
 
@@ -264,7 +264,7 @@ const ProductTemplate = async ({
                   WHEN TO WEAR
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {perfume.occasions.split(",").map((occ) => occ.trim()).filter(Boolean).map((occ) => {
+                  {perfume.occasions.split(",").map((occ: string) => occ.trim()).filter(Boolean).map((occ: string) => {
                     const OCCASION_META: Record<string, { label: string; icon: string }> = {
                       day:     { label: "Day",         icon: "☀" },
                       evening: { label: "Evening",     icon: "🌙" },

@@ -1,7 +1,6 @@
 "use server"
 
-import { PerfumeDetails } from "@/types/perfume"
-import { getCacheOptions } from "./cookies"
+import { PerfumeDetails } from "../../types/perfume"
 
 const MEDUSA_BACKEND_URL =
   process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -9,15 +8,10 @@ const MEDUSA_BACKEND_URL =
 export const getPerfumeDetails = async (
   productId: string
 ): Promise<PerfumeDetails | null> => {
-  const next = {
-    ...(await getCacheOptions("products")),
-  }
-
   try {
     const res = await fetch(
       `${MEDUSA_BACKEND_URL}/store/products/${productId}/perfume-details`,
       {
-        next,
         cache: "no-store",
         headers: {
           "x-publishable-api-key":

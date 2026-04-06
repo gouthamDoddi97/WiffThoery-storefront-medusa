@@ -12,14 +12,19 @@ export const FG_PRESETS = {
   "sweep-in": { label: "Sweep In", description: "Image 2 sweeps in from the far right" },
   "bloom-up": { label: "Bloom Up", description: "Image 2 floats up from below with a soft fade" },
   "swing-in": { label: "Swing In", description: "Image 2 swings in with a slight rotation" },
+  "pan-out":    { label: "Pan Out",    description: "Image 1 starts zoomed into its right corner then pans back as image 2 rises from below" },
+  "zoom-portal":   { label: "Zoom Portal",   description: "Image 1 zooms into a focal point — image 2 emerges from that same point as a tiny spec that expands to fill the screen" },
+  "split-reveal":  { label: "Split Reveal",  description: "Image 1 stays full. Image 2 rises from below on the left, image 3 descends from above on the right — both simultaneously" },
+  "fade-over":     { label: "Fade Over",     description: "Image 2 slowly fades in over image 1 — no movement, no blur" },
 } as const
 
 // ── How image 3 enters (bg2 layer, second half of scroll) ────────────────────
 export const BG2_PRESETS = {
-  "dissolve-over": { label: "Dissolve Over", description: "Image 3 crossfades over the current view" },
-  "veil-fall":     { label: "Veil Fall",     description: "Image 3 descends from above like a curtain" },
-  "zoom-through":  { label: "Zoom Through",  description: "Image 3 punches in from an oversized scale" },
-  "push-over":     { label: "Push Over",     description: "Image 1 slides left as image 3 enters from the right" },
+  "dissolve-over":  { label: "Dissolve Over",  description: "Image 3 crossfades over the current view" },
+  "veil-fall":      { label: "Veil Fall",      description: "Image 3 descends from above like a curtain" },
+  "zoom-through":   { label: "Zoom Through",   description: "Image 3 punches in from an oversized scale" },
+  "push-over":      { label: "Push Over",      description: "Image 1 slides left as image 3 enters from the right" },
+  "full-takeover":  { label: "Full Takeover",  description: "Image 3 dissolves over everything — image 2 fades out too, leaving image 3 alone" },
 } as const
 
 export type FgPreset  = keyof typeof FG_PRESETS
@@ -29,6 +34,8 @@ type LayerState = {
   opacity?: number
   transform?: string
   filter?: string
+  transformOrigin?: string
+  clipPath?: string
 }
 
 function clamp(value: number, min = 0, max = 1) {
@@ -44,6 +51,8 @@ function applyLayerState(layer: HTMLDivElement | null, state: LayerState) {
   if (state.opacity !== undefined) layer.style.opacity = String(state.opacity)
   if (state.transform !== undefined) layer.style.transform = state.transform
   if (state.filter !== undefined) layer.style.filter = state.filter
+  if (state.transformOrigin !== undefined) layer.style.transformOrigin = state.transformOrigin
+  if (state.clipPath !== undefined) layer.style.clipPath = state.clipPath
 }
 
 function buildSceneState(
@@ -83,9 +92,39 @@ function buildSceneState(
       bg1 = { opacity: 1, transform: `translate3d(${mix(0,-3,p1)}%,0,0) rotate(${mix(0,-1,p1)}deg)`, filter: `blur(${mix(0,1.2,p1)}px)` }
       fg  = { opacity: p1, transform: `translate3d(${mix(18,0,p1)}%,${mix(10,0,p1)}%,0) rotate(${mix(8,0,p1)}deg)` }
       break
+    case "pan-out":
+      // bg1: starts zoomed into the right corner (scale up + shift right), pans back to full
+      bg1 = { opacity: 1, transform: `scale(${mix(1.8,1,p1)}) translateX(${mix(20,0,p1)}%)`, filter: `blur(${mix(1,0,p1)}px)` }
+      // fg: rises from below center as bg1 reveals
+      fg  = { opacity: clamp(p1*1.25), transform: `translate3d(0,${mix(60,0,p1)}%,0) scale(${mix(0.92,1,p1)})` }
+      break
+    case "fade-over":
+      // bg1 stays perfectly still and crisp; fg simply fades in on top
+      bg1 = { opacity: 1 }
+      fg  = { opacity: p1 }
+      break
+    case "zoom-portal": {
+      // focal point — roughly center, adjust to taste (e.g. a gap between trees)
+      const origin = "58% 42%"
+      // bg1 zooms INTO the focal point: scale 1 → 5, blur builds as it punches in
+      bg1 = {
+        opacity: 1,
+        transform: `scale(${mix(1, 5, p1)})`,
+        transformOrigin: origin,
+        filter: `blur(${mix(0, 6, p1)}px) brightness(${mix(1, 0.55, p1)})`,
+      }
+      // fg emerges FROM the same focal point: scale 0.04 → 1 (tiny spec → full screen)
+      fg = {
+        opacity: clamp(p1 * 1.3),
+        transform: `scale(${mix(0.04, 1, p1)})`,
+        transformOrigin: origin,
+      }
+      break
+    }
   }
 
-  // ── Phase 2: how image 3 (bg2) enters — fg stays on top, untouched ──────────
+  // ── Phase 2: how image 3 (bg2) enters ───────────────────────────────────────
+  // fg (image 2) fades out during phase 2 so bg2 (image 3) is revealed beneath it
   let bg2: LayerState = { opacity: 0 }
   const b1op = bg1.opacity ?? 1
 
@@ -106,6 +145,11 @@ function buildSceneState(
       bg1 = { ...bg1, opacity: mix(b1op,0,p2), transform: `translate3d(${mix(0,-30,p2)}%,0,0)` }
       bg2 = { opacity: 1, transform: `translate3d(${mix(100,0,p2)}%,0,0)` }
       break
+    case "full-takeover":
+      bg1 = { ...bg1, opacity: b1op * (1 - p2) }
+      bg2 = { opacity: p2 }
+      fg  = { ...fg, opacity: (fg.opacity ?? 1) * (1 - p2) }
+      break
   }
 
   return { bg1, fg, bg2 }
@@ -124,6 +168,8 @@ function PerfumeScene({
   const bg1Ref = useRef<HTMLDivElement>(null)
   const bg2Ref = useRef<HTMLDivElement>(null)
   const fgRef = useRef<HTMLDivElement>(null)
+  const splitLeftRef = useRef<HTMLDivElement>(null)
+  const splitRightRef = useRef<HTMLDivElement>(null)
 
   const bg1 = images?.[0]
   const bg2 = images?.[2]
@@ -142,8 +188,54 @@ function PerfumeScene({
       const scrollRange = Math.max(rect.height - window.innerHeight, 1)
       const scrolled = Math.min(Math.max(-rect.top, 0), scrollRange)
       const progress = scrolled / scrollRange
-      const state = buildSceneState(fgPreset, bg2Preset, progress)
 
+      if (fgPreset === "split-reveal") {
+        const p = clamp(progress / 0.75)
+        const isMobile = window.innerWidth < 640
+        // bg1 stays visible; hide standard fg/bg2 layers
+        if (bg1Layer) { bg1Layer.style.opacity = "1"; bg1Layer.style.transform = "none"; bg1Layer.style.filter = "none" }
+        if (fgLayer) fgLayer.style.opacity = "0"
+        if (bg2Layer) bg2Layer.style.opacity = "0"
+        const leftEl = splitLeftRef.current
+        const rightEl = splitRightRef.current
+        if (leftEl) {
+          if (isMobile) {
+            // top half, slides in from left
+            leftEl.style.left = "0"; leftEl.style.top = "0"; leftEl.style.bottom = "auto"; leftEl.style.right = "auto"
+            leftEl.style.width = "100%"; leftEl.style.height = "50%"
+            leftEl.style.transform = `translateX(${mix(-105, 0, p)}%)`
+          } else {
+            // left half, slides up from below
+            leftEl.style.left = "0"; leftEl.style.top = "0"; leftEl.style.bottom = "auto"; leftEl.style.right = "auto"
+            leftEl.style.width = "50%"; leftEl.style.height = "100%"
+            leftEl.style.transform = `translateY(${mix(105, 0, p)}%)`
+          }
+          leftEl.style.opacity = "1"
+        }
+        if (rightEl) {
+          if (isMobile) {
+            // bottom half, slides in from right
+            rightEl.style.left = "0"; rightEl.style.top = "auto"; rightEl.style.bottom = "0"; rightEl.style.right = "auto"
+            rightEl.style.width = "100%"; rightEl.style.height = "50%"
+            rightEl.style.transform = `translateX(${mix(105, 0, p)}%)`
+          } else {
+            // right half, slides down from above
+            rightEl.style.left = "auto"; rightEl.style.top = "0"; rightEl.style.bottom = "auto"; rightEl.style.right = "0"
+            rightEl.style.width = "50%"; rightEl.style.height = "100%"
+            rightEl.style.transform = `translateY(${mix(-105, 0, p)}%)`
+          }
+          rightEl.style.opacity = "1"
+        }
+        return
+      }
+
+      // All other presets: keep split panels hidden
+      const leftEl = splitLeftRef.current
+      const rightEl = splitRightRef.current
+      if (leftEl) leftEl.style.opacity = "0"
+      if (rightEl) rightEl.style.opacity = "0"
+
+      const state = buildSceneState(fgPreset, bg2Preset, progress)
       applyLayerState(bg1Layer, state.bg1)
       applyLayerState(bg2Layer, state.bg2)
       applyLayerState(fgLayer, state.fg)
@@ -204,6 +296,29 @@ function PerfumeScene({
               willChange: "opacity, transform",
             }}
           />
+        )}
+
+        {/* Split-reveal panels — each is a true half-viewport container so
+            object-cover centers the image within its own half, not the full screen */}
+        {fg && (
+          <div
+            ref={splitLeftRef}
+            className="absolute overflow-hidden opacity-0"
+            style={{ willChange: "transform, opacity" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={fg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          </div>
+        )}
+        {bg2 && (
+          <div
+            ref={splitRightRef}
+            className="absolute overflow-hidden opacity-0"
+            style={{ willChange: "transform, opacity" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={bg2} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          </div>
         )}
       </div>
     </div>

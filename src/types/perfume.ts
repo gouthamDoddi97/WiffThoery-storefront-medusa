@@ -21,4 +21,7 @@ export type PerfumeDetails = {
   animation_preset: string | null
   fg_preset: string | null
   bg2_preset: string | null
+  scene_image_1: string | null
+  scene_image_2: string | null
+  scene_image_3: string | null
 }
