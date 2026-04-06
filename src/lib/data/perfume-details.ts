@@ -18,7 +18,7 @@ export const getPerfumeDetails = async (
       `${MEDUSA_BACKEND_URL}/store/products/${productId}/perfume-details`,
       {
         next,
-        cache: "force-cache",
+        cache: "no-store",
         headers: {
           "x-publishable-api-key":
             process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",

@@ -125,9 +125,13 @@ const ProductTemplate = async ({
     tierHandle ? TIER_META_FALLBACK[tierHandle] : undefined
   )
 
-  // All images are shown on this branch — scene image filtering is handled via
-  // the admin-assigned scene_image_1/2/3 fields on the story-mode branch only.
-  const nonSceneImages = images
+  // Exclude the three admin-designated parallax scene images from this branch.
+  const sceneUrls = new Set(
+    [perfume?.scene_image_1, perfume?.scene_image_2, perfume?.scene_image_3].filter(Boolean)
+  )
+  const nonSceneImages = sceneUrls.size > 0
+    ? images.filter((img) => !sceneUrls.has(img.url ?? ""))
+    : images
 
   // Classify images by filename substring
   const regularImgs = nonSceneImages.filter(
