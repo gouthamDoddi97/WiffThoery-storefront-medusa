@@ -166,37 +166,6 @@ const ProductTemplate = async ({
         accentClass={tier?.accentClass}
       />
 
-      {/* ─── ADD TO CART ─── */}
-      <section className="bg-surface-low py-8 border-b border-surface-variant/20">
-        <div className="content-container max-w-[580px] mx-auto flex flex-col gap-4">
-          <ProductOnboardingCta />
-          <Suspense
-            fallback={
-              <ProductActions disabled={true} product={product} region={region} />
-            }
-          >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
-          {/* Trust badges */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
-            {(["GENUINE EXTRAIT", "GRAPHIC-ART PACKAGING", "TRANSPARENT PRICING"] as const).map(
-              (badge) => (
-                <div key={badge} className="flex items-center gap-2">
-                  <div className="w-1 h-1 bg-primary flex-shrink-0" />
-                  <span className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-variant">
-                    {badge}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </section>
-
-
-
-
-
       {/* ─── OLFACTORY BLUEPRINT ─── */}
       {(perfume?.top_notes ||
         perfume?.middle_notes ||
@@ -208,7 +177,7 @@ const ProductTemplate = async ({
           <div className="content-container">
             <div className="grid grid-cols-1 small:grid-cols-2 gap-12 items-start">
               {/* Left: bottle images carousel */}
-              <div className="sticky top-8">
+              <div className="small:sticky small:top-8">
                 <ImageCarousel
                   images={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
                     url: img.url ?? "",
@@ -352,6 +321,33 @@ const ProductTemplate = async ({
       <div className="content-container py-10 max-w-[720px]">
         <ProductTabs product={product} />
       </div>
+
+      {/* ─── ADD TO CART ─── */}
+      <section className="bg-surface-low py-8 border-b border-surface-variant/20">
+        <div className="content-container max-w-[580px] mx-auto flex flex-col gap-4">
+          <ProductOnboardingCta />
+          <Suspense
+            fallback={
+              <ProductActions disabled={true} product={product} region={region} />
+            }
+          >
+            <ProductActionsWrapper id={product.id} region={region} />
+          </Suspense>
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
+            {(["GENUINE EXTRAIT", "GRAPHIC-ART PACKAGING", "TRANSPARENT PRICING"] as const).map(
+              (badge) => (
+                <div key={badge} className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-primary flex-shrink-0" />
+                  <span className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-variant">
+                    {badge}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* ─── REVIEWS ─── */}
       <ProductReviews

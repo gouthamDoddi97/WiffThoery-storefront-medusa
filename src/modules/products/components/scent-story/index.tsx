@@ -493,31 +493,12 @@ export default function ScentStory({
                 <div className="flex flex-col gap-2 text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
                   <div className="mx-auto w-6 h-px" style={{ background: "var(--primary)" }} />
                   <span className="font-inter text-[7px] small:text-[8px] tracking-[0.32em] small:tracking-[0.35em] uppercase text-primary">
-                    THE COMPOSITION
+                    SMELLS LIKE
                   </span>
                   <div className="flex flex-col items-center gap-2">
                     {topNotes && (
                       <p className="font-grotesk text-[1rem] small:text-[1.35rem] text-white font-light leading-tight">
-                        <span className="font-inter text-[7px] small:text-[8px] tracking-[0.28em] uppercase text-white/45 mr-2 align-middle">
-                          TOP
-                        </span>
                         {topNotes}
-                      </p>
-                    )}
-                    {middleNotes && (
-                      <p className="font-grotesk text-[1rem] small:text-[1.35rem] text-white font-light leading-tight">
-                        <span className="font-inter text-[7px] small:text-[8px] tracking-[0.28em] uppercase text-white/45 mr-2 align-middle">
-                          HEART
-                        </span>
-                        {middleNotes}
-                      </p>
-                    )}
-                    {baseNotes && (
-                      <p className="font-grotesk text-[1rem] small:text-[1.35rem] text-white font-light leading-tight">
-                        <span className="font-inter text-[7px] small:text-[8px] tracking-[0.28em] uppercase text-white/45 mr-2 align-middle">
-                          BASE
-                        </span>
-                        {baseNotes}
                       </p>
                     )}
                   </div>
