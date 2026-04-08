@@ -63,23 +63,23 @@ function resolveCategoryImage(
 }
 
 const FALLBACK_META: Record<string, ResolvedMeta> = {
-  "crowd-pleaser": {
+  "popular": {
     number: "TIER 01 / 03",
     tagline: "Your entry point. Instantly loved.",
     description: "Universally adored, immediately wearable. These fragrances win rooms, open conversations, and leave lasting impressions — without demanding anything from your nose.",
     accentColor: "#4FDBCC",
     accentClass: "text-primary",
-    nextTier: { label: "Ready for More?", href: "/categories/intro-to-niche", cta: "EXPLORE INTRO TO NICHE" },
+    nextTier: { label: "Ready for More?", href: "/categories/unique", cta: "EXPLORE UNIQUE" },
   },
-  "intro-to-niche": {
+  "unique": {
     number: "TIER 02 / 03",
     tagline: "For the curious nose.",
     description: "Beyond the mainstream. These scents reward attention and develop beautifully over time. Your nose has grown. These fragrances know it.",
     accentColor: "#FFB547",
     accentClass: "text-tertiary",
-    nextTier: { label: "Ready for the deepest end?", href: "/categories/polarizing-art", cta: "EXPLORE POLARIZING ART" },
+    nextTier: { label: "Ready for the deepest end?", href: "/categories/idgf", cta: "EXPLORE IDGF" },
   },
-  "polarizing-art": {
+  "idgf": {
     number: "TIER 03 / 03",
     tagline: "Not for everyone. Definitely for you.",
     description: "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
@@ -93,9 +93,9 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STEPPER_STEPS = [
-  { label: "Crowd Pleaser" },
-  { label: "Intro to Niche" },
-  { label: "Polarizing Art" },
+  { label: "Popular" },
+  { label: "Unique" },
+  { label: "IDGF" },
 ]
 
 function TierStepper({ activeIndex }: { activeIndex: 0 | 1 | 2 }) {
@@ -336,7 +336,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           <div className="flex items-center gap-2 mb-10">
             <LocalizedClientLink href="/" className="font-inter text-[10px] tracking-[0.15em] uppercase text-on-surface-disabled hover:text-on-surface-variant transition-colors">HOME</LocalizedClientLink>
             <span className="text-on-surface-disabled text-[10px]">/</span>
-            <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-secondary">POLARIZING ART</span>
+            <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-secondary">IDGF</span>
           </div>
           <div className="flex flex-col gap-6 max-w-[700px]">
             <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-secondary">{meta.number}</span>
@@ -449,14 +449,14 @@ export default async function CategoryTemplate({
   const tierMap = await getCollectionTiers()
   const heroImage = resolveCategoryImage(category, tierMap[handle])
 
-  if (handle === "crowd-pleaser") {
-    return <CrowdPleaserTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["crowd-pleaser"])} heroImage={heroImage} />
+  if (handle === "popular") {
+    return <CrowdPleaserTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["popular"])} heroImage={heroImage} />
   }
-  if (handle === "intro-to-niche") {
-    return <IntroToNicheTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["intro-to-niche"])} heroImage={heroImage} />
+  if (handle === "unique") {
+    return <IntroToNicheTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["unique"])} heroImage={heroImage} />
   }
-  if (handle === "polarizing-art") {
-    return <PolarizingArtTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["polarizing-art"])} heroImage={heroImage} />
+  if (handle === "idgf") {
+    return <PolarizingArtTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["idgf"])} heroImage={heroImage} />
   }
 
   return <GenericCategoryTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} heroImage={heroImage} />

@@ -14,30 +14,30 @@ import { Locale } from "@lib/data/locales"
 const TIERS = [
   {
     num: "01",
-    label: "CROWD PLEASERS",
+    label: "POPULAR",
     sub: "Universally loved, instantly wearable",
-    href: "/categories/crowd-pleaser",
-    handle: "crowd-pleaser" as const,
+    href: "/categories/popular",
+    handle: "popular" as const,
     accent: "text-primary",
     border: "border-primary/30",
     hoverOverlay: "rgba(79,219,204,0.15)",
   },
   {
     num: "02",
-    label: "INTRO TO NICHE",
+    label: "UNIQUE",
     sub: "Your first step into something deeper",
-    href: "/categories/intro-to-niche",
-    handle: "intro-to-niche" as const,
+    href: "/categories/unique",
+    handle: "unique" as const,
     accent: "text-tertiary",
     border: "border-tertiary/30",
     hoverOverlay: "rgba(255,181,71,0.15)",
   },
   {
     num: "03",
-    label: "POLARIZING ART",
+    label: "IDGF",
     sub: "For those who wear to provoke",
-    href: "/categories/polarizing-art",
-    handle: "polarizing-art" as const,
+    href: "/categories/idgf",
+    handle: "idgf" as const,
     accent: "text-secondary",
     border: "border-secondary/30",
     hoverOverlay: "rgba(255,107,90,0.15)",
@@ -54,9 +54,9 @@ const UTILITY_LINKS = [
 ]
 
 type TierImages = {
-  "crowd-pleaser": string | null
-  "intro-to-niche": string | null
-  "polarizing-art": string | null
+  "popular": string | null
+  "unique": string | null
+  "idgf": string | null
 }
 
 type SideMenuProps = {

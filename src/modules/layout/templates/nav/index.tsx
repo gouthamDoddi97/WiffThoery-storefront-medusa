@@ -9,9 +9,9 @@ import SideMenu from "@modules/layout/components/side-menu"
 import { getCollectionTiers } from "@lib/data/collection-tier"
 
 const LEFT_LINKS = [
-  { label: "CROWD PLEASERS", href: "/categories/crowd-pleaser" },
-  { label: "INTRO TO NICHE", href: "/categories/intro-to-niche" },
-  { label: "POLARIZING ART", href: "/categories/polarizing-art" },
+  { label: "POPULAR", href: "/categories/popular" },
+  { label: "UNIQUE", href: "/categories/unique" },
+  { label: "IDGF", href: "/categories/idgf" },
 ]
 
 const RIGHT_LINKS = [
@@ -28,9 +28,9 @@ export default async function Nav() {
   ])
 
   const tierImages = {
-    "crowd-pleaser": tierMap["crowd-pleaser"]?.image_url ?? null,
-    "intro-to-niche": tierMap["intro-to-niche"]?.image_url ?? null,
-    "polarizing-art": tierMap["polarizing-art"]?.image_url ?? null,
+    "popular": tierMap["popular"]?.image_url ?? null,
+    "unique": tierMap["unique"]?.image_url ?? null,
+    "idgf": tierMap["idgf"]?.image_url ?? null,
   }
 
   return (

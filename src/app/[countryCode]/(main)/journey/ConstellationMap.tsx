@@ -47,19 +47,19 @@ const ZONES: Record<string, {
   color: string; label: string
   lx: number; ly: number
 }> = {
-  "crowd-pleaser": {
+  "popular": {
     cx: 182, cy: 155, r: 90,
-    color: "#4FDBCC", label: "CROWD PLEASERS",
+    color: "#4FDBCC", label: "POPULAR",
     lx: 182, ly: 263,
   },
-  "intro-to-niche": {
+  "unique": {
     cx: 415, cy: 265, r: 88,
-    color: "#D4AF37", label: "INTRO TO NICHE",
+    color: "#D4AF37", label: "UNIQUE",
     lx: 415, ly: 369,
   },
-  "polarizing-art": {
+  "idgf": {
     cx: 648, cy: 375, r: 90,
-    color: "#FF6B6B", label: "POLARIZING ART",
+    color: "#FF6B6B", label: "IDGF",
     lx: 648, ly: 480,
   },
   unknown: {
@@ -186,11 +186,11 @@ function orbitState(o: ReturnType<typeof orbitParams>, t: number) {
 
 function buildGlyphD(tier: string, r: number): string | null {
   switch (tier) {
-    case "crowd-pleaser":
+    case "popular":
       return null // <circle>
-    case "intro-to-niche":
+    case "unique":
       return `M 0 ${-r} L ${r} 0 L 0 ${r} L ${-r} 0 Z`
-    case "polarizing-art": {
+    case "idgf": {
       const pts: string[] = []
       for (let k = 0; k < 6; k++) {
         const ao = (k * Math.PI) / 3 - Math.PI / 2
@@ -328,7 +328,7 @@ export default function ConstellationMap({ nodes, featuredId, selectedId, onSele
   })
 
   // Journey arc through occupied main tier zone centres
-  const arcTiers = (["crowd-pleaser", "intro-to-niche", "polarizing-art"] as const).filter(
+  const arcTiers = (["popular", "unique", "idgf"] as const).filter(
     (t) => activeZones.has(t)
   )
   let journeyPath = ""

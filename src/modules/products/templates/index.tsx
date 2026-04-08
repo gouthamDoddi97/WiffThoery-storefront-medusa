@@ -32,24 +32,24 @@ type TierDisplayMeta = {
 
 // Fallback used when the backend returns no data for a handle
 const TIER_META_FALLBACK: Record<string, TierDisplayMeta> = {
-  "crowd-pleaser": {
-    badge: "01 — CROWD PLEASER",
+  "popular": {
+    badge: "01 — POPULAR",
     accentClass: "text-primary",
     glowColor: "rgba(79,219,204,0.07)",
-    nextHref: "/categories/intro-to-niche",
-    nextBadge: "LADDER TIER: 01 — CROWD PLEASER",
-    nextLabel: "EXPLORE INTRO TO NICHE",
+    nextHref: "/categories/unique",
+    nextBadge: "LADDER TIER: 01 — POPULAR",
+    nextLabel: "EXPLORE UNIQUE",
   },
-  "intro-to-niche": {
-    badge: "02 — INTRO TO NICHE",
+  "unique": {
+    badge: "02 — UNIQUE",
     accentClass: "text-tertiary",
     glowColor: "rgba(255,181,71,0.07)",
-    nextHref: "/categories/polarizing-art",
-    nextBadge: "LADDER TIER: 02 — INTRO TO NICHE",
-    nextLabel: "EXPLORE POLARIZING ART",
+    nextHref: "/categories/idgf",
+    nextBadge: "LADDER TIER: 02 — UNIQUE",
+    nextLabel: "EXPLORE IDGF",
   },
-  "polarizing-art": {
-    badge: "03 — POLARIZING ART",
+  "idgf": {
+    badge: "03 — IDGF",
     accentClass: "text-secondary",
     glowColor: "rgba(255,107,90,0.07)",
   },

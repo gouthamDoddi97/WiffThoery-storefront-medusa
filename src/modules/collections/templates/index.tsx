@@ -63,7 +63,7 @@ function buildMeta(
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FALLBACK_META: Record<string, ResolvedMeta> = {
-  "crowd-pleasers": {
+  "popular": {
     number: "TIER 01 / 03",
     tagline: "Your entry point. Instantly loved.",
     description:
@@ -72,11 +72,11 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     accentClass: "text-primary",
     nextTier: {
       label: "Ready for More?",
-      href: "/collections/intro-to-niche",
-      cta: "EXPLORE INTRO TO NICHE",
+      href: "/collections/unique",
+      cta: "EXPLORE UNIQUE",
     },
   },
-  "intro-to-niche": {
+  "unique": {
     number: "TIER 02 / 03",
     tagline: "For the curious nose.",
     description:
@@ -85,11 +85,11 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     accentClass: "text-tertiary",
     nextTier: {
       label: "Ready for the deepest end?",
-      href: "/collections/polarizing-art",
-      cta: "EXPLORE POLARIZING ART",
+      href: "/collections/idgf",
+      cta: "EXPLORE IDGF",
     },
   },
-  "polarizing-art": {
+  "idgf": {
     number: "TIER 03 / 03",
     tagline: "Not for everyone. Definitely for you.",
     description:
@@ -265,9 +265,9 @@ function IntroToNicheTemplate({
           {/* Journey stepper */}
           <div className="flex items-center gap-3">
             {[
-              { label: "Crowd Pleasers", done: true },
-              { label: "Intro to Niche", active: true },
-              { label: "Polarizing Art", done: false },
+              { label: "Popular", done: true },
+              { label: "Unique", active: true },
+              { label: "IDGF", done: false },
             ].map((step, i) => (
               <div key={step.label} className="flex items-center gap-3">
                 {i > 0 && (
@@ -395,7 +395,7 @@ function PolarizingArtTemplate({
             </LocalizedClientLink>
             <span className="text-on-surface-disabled text-[10px]">/</span>
             <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-secondary">
-              POLARIZING ART
+              IDGF
             </span>
           </div>
 
@@ -469,38 +469,38 @@ export default async function CollectionTemplate({
 
   const tierMap = await getCollectionTiers()
 
-  if (handle === "crowd-pleasers") {
+  if (handle === "popular") {
     return (
       <CrowdPleasersTemplate
         collection={collection}
         sort={sort}
         page={pageNumber}
         countryCode={countryCode}
-        meta={buildMeta(tierMap[handle], FALLBACK_META["crowd-pleasers"])}
+        meta={buildMeta(tierMap[handle], FALLBACK_META["popular"])}
       />
     )
   }
 
-  if (handle === "intro-to-niche") {
+  if (handle === "unique") {
     return (
       <IntroToNicheTemplate
         collection={collection}
         sort={sort}
         page={pageNumber}
         countryCode={countryCode}
-        meta={buildMeta(tierMap[handle], FALLBACK_META["intro-to-niche"])}
+        meta={buildMeta(tierMap[handle], FALLBACK_META["unique"])}
       />
     )
   }
 
-  if (handle === "polarizing-art") {
+  if (handle === "idgf") {
     return (
       <PolarizingArtTemplate
         collection={collection}
         sort={sort}
         page={pageNumber}
         countryCode={countryCode}
-        meta={buildMeta(tierMap[handle], FALLBACK_META["polarizing-art"])}
+        meta={buildMeta(tierMap[handle], FALLBACK_META["idgf"])}
       />
     )
   }

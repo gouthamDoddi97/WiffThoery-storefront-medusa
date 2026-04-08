@@ -88,8 +88,8 @@ export default function WishlistClient() {
               any product page to add it to your radar.
             </p>
             <div className="flex gap-4 mt-2">
-              <LocalizedClientLink href="/categories/crowd-pleaser">
-                <button className="btn-primary">EXPLORE CROWD PLEASERS</button>
+              <LocalizedClientLink href="/categories/popular">
+                <button className="btn-primary">EXPLORE POPULAR</button>
               </LocalizedClientLink>
               <LocalizedClientLink href="/store">
                 <button className="btn-ghost">BROWSE ALL</button>

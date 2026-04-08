@@ -4,47 +4,47 @@ import TierShowcaseClient, { TierItem } from "./client"
 // Video URLs — set NEXT_PUBLIC_VIDEO_* in .env.local to point at a CDN (e.g. Cloudinary).
 // Falls back to /public/ files so local dev works without env vars.
 const VIDEO_URLS = {
-  "crowd-pleaser": process.env.NEXT_PUBLIC_VIDEO_CROWD_PLEASER ?? "/tier-crowd-pleaser.webm",
-  "intro-to-niche": process.env.NEXT_PUBLIC_VIDEO_INTRO_TO_NICHE ?? "/tier-intro-to-niche.webm",
-  "polarizing-art": process.env.NEXT_PUBLIC_VIDEO_POLARIZING_ART ?? "/tier-polarizing-art.webm",
+  "popular": process.env.NEXT_PUBLIC_VIDEO_POPULAR ?? "/tier-popular.webm",
+  "unique": process.env.NEXT_PUBLIC_VIDEO_UNIQUE ?? "/tier-unique.webm",
+  "idgf": process.env.NEXT_PUBLIC_VIDEO_IDGF ?? "/tier-idgf.webm",
 } as const
 
 const TIERS_FALLBACK: TierItem[] = [
   {
     number: "TIER 01 / 03",
-    name: "CROWD PLEASERS",
+    name: "POPULAR",
     tagline: "Your entry point. Instantly loved.",
     description:
       "Universally adored, immediately wearable. These fragrances win rooms.",
-    href: "/categories/crowd-pleaser",
-    handle: "crowd-pleaser",
+    href: "/categories/popular",
+    handle: "popular",
     accentColor: "#4FDBCC",
     imageUrl: null,
-    videoUrl: VIDEO_URLS["crowd-pleaser"],
+    videoUrl: VIDEO_URLS["popular"],
   },
   {
     number: "TIER 02 / 03",
-    name: "INTRO TO NICHE",
+    name: "UNIQUE",
     tagline: "For the curious nose.",
     description:
       "Beyond the mainstream. Scents that reward attention and develop over time.",
-    href: "/categories/intro-to-niche",
-    handle: "intro-to-niche",
+    href: "/categories/unique",
+    handle: "unique",
     accentColor: "#FFB547",
     imageUrl: null,
-    videoUrl: VIDEO_URLS["intro-to-niche"],
+    videoUrl: VIDEO_URLS["unique"],
   },
   {
     number: "TIER 03 / 03",
-    name: "POLARIZING ART",
+    name: "IDGF",
     tagline: "Not for everyone. Maybe for you.",
     description:
       "Challenging, unforgettable, unapologetically complex. Only the committed need apply.",
-    href: "/categories/polarizing-art",
-    handle: "polarizing-art",
+    href: "/categories/idgf",
+    handle: "idgf",
     accentColor: "#FF6B5A",
     imageUrl: null,
-    videoUrl: VIDEO_URLS["polarizing-art"],
+    videoUrl: VIDEO_URLS["idgf"],
   },
 ]
 

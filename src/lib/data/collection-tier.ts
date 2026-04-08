@@ -38,10 +38,12 @@ export const getCollectionTiers = async (): Promise<
     }
     const map: Record<string, CollectionTierMeta> = {}
     for (const tier of collection_tiers ?? []) {
-      const image_url = tier.image_url ?? tier?.image_url ?? null
+      const image_url = tier.image_url ?? null
       if (tier.category_handle) {
-        map[tier.category_handle] = {
+        const key = tier.category_handle.toLowerCase()
+        map[key] = {
           ...tier,
+          category_handle: key,
           image_url,
         }
       }

@@ -63,7 +63,7 @@ const Hero = () => {
             <button className="btn-primary">BEGIN THE STORY</button>
           </LocalizedClientLink>
           <LocalizedClientLink href="/store">
-            <button className="btn-ghost">EXPLORE THE WARDROBE</button>
+            <button className="btn-ghost">EXPLORE ALL</button>
           </LocalizedClientLink>
         </div>
 

@@ -4,32 +4,32 @@ import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tie
 const TIERS_FALLBACK = [
   {
     number: "TIER 01 / 03",
-    name: "CROWD PLEASERS",
+    name: "POPULAR",
     tagline: "Your entry point. Instantly loved.",
     description:
       "Universally adored, immediately wearable. These fragrances win rooms.",
-    href: "/categories/crowd-pleaser",
-    handle: "crowd-pleaser",
+    href: "/categories/popular",
+    handle: "popular",
     accentColor: "#4FDBCC",
   },
   {
     number: "TIER 02 / 03",
-    name: "INTRO TO NICHE",
+    name: "UNIQUE",
     tagline: "For the curious nose.",
     description:
       "Beyond the mainstream. Scents that reward attention and develop over time.",
-    href: "/categories/intro-to-niche",
-    handle: "intro-to-niche",
+    href: "/categories/unique",
+    handle: "unique",
     accentColor: "#FFB547",
   },
   {
     number: "TIER 03 / 03",
-    name: "POLARIZING ART",
+    name: "IDGF",
     tagline: "Not for everyone. Maybe for you.",
     description:
       "Challenging, unforgettable, unapologetically complex. Only the committed need apply.",
-    href: "/categories/polarizing-art",
-    handle: "polarizing-art",
+    href: "/categories/idgf",
+    handle: "idgf",
     accentColor: "#FF6B5A",
   },
 ]

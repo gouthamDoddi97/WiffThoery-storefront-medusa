@@ -7,14 +7,14 @@ import StoreTemplate from "@modules/store/templates"
 export const metadata: Metadata = {
   title: "Shop All Fragrances",
   description:
-    "Browse every Whiff Theory fragrance — Eau de Parfum, Extrait, Crowd Pleasers, Intro to Niche, and Polarizing Art. Luxury Indian perfumes crafted in Visakhapatnam.",
+    "Browse every Whiff Theory fragrance — Eau de Parfum, Extrait, Popular, Unique, and IDGF. Luxury Indian perfumes crafted in Visakhapatnam.",
   alternates: {
     canonical: `${getSiteURL()}/in/store`,
   },
   openGraph: {
     title: "Shop All Fragrances | Whiff Theory",
     description:
-      "Browse every Whiff Theory fragrance — Eau de Parfum, Extrait, and Polarizing Art. Luxury Indian perfumes crafted in Visakhapatnam.",
+      "Browse every Whiff Theory fragrance — Eau de Parfum, Extrait, and IDGF. Luxury Indian perfumes crafted in Visakhapatnam.",
     images: [{ url: "/og-image.png", alt: "Whiff Theory Store", width: 1200, height: 630 }],
     siteName: "Whiff Theory",
   },

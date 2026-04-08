@@ -9,12 +9,12 @@ const EmptyCartMessage = () => {
         Nothing here yet.
       </h1>
       <p className="font-inter text-sm text-on-surface-variant max-w-[400px] leading-relaxed">
-        Your curation is empty. Start your olfactory journey — begin with the crowd pleasers
-        or dive straight into niche.
+        Your curation is empty. Start your olfactory journey — begin with the popular picks
+        or dive straight into something unique.
       </p>
       <div className="flex gap-4 mt-2">
-        <LocalizedClientLink href="/collections/crowd-pleasers">
-          <button className="btn-primary">START WITH CROWD PLEASERS</button>
+        <LocalizedClientLink href="/categories/popular">
+          <button className="btn-primary">START WITH POPULAR</button>
         </LocalizedClientLink>
         <LocalizedClientLink href="/store">
           <button className="btn-ghost">BROWSE ALL</button>

@@ -57,26 +57,26 @@ export default async function Footer() {
             <ul className="flex flex-col gap-3">
               <li>
                 <LocalizedClientLink
-                  href="/categories/crowd-pleaser"
+                  href="/categories/popular"
                   className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
                 >
-                  Crowd Pleasers
+                  Popular
                 </LocalizedClientLink>
               </li>
               <li>
                 <LocalizedClientLink
-                  href="/categories/intro-to-niche"
+                  href="/categories/unique"
                   className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
                 >
-                  Intro to Niche
+                  Unique
                 </LocalizedClientLink>
               </li>
               <li>
                 <LocalizedClientLink
-                  href="/categories/polarizing-art"
+                  href="/categories/idgf"
                   className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200"
                 >
-                  Polarizing Art
+                  IDGF
                 </LocalizedClientLink>
               </li>
               <li>

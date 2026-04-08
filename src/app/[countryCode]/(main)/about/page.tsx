@@ -124,7 +124,7 @@ export default function AboutPage() {
                 to the people who wear it. <em>Also, a few months of paychecks and credit card debt.</em>
               </p>
               <p>
-                The three-tier ladder — Crowd Pleasers, Intro to Niche, Polarizing Art — isn't a
+                The three-tier ladder — Popular, Unique, IDGF — isn't a
                 marketing segmentation exercise. It's a philosophy. Your nose grows. Your taste evolves.
                 We built the brand around that journey.
               </p>
@@ -278,8 +278,8 @@ export default function AboutPage() {
             Start with what everybody loves, then evolve as far as curiosity takes you.
           </p>
           <div className="flex flex-col xsmall:flex-row gap-4">
-            <LocalizedClientLink href="/categories/crowd-pleaser">
-              <button className="btn-primary">START WITH CROWD PLEASERS</button>
+            <LocalizedClientLink href="/categories/popular">
+              <button className="btn-primary">START WITH POPULAR</button>
             </LocalizedClientLink>
             <LocalizedClientLink href="/store">
               <button className="btn-ghost">EXPLORE ALL FRAGRANCES</button>

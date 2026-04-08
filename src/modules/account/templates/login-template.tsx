@@ -45,7 +45,7 @@ const LoginTemplate = () => {
             Three tiers. Honest pricing. Art you wear.
           </p>
           <div className="flex gap-4 mt-4 text-center">
-            {["CROWD PLEASERS", "INTRO TO NICHE", "POLARIZING ART"].map((tier, i) => (
+            {["POPULAR", "UNIQUE", "IDGF"].map((tier, i) => (
               <div key={tier} className="flex flex-col gap-1">
                 <div
                   className="w-8 h-px"

@@ -25,9 +25,9 @@ const ConstellationMap = dynamic(() => import("./ConstellationMap"), {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const TIER_META: Record<string, { label: string; color: string }> = {
-  "crowd-pleaser":  { label: "CROWD PLEASER",  color: "#4FDBCC" },
-  "intro-to-niche": { label: "INTRO TO NICHE", color: "#D4AF37" },
-  "polarizing-art": { label: "POLARIZING ART", color: "#FF6B6B" },
+  "popular":  { label: "POPULAR",  color: "#4FDBCC" },
+  "unique": { label: "UNIQUE", color: "#D4AF37" },
+  "idgf": { label: "IDGF", color: "#FF6B6B" },
   unknown:          { label: "ARCHIVE",        color: "#7B7FA6" },
 }
 
@@ -64,9 +64,9 @@ function buildJourneyData(
   productTierMap: Record<string, string>
 ) {
   const tierCounts: Record<string, number> = {
-    "crowd-pleaser": 0,
-    "intro-to-niche": 0,
-    "polarizing-art": 0,
+    "popular": 0,
+    "unique": 0,
+    "idgf": 0,
     unknown: 0,
   }
   const timeline: Array<{
@@ -117,16 +117,16 @@ function buildJourneyData(
   if (total === 0) {
     persona = "The Unscented"
     personaDesc = "Your journey hasn't begun yet."
-  } else if (tierCounts["polarizing-art"] >= 2) {
+  } else if (tierCounts["idgf"] >= 2) {
     persona = "The Connoisseur"
     personaDesc =
       "You're drawn to the depth of the shadows — where music meets moonlight. Your selections reveal a preference for heavy base notes and enigmatic finishes that linger long after the sun sets."
-  } else if (tierCounts["intro-to-niche"] >= 2) {
+  } else if (tierCounts["unique"] >= 2) {
     persona = "The Explorer"
     personaDesc =
       "Curiosity is your compass. You seek out scents that tell a story — complex narratives crafted from rare ingredients and bold artistic vision."
-  } else if (tierCounts["crowd-pleaser"] >= 2) {
-    persona = "The Crowd Pleaser"
+  } else if (tierCounts["popular"] >= 2) {
+    persona = "The Popular Pick"
     personaDesc =
       "You wear what works — confidently. Your collection blends accessibility with elegance, making a statement without demanding a stage."
   } else if (total >= 1) {
@@ -282,10 +282,10 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
   })
 
   const nextTier =
-    tierCounts["crowd-pleaser"] > 0 && tierCounts["intro-to-niche"] === 0
-      ? { label: "INTRO TO NICHE", href: "/categories/intro-to-niche" }
-      : tierCounts["intro-to-niche"] > 0 && tierCounts["polarizing-art"] === 0
-      ? { label: "POLARIZING ART", href: "/categories/polarizing-art" }
+    tierCounts["popular"] > 0 && tierCounts["unique"] === 0
+      ? { label: "UNIQUE", href: "/categories/unique" }
+      : tierCounts["unique"] > 0 && tierCounts["idgf"] === 0
+      ? { label: "IDGF", href: "/categories/idgf" }
       : null
 
   // ── Empty state ─────────────────────────────────────────────────────────
@@ -310,7 +310,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
             Your constellation is empty. Every fragrance you purchase places a new star in your map.
           </p>
-          <LocalizedClientLink href="/categories/crowd-pleaser">
+          <LocalizedClientLink href="/categories/popular">
             <button className="btn-primary">BEGIN YOUR JOURNEY →</button>
           </LocalizedClientLink>
         </div>

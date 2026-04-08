@@ -7,7 +7,7 @@ import { PerfumeDetails } from "@/types/perfume"
 import JourneyClient from "./journey-client"
 
 const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
-const TIER_HANDLES = ["crowd-pleaser", "intro-to-niche", "polarizing-art"]
+const TIER_HANDLES = ["popular", "unique", "idgf"]
 
 async function getProductInfo(productId: string): Promise<{ tier: string; tags: string[] }> {
   try {

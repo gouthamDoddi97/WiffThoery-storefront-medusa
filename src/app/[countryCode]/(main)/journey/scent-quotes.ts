@@ -85,7 +85,7 @@ const OPENERS: string[] = [
 // ── Pool 2 · Tier Phrases (30 per tier = 90 + 15 mixed = 105 entries) ────────
 
 const TIER_PHRASES: Record<string, string[]> = {
-  "crowd-pleaser": [
+  "popular": [
     "you understand that accessibility is its own art form",
     "your collection speaks of warmth freely given",
     "you know that a scent that turns every head is no small feat",
@@ -117,7 +117,7 @@ const TIER_PHRASES: Record<string, string[]> = {
     "beauty doesn't need to be painful to be real — and your collection proves it",
     "your fragrance philosophy begins and ends with: does it make people smile?",
   ],
-  "intro-to-niche": [
+  "unique": [
     "you stand at the frontier of the familiar and the fascinatingly strange",
     "your collection straddles the threshold between mainstream beauty and artisan complexity",
     "you've begun the descent into the rabbit hole — and something tells us you won't surface soon",
@@ -149,7 +149,7 @@ const TIER_PHRASES: Record<string, string[]> = {
     "you've developed a connoisseur's eye in a beginner's body — and that's a gift",
     "your collection is evidence of a curious mind and a developing, exacting nose",
   ],
-  "polarizing-art": [
+  "idgf": [
     "you do not collect compliments — you collect truths",
     "you've moved beyond wearability into the realm of olfactory art",
     "your collection is a manifesto in glass",
