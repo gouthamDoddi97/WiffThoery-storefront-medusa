@@ -5,7 +5,7 @@ import TierShowcase from "@modules/home/components/tier-showcase"
 import Hero from "@modules/home/components/hero"
 import TierCards from "@modules/home/components/tier-cards"
 import BrandValues from "@modules/home/components/brand-values"
-import UGCGallery from "@modules/home/components/ugc-gallery"
+import FeaturedReviews from "@modules/home/components/featured-reviews"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
@@ -134,8 +134,8 @@ export default async function Home(props: {
       {/* Brand values trio */}
       <BrandValues />
 
-      {/* UGC Gallery */}
-      <UGCGallery />
+      {/* Featured Reviews */}
+      <FeaturedReviews />
     </>
   )
 }
