@@ -9,9 +9,9 @@ import SideMenu from "@modules/layout/components/side-menu"
 import { getCollectionTiers } from "@lib/data/collection-tier"
 
 const LEFT_LINKS = [
-  { label: "POPULAR", href: "/categories/popular" },
-  { label: "UNIQUE", href: "/categories/unique" },
-  { label: "IDGF", href: "/categories/idgf" },
+  { label: "POPULAR", href: "/categories/popular", accent: "#4FDBCC", num: "01" },
+  { label: "UNIQUE",  href: "/categories/unique",  accent: "#FFB547", num: "02" },
+  { label: "IDGF",   href: "/categories/idgf",    accent: "#FF6B5A", num: "03" },
 ]
 
 const RIGHT_LINKS = [
@@ -61,9 +61,22 @@ export default async function Nav() {
                 <LocalizedClientLink
                   key={link.href}
                   href={link.href}
-                  className="font-inter font-medium text-[11px] tracking-[0.18em] text-on-surface-variant hover:text-primary transition-colors duration-200"
+                  className="group flex flex-col gap-0.5 transition-opacity duration-200 hover:opacity-70"
                 >
-                  {link.label}
+                  {/* Tier number — sits above */}
+                  <span
+                    className="font-inter text-[7.5px] tracking-[0.2em] leading-none opacity-60"
+                    style={{ color: link.accent }}
+                  >
+                    {link.num}
+                  </span>
+                  {/* Label — bigger, full Garamond italic */}
+                  <span
+                    className="font-garamond italic text-[22px] leading-none"
+                    style={{ color: link.accent }}
+                  >
+                    {link.label}
+                  </span>
                 </LocalizedClientLink>
               ))}
             </div>

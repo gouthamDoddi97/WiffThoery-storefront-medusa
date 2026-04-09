@@ -324,59 +324,102 @@ function TierSlide({ tier }: { tier: TierItem }) {
         />
       ) : null}
 
-      {/* Dark overlay */}
+      {/* Dark overlay — lighter than before so the video breathes */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(110deg, rgba(10,14,26,0.94) 0%, rgba(10,14,26,0.78) 45%, rgba(10,14,26,0.30) 100%)",
+            "linear-gradient(110deg, rgba(10,14,26,0.82) 0%, rgba(10,14,26,0.55) 50%, rgba(10,14,26,0.08) 100%)",
         }}
       />
 
       {/* Ambient glow */}
       <div
-        className="absolute bottom-0 left-0 w-[700px] h-[700px] pointer-events-none"
+        className="absolute bottom-0 left-0 w-[900px] h-[900px] pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at bottom left, ${tier.accentColor}12 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse at bottom left, ${tier.accentColor}22 0%, transparent 65%)`,
         }}
       />
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-center">
         <div className="content-container">
-          <div className="flex flex-col gap-5 max-w-[640px]">
-            <span
-              className="font-inter text-[10px] tracking-[0.3em] uppercase"
-              style={{ color: tier.accentColor }}
-            >
-              {tier.number}
-            </span>
+          <div className="flex flex-col max-w-[560px]" style={{ gap: "1.4rem" }}>
 
+            {/* Eyebrow — thin accent rule + tier number */}
+            <div className="flex items-center gap-3">
+              <div
+                className="h-px w-7 shrink-0"
+                style={{ background: tier.accentColor }}
+              />
+              <span
+                className="font-inter text-[9px] tracking-[0.38em] uppercase"
+                style={{ color: tier.accentColor }}
+              >
+                {tier.number}
+              </span>
+            </div>
+
+            {/* Main heading — Garamond italic for luxury editorial feel */}
             <h2
-              className="font-grotesk font-bold leading-[0.88] tracking-[-0.04em] text-on-surface"
-              style={{ fontSize: "clamp(2.8rem, 7vw, 6rem)" }}
+              className="font-garamond italic text-on-surface leading-[0.9]"
+              style={{
+                fontSize: "clamp(3.8rem, 8.5vw, 8rem)",
+                fontWeight: 400,
+                letterSpacing: "-0.01em",
+              }}
             >
               {tier.name}
             </h2>
 
+            {/* Tagline — Garamond italic, accent color */}
             <p
-              className="font-inter text-lg small:text-xl italic"
-              style={{ color: tier.accentColor }}
+              className="font-garamond italic leading-snug"
+              style={{
+                color: tier.accentColor,
+                fontSize: "clamp(1.05rem, 1.8vw, 1.4rem)",
+                fontWeight: 400,
+              }}
             >
               {tier.tagline}
             </p>
 
-            <p className="font-inter text-sm small:text-base text-on-surface-variant leading-relaxed max-w-[460px]">
+            {/* Thin rule separator */}
+            <div
+              className="h-px w-40"
+              style={{ background: "rgba(255,255,255,0.10)" }}
+            />
+
+            {/* Description */}
+            <p className="font-inter text-sm small:text-[15px] text-on-surface-variant leading-relaxed max-w-[400px]">
               {tier.description}
             </p>
 
-            <div className="mt-2">
+            {/* Text-link CTA — line extends on hover */}
+            <div className="mt-1">
               <LocalizedClientLink href={tier.href}>
                 <button
-                  className="font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:opacity-90 inline-block"
-                  style={{ background: tier.accentColor, color: "#0A0E1A" }}
+                  className="group flex items-center gap-3 font-inter text-[11px] tracking-[0.22em] uppercase transition-all duration-300"
+                  style={{ color: tier.accentColor }}
                 >
-                  EXPLORE TIER
+                  <span
+                    className="block h-px transition-all duration-500 group-hover:w-10"
+                    style={{ background: tier.accentColor, width: "20px" }}
+                  />
+                  <span className="transition-all duration-300 group-hover:tracking-[0.28em]">
+                    Explore Tier
+                  </span>
+                  <svg
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </button>
               </LocalizedClientLink>
             </div>
@@ -388,7 +431,7 @@ function TierSlide({ tier }: { tier: TierItem }) {
       <div
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{
-          background: `linear-gradient(to right, transparent, ${tier.accentColor}60, transparent)`,
+          background: `linear-gradient(to right, transparent, ${tier.accentColor}50, transparent)`,
         }}
       />
     </div>

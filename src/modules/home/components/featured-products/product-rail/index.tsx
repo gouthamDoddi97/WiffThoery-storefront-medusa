@@ -1,9 +1,15 @@
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
-
+import { getProductPrice } from "@lib/util/get-product-price"
+import { getPerfumeDetails } from "@lib/data/perfume-details"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import ProductPreview from "@modules/products/components/product-preview"
-import ProductPreviewLarge from "@modules/products/components/product-preview/large"
+import CollectionCarousel from "../collection-carousel"
+
+const TIER_ACCENTS: Record<string, string> = {
+  popular: "#4FDBCC",
+  unique:  "#FFB547",
+  idgf:    "#FF6B5A",
+}
 
 export default async function ProductRail({
   collection,
@@ -18,7 +24,7 @@ export default async function ProductRail({
     regionId: region.id,
     queryParams: {
       collection_id: collection.id,
-      fields: "*variants.calculated_price",
+      fields: "*variants.calculated_price,+tags",
     },
   })
 
@@ -26,13 +32,37 @@ export default async function ProductRail({
     return null
   }
 
+  const accent = TIER_ACCENTS[collection.handle ?? ""] ?? "#C9A84C"
+
+  // Fetch perfume details for all products in parallel
+  const detailsList = await Promise.all(
+    pricedProducts.slice(0, 6).map((p) => getPerfumeDetails(p.id!))
+  )
+
+  const slides = pricedProducts.slice(0, 6).map((product, i) => {
+    const { cheapestPrice } = getProductPrice({ product })
+    return {
+      id: product.id!,
+      title: product.title!,
+      handle: product.handle!,
+      thumbnail: product.thumbnail ?? product.images?.[0]?.url ?? null,
+      tags: (product.tags ?? []).map((t) => ({ id: t.id!, value: t.value! })),
+      cheapestPrice,
+      scentStory: detailsList[i]?.scent_story ?? null,
+      accent,
+    }
+  })
+
   return (
     <div className="content-container py-16">
       {/* Rail header */}
       <div className="flex items-end justify-between mb-10">
         <div className="flex flex-col gap-1">
           <span className="eyebrow">FEATURED</span>
-          <h2 className="section-heading text-2xl small:text-3xl">
+          <h2
+            className="font-garamond italic font-normal text-2xl small:text-3xl text-on-surface"
+            style={{ letterSpacing: "-0.01em" }}
+          >
             {collection.title}
           </h2>
         </div>
@@ -48,27 +78,11 @@ export default async function ProductRail({
         </LocalizedClientLink>
       </div>
 
-      {/* Mobile: 2-col static grid */}
-      <div className="small:hidden">
-        <ul className="grid grid-cols-2 gap-[26px] bg-surface-variant/10">
-          {pricedProducts.slice(0, 4).map((product) => (
-            <li key={product.id} className="bg-surface-lowest">
-              <ProductPreview product={product} region={region} isFeatured />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Desktop: 4-col grid */}
-      <div className="hidden small:block">
-        <ul className="grid grid-cols-4 gap-x-8 items-start">
-          {pricedProducts.slice(0, 4).map((product, index) => (
-            <li key={product.id} >
-              <ProductPreviewLarge product={product} region={region} compact />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <CollectionCarousel
+        slides={slides}
+        collectionHandle={collection.handle ?? ""}
+        collectionTitle={collection.title ?? ""}
+      />
     </div>
   )
 }

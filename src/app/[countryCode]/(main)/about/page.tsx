@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import FadeIn from "@modules/common/components/fade-in"
 import { getSiteURL } from "@lib/util/env"
 
 export const metadata: Metadata = {
@@ -69,7 +70,7 @@ export default function AboutPage() {
           }}
         />
         <div className="content-container relative z-10 flex flex-col small:flex-row gap-16 items-center">
-          <div className="flex flex-col gap-6 flex-1 max-w-[580px]">
+          <FadeIn className="flex flex-col gap-6 flex-1 max-w-[580px]">
             <span className="eyebrow">OUR STORY</span>
               <h1 className="font-grotesk font-bold text-4xl small:text-6xl text-on-surface tracking-[-0.03em] leading-[0.95]">
                 I once gifted a perfume.
@@ -88,9 +89,9 @@ export default function AboutPage() {
               Born on India&apos;s eastern coast. Built for those ready to wear something real.
             </p>
             <div className="w-12 h-[2px] bg-primary" />
-          </div>
+          </FadeIn>
 
-          <div className="flex-shrink-0 w-full small:w-[400px] aspect-[4/5] overflow-hidden bg-surface-container">
+          <FadeIn delay={150} className="flex-shrink-0 w-full small:w-[400px] aspect-[4/5] overflow-hidden bg-surface-container">
             <video
               src="/aboutHero.webm"
               autoPlay
@@ -99,7 +100,7 @@ export default function AboutPage() {
               playsInline
               className="w-full h-full object-cover"
             />
-          </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -107,7 +108,7 @@ export default function AboutPage() {
       <section className="py-24" id="story">
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-start">
           {/* Text */}
-          <div className="flex flex-col gap-6">
+          <FadeIn className="flex flex-col gap-6">
             <span className="eyebrow">THE INDEPENDENT PATH</span>
             <h2 className="section-heading text-3xl">
               We didn't follow the playbook. There wasn't one worth following.
@@ -129,14 +130,16 @@ export default function AboutPage() {
                 We built the brand around that journey.
               </p>
             </div>
-          </div>
+          </FadeIn>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          <FadeIn delay={150}>
           <img
             src="/Vizag.jpg"
             alt="Vizag coastline"
             className="aspect-square w-full object-cover sticky top-24"
           />
+          </FadeIn>
         </div>
       </section>
 
@@ -150,35 +153,18 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 xsmall:grid-cols-2 gap-px bg-surface-variant/20">
             {[
-              {
-                label: "ART IS NON-NEGOTIABLE",
-                body: "Every label is an original piece of graphic art. The bottle you place on your shelf is a design object — not packaging. The art is the point.",
-              },
-              {
-                label: "RESPECT THE BEGINNER",
-                body: "Fragrance culture has too many gatekeepers. We write in plain language, price honestly, and meet you wherever you are on the journey.",
-              },
-              {
-                label: "EARN THE NEXT PURCHASE",
-                body: "We don't lock you in. No subscriptions, no bundles you didn't ask for. Each purchase should be good enough that you come back — on your terms.",
-              },
-              {
-                label: "BUILT, NOT POLISHED",
-                body: "We're an independent brand from Vizag, not a venture-backed fragrance house. What you see is real — the prices, the origins, the people behind it.",
-              },
-            ].map((card) => (
-              <div
-                key={card.label}
-                className="bg-surface-low px-8 py-10 flex flex-col gap-4"
-              >
+              { label: "ART IS NON-NEGOTIABLE", body: "Every label is an original piece of graphic art. The bottle you place on your shelf is a design object — not packaging. The art is the point." },
+              { label: "RESPECT THE BEGINNER", body: "Fragrance culture has too many gatekeepers. We write in plain language, price honestly, and meet you wherever you are on the journey." },
+              { label: "EARN THE NEXT PURCHASE", body: "We don't lock you in. No subscriptions, no bundles you didn't ask for. Each purchase should be good enough that you come back — on your terms." },
+              { label: "BUILT, NOT POLISHED", body: "We're an independent brand from Vizag, not a venture-backed fragrance house. What you see is real — the prices, the origins, the people behind it." },
+            ].map((card, i) => (
+              <FadeIn key={card.label} delay={i * 100}>
+              <div className="bg-surface-low px-8 py-10 flex flex-col gap-4 h-full">
                 <div className="w-1 h-8 bg-primary" />
-                <h3 className="font-grotesk font-bold text-sm tracking-[0.15em] uppercase text-on-surface">
-                  {card.label}
-                </h3>
-                <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
-                  {card.body}
-                </p>
+                <h3 className="font-grotesk font-bold text-sm tracking-[0.15em] uppercase text-on-surface">{card.label}</h3>
+                <p className="font-inter text-sm text-on-surface-variant leading-relaxed">{card.body}</p>
               </div>
+              </FadeIn>
             ))}
           </div>
         </div>
@@ -188,13 +174,15 @@ export default function AboutPage() {
       <section className="py-24 bg-surface-container" id="sourcing">
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          <FadeIn>
           <img
             src="/bayOfbengal.jpeg"
             alt="Bay of Bengal, Vizag"
             className="aspect-[16/10] w-full object-cover"
           />
+          </FadeIn>
 
-          <div className="flex flex-col gap-6">
+          <FadeIn delay={150} className="flex flex-col gap-6">
             <span className="eyebrow">WHERE WE'RE FROM</span>
             <h2 className="section-heading text-3xl">
               Crafted in Vizag, for the world.
@@ -210,14 +198,14 @@ export default function AboutPage() {
                 we're from.
               </p>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 5. The Pricing Truth ────────────────────────────────────────── */}
       <section className="py-24 bg-surface-lowest" id="pricing">
         <div className="content-container max-w-[800px]">
-          <div className="flex flex-col gap-6">
+          <FadeIn className="flex flex-col gap-6">
             <span className="eyebrow text-secondary">TRANSPARENCY</span>
             <h2 className="font-grotesk font-bold text-3xl small:text-4xl text-secondary tracking-[-0.02em] leading-tight">
               THE PRICING TRUTH
@@ -264,13 +252,13 @@ export default function AboutPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 6. Journey CTA ──────────────────────────────────────────────── */}
       <section className="bg-surface-low py-24">
-        <div className="content-container flex flex-col items-center text-center gap-8 max-w-[560px] mx-auto">
+        <FadeIn className="content-container flex flex-col items-center text-center gap-8 max-w-[560px] mx-auto">
           <h2 className="section-heading text-3xl small:text-4xl">
             Ready to find your signature scent?
           </h2>
@@ -285,7 +273,7 @@ export default function AboutPage() {
               <button className="btn-ghost">EXPLORE ALL FRAGRANCES</button>
             </LocalizedClientLink>
           </div>
-        </div>
+        </FadeIn>
       </section>
 
     </div>

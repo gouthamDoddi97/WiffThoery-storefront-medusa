@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { submitReview } from "@lib/data/reviews"
+import { useState, useRef } from "react"
+import { submitReview, uploadReviewImage } from "@lib/data/reviews"
 import type { ProductReview, ReviewStats } from "@lib/data/reviews"
 
 // ─── Star rating input ────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ function StarInput({
 
 // ─── Single review card ───────────────────────────────────────────────────────
 
-function ReviewCard({ review }: { review: ProductReview }) {
+export function ReviewCard({ review }: { review: ProductReview }) {
   const stars = Array.from({ length: 5 }, (_, i) => i + 1)
   const date = new Date(review.created_at).toLocaleDateString("en-IN", {
     year: "numeric",
@@ -72,6 +72,27 @@ function ReviewCard({ review }: { review: ProductReview }) {
       <p className="font-inter text-sm text-on-surface-variant leading-relaxed">
         {review.body}
       </p>
+      {review.image_urls && review.image_urls.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-1">
+          {review.image_urls.map((url, i) => (
+            <a
+              key={i}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-20 h-20 overflow-hidden bg-surface-low flex-shrink-0 border border-surface-variant/20 hover:border-primary/40 transition-colors"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt={`Review photo ${i + 1}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -94,6 +115,109 @@ function RatingBar({ label, count, total }: { label: string; count: number; tota
   )
 }
 
+// ─── Image upload input ───────────────────────────────────────────────────────
+
+function ImageUploadInput({
+  images,
+  onChange,
+}: {
+  images: string[]
+  onChange: (urls: string[]) => void
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState("")
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const remaining = 3 - images.length
+    if (remaining <= 0) return
+
+    setUploadError("")
+    setUploading(true)
+
+    const toUpload = Array.from(files).slice(0, remaining)
+    const newUrls: string[] = []
+
+    for (const file of toUpload) {
+      const fd = new FormData()
+      fd.append("file", file)
+      const result = await uploadReviewImage(fd)
+      if ("error" in result) {
+        setUploadError(result.error)
+        break
+      }
+      newUrls.push(result.url)
+    }
+
+    setUploading(false)
+    if (newUrls.length > 0) onChange([...images, ...newUrls])
+  }
+
+  const removeImage = (idx: number) => {
+    onChange(images.filter((_, i) => i !== idx))
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="font-inter text-[10px] tracking-[0.15em] uppercase text-on-surface-disabled">
+        Photos <span className="text-on-surface-disabled/60 normal-case">(optional, up to 3)</span>
+      </label>
+
+      <div className="flex flex-wrap gap-2">
+        {images.map((url, i) => (
+          <div key={i} className="relative w-16 h-16 bg-surface-low overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt="" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => removeImage(i)}
+              className="absolute top-0.5 right-0.5 w-4 h-4 bg-surface-lowest/80 text-on-surface flex items-center justify-center text-[10px] leading-none hover:bg-surface-lowest transition-colors"
+              aria-label="Remove photo"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+
+        {images.length < 3 && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="w-16 h-16 border border-dashed border-surface-variant/50 hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-on-surface-disabled hover:text-primary transition-colors disabled:opacity-50"
+          >
+            {uploading ? (
+              <span className="font-inter text-[9px]">…</span>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span className="font-inter text-[8px] tracking-[0.1em] uppercase">Add</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="sr-only"
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+
+      {uploadError && (
+        <p className="font-inter text-xs text-red-400">{uploadError}</p>
+      )}
+    </div>
+  )
+}
+
 // ─── Submission form ─────────────────────────────────────────────────────────
 
 function SubmitForm({ productId, onSubmitted }: { productId: string; onSubmitted: () => void }) {
@@ -102,6 +226,7 @@ function SubmitForm({ productId, onSubmitted }: { productId: string; onSubmitted
   const [email, setEmail] = useState("")
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState("")
@@ -117,6 +242,7 @@ function SubmitForm({ productId, onSubmitted }: { productId: string; onSubmitted
       rating,
       title: title || undefined,
       body,
+      image_urls: imageUrls.length > 0 ? imageUrls : undefined,
     })
 
     setSubmitting(false)
@@ -209,6 +335,8 @@ function SubmitForm({ productId, onSubmitted }: { productId: string; onSubmitted
           {body.length}/2000
         </span>
       </div>
+
+      <ImageUploadInput images={imageUrls} onChange={setImageUrls} />
 
       {error && (
         <p className="font-inter text-sm text-red-400">{error}</p>

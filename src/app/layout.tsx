@@ -130,7 +130,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable} dark`}
     >
       <body className="bg-surface-lowest text-on-surface">
-        <script
+<script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(sitewideSchema) }}
         />

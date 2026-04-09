@@ -6,6 +6,7 @@ import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import FadeIn from "@modules/common/components/fade-in"
 import { HttpTypes } from "@medusajs/types"
 import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tier"
 
@@ -183,7 +184,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
         )}
         <div className="absolute top-0 left-0 w-[500px] h-[500px] pointer-events-none" style={{ background: "radial-gradient(ellipse at top left, rgba(79,219,204,0.06) 0%, transparent 70%)" }} />
         <div className="content-container relative z-10">
-          <div className="flex flex-col gap-6 max-w-[700px]">
+          <FadeIn className="flex flex-col gap-6 max-w-[700px]">
           <div className="flex items-center gap-2">
             <LocalizedClientLink href="/" className="font-inter text-[10px] tracking-[0.15em] uppercase text-on-surface-disabled hover:text-on-surface-variant transition-colors">HOME</LocalizedClientLink>
             <span className="text-on-surface-disabled text-[10px]">/</span>
@@ -195,21 +196,21 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
           <p className="font-inter text-lg italic text-primary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
           <div className="w-16 h-[2px] bg-primary" />
-          </div>
+          </FadeIn>
         </div>
       </div>
       <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
+        <FadeIn className="flex items-center justify-between mb-10">
           <h2 className="section-heading text-xl">THE COLLECTION</h2>
           <RefinementList sortBy={sort} />
-        </div>
+        </FadeIn>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
           <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
       {meta.nextTier && (
         <div className="bg-surface-low py-16">
-          <div className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
+          <FadeIn className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
             <div className="flex flex-col gap-2">
               <span className="eyebrow">THE JOURNEY</span>
               <h3 className="section-heading text-2xl">{meta.nextTier.label}</h3>
@@ -218,7 +219,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
             <LocalizedClientLink href={meta.nextTier.href}>
               <button className="btn-ghost flex-shrink-0">{meta.nextTier.cta} →</button>
             </LocalizedClientLink>
-          </div>
+          </FadeIn>
         </div>
       )}
 
@@ -256,7 +257,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
           </>
         )}
         <div className="content-container relative z-10">
-          <div className="flex flex-col gap-6 max-w-[700px]">
+          <FadeIn className="flex flex-col gap-6 max-w-[700px]">
           <div className="flex items-center gap-2">
             <LocalizedClientLink href="/" className="font-inter text-[10px] tracking-[0.15em] uppercase text-on-surface-disabled hover:text-on-surface-variant transition-colors">HOME</LocalizedClientLink>
             <span className="text-on-surface-disabled text-[10px]">/</span>
@@ -268,25 +269,28 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
           <p className="font-inter text-lg italic text-tertiary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
           <div className="w-16 h-[2px] bg-tertiary" />
-          </div>
+          </FadeIn>
         </div>
       </div>
       <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
+        <FadeIn className="flex items-center justify-between mb-10">
           <h2 className="section-heading text-xl">THE COLLECTION</h2>
           <RefinementList sortBy={sort} />
-        </div>
+        </FadeIn>
         <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
           <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
+      <FadeIn>
       <div className="bg-surface-low py-16">
         <div className="content-container max-w-[600px]">
           <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface italic leading-[1.2] tracking-[-0.02em]">"I didn't know fragrance could feel like this."</p>
           <span className="block mt-4 font-inter text-xs tracking-[0.2em] uppercase text-on-surface-variant">— Whiff Theory Community</span>
         </div>
       </div>
+      </FadeIn>
       {meta.nextTier && (
+        <FadeIn>
         <div className="content-container py-16 flex flex-col small:flex-row items-center justify-between gap-8">
           <div className="flex flex-col gap-2">
             <span className="eyebrow">THE FINAL FRONTIER</span>
@@ -297,6 +301,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
             <button className="btn-primary flex-shrink-0">{meta.nextTier.cta} →</button>
           </LocalizedClientLink>
         </div>
+        </FadeIn>
       )}
     </div>
   )
@@ -338,14 +343,14 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
             <span className="text-on-surface-disabled text-[10px]">/</span>
             <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-secondary">IDGF</span>
           </div>
-          <div className="flex flex-col gap-6 max-w-[700px]">
+          <FadeIn className="flex flex-col gap-6 max-w-[700px]">
             <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-secondary">{meta.number}</span>
             <TierStepper activeIndex={2} />
             <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">{category.name}</h1>
             <p className="font-inter text-lg italic text-secondary">{meta.tagline}</p>
             <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
             <div className="w-16 h-[2px] bg-secondary" />
-          </div>
+          </FadeIn>
         </div>
       </div>
       <div className="content-container py-16">
@@ -357,6 +362,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
         </Suspense>
       </div>
+      <FadeIn>
       <div className="bg-surface-container py-16">
         <div className="content-container max-w-[640px]">
           <span className="eyebrow mb-4 block">THE CURATOR'S NOTE</span>
@@ -364,6 +370,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           <span className="block mt-6 font-inter text-xs tracking-[0.2em] uppercase text-on-surface-variant">— Founder, Whiff Theory</span>
         </div>
       </div>
+      </FadeIn>
     </div>
   )
 }
