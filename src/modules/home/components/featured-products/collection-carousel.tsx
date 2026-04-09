@@ -123,7 +123,7 @@ export default function CollectionCarousel({
       <div className="small:hidden relative z-10 flex flex-col">
 
         {/* Image — wide landscape crop */}
-        <div className="relative w-full aspect-[4/3] overflow-hidden" style={{ opacity: imageStyle.opacity, transition: imageStyle.transition }}>
+        <LocalizedClientLink href={`/products/${slide.handle}`} className="relative block w-full aspect-[4/3] overflow-hidden" style={{ opacity: imageStyle.opacity, transition: imageStyle.transition }}>
           {slide.thumbnail ? (
             <img
               src={slide.thumbnail}
@@ -139,7 +139,7 @@ export default function CollectionCarousel({
           />
           <div className="absolute top-3 left-3 w-6 h-6 border-t border-l pointer-events-none" style={{ borderColor: `${slide.accent}70` }} />
           <div className="absolute bottom-3 right-3 w-6 h-6 border-b border-r pointer-events-none" style={{ borderColor: `${slide.accent}70` }} />
-        </div>
+        </LocalizedClientLink>
 
         {/* Content */}
         <div className="flex flex-col gap-4 pt-6 pb-4">
@@ -278,7 +278,7 @@ export default function CollectionCarousel({
         </div>
 
         {/* Right — tall image */}
-        <div className="relative overflow-hidden" style={imageStyle}>
+        <LocalizedClientLink href={`/products/${slide.handle}`} className="relative block overflow-hidden" style={imageStyle}>
           {slide.thumbnail ? (
             <img
               src={slide.thumbnail}
@@ -294,7 +294,7 @@ export default function CollectionCarousel({
           />
           <div className="absolute top-5 left-5 w-8 h-8 border-t border-l pointer-events-none" style={{ borderColor: `${slide.accent}60`, marginLeft: "20%" }} />
           <div className="absolute bottom-5 right-5 w-8 h-8 border-b border-r pointer-events-none" style={{ borderColor: `${slide.accent}60` }} />
-        </div>
+        </LocalizedClientLink>
       </div>
 
       {/* Progress bar */}
