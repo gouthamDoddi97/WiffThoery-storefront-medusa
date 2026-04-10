@@ -2,7 +2,8 @@ import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Thumbnail from "../thumbnail"
+import PlaceholderImage from "@modules/common/icons/placeholder-image"
+import Image from "next/image"
 import CardActions from "./card-actions"
 import PreviewPrice from "./price"
 
@@ -26,79 +27,99 @@ export default async function ProductPreview({
 
   return (
     <div className="group flex flex-col" data-testid="product-wrapper">
-      {/* Image — fixed aspect ratio, icons overlaid */}
-      <LocalizedClientLink href={`/products/${product.handle}`} className="block">
-        <div className="relative overflow-hidden aspect-[3/4] bg-surface-container transition-all duration-300 group-hover:opacity-90">
-          <Thumbnail
-            thumbnail={product.thumbnail}
-            images={product.images}
-            size="full"
-            isFeatured={isFeatured}
+
+      {/* ── Image ── */}
+      <LocalizedClientLink
+        href={`/products/${product.handle}`}
+        className="block relative overflow-hidden aspect-[3/4] bg-surface-container"
+      >
+        {product.thumbnail ? (
+          <Image
+            src={product.thumbnail}
+            alt={product.title}
+            fill
+            className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            quality={70}
+            draggable={false}
           />
-          {/* Action icons — absolute top-right */}
-          <div className="absolute top-2 right-2 flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <CardActions
-              product={product}
-              price={cheapestPrice?.calculated_price}
-              colorVariant="default"
-              overlay
-            />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <PlaceholderImage size={64} />
           </div>
+        )}
+
+        {/* Bottom gradient + EXPLORE reveal */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-white/90">EXPLORE</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="square" opacity="0.9">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </div>
+
+        {/* Collection badge — top-left */}
+        {product.collection?.title && (
+          <div className="absolute top-3 left-3">
+            <span className="font-inter text-[8px] tracking-[0.22em] uppercase text-primary bg-surface-lowest/75 px-2 py-0.5 backdrop-blur-sm">
+              {product.collection.title}
+            </span>
+          </div>
+        )}
+
+        {/* Wishlist / cart actions — top-right, hover only */}
+        <div className="absolute top-2 right-2 flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <CardActions
+            product={product}
+            price={cheapestPrice?.calculated_price}
+            colorVariant="default"
+            overlay
+          />
         </div>
       </LocalizedClientLink>
 
-      {/* Character tags — 2-row centred on mobile, single-row left-aligned on desktop */}
-      <div className="flex flex-wrap justify-center items-center content-center gap-1.5 px-4 py-2 min-h-[4.25rem] max-h-[4.25rem] small:flex-nowrap small:justify-start small:content-start small:h-9 small:min-h-0 small:max-h-none bg-surface-low border-t border-white/[0.04] overflow-hidden">
-        {product.tags && product.tags.length > 0
-          ? product.tags.slice(0, 6).map((tag) => (
-              product.tags!.length <= 2
-                ? <span key={tag.id} className="w-full flex justify-center small:w-auto small:justify-start">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-sm border border-white/10 font-inter text-[9px] tracking-[0.2em] uppercase text-on-surface-disabled whitespace-nowrap">
-                      {tag.value}
-                    </span>
-                  </span>
-                : <span
-                    key={tag.id}
-                    className="inline-flex items-center px-2 py-0.5 rounded-sm border border-white/10 font-inter text-[9px] tracking-[0.2em] uppercase text-on-surface-disabled whitespace-nowrap"
-                  >
-                    {tag.value}
-                  </span>
-            ))
-          : null
-        }
-      </div>
+      {/* ── Info ── */}
+      <LocalizedClientLink
+        href={`/products/${product.handle}`}
+        className="flex flex-col gap-1 pt-3 pb-1"
+      >
+        {/* Tags — single truncated row */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="flex gap-2 overflow-hidden h-3.5">
+            {product.tags.slice(0, 5).map((tag) => (
+              <span
+                key={tag.id}
+                className="font-inter text-[8px] tracking-[0.18em] uppercase text-on-surface-disabled whitespace-nowrap"
+              >
+                {tag.value}
+              </span>
+            ))}
+          </div>
+        )}
 
-      {/* Info row */}
-      <div className="flex items-start p-4 bg-surface-low group-hover:bg-surface-container transition-colors duration-300 flex-1">
-        {/* Text content — also a link */}
-        <LocalizedClientLink
-          href={`/products/${product.handle}`}
-          className="flex-1 min-w-0 flex flex-col gap-1.5"
+        {/* Title */}
+        <h3
+          className="font-garamond italic font-normal text-on-surface line-clamp-2 leading-[1.15] mt-0.5"
+          style={{ fontSize: "clamp(1rem, 2.4vw, 1.15rem)" }}
+          data-testid="product-title"
         >
-          {/* Collection badge */}
-          <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-primary h-4 truncate">
-            {product.collection?.title ?? ""}
-          </span>
+          {product.title}
+        </h3>
 
-          {/* Title — always 2 lines reserved */}
-          <h3
-            className="font-grotesk font-semibold text-on-surface text-sm tracking-[-0.01em] leading-snug line-clamp-2 min-h-[2.5rem]"
-            data-testid="product-title"
-          >
-            {product.title}
-          </h3>
-
-          {/* Notes — always 2 lines reserved */}
-          <p className="font-inter text-[10px] tracking-[0.18em] uppercase text-on-surface-disabled leading-relaxed line-clamp-2 min-h-[2rem]">
+        {/* Note caption */}
+        {caption && (
+          <p className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled line-clamp-1 leading-relaxed">
             {caption}
           </p>
+        )}
 
-          {/* Price */}
-          <div className="mt-0.5">
-            {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
-          </div>
-        </LocalizedClientLink>
-      </div>
+        {/* Price */}
+        <div className="mt-1.5">
+          {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+        </div>
+      </LocalizedClientLink>
+
     </div>
   )
 }

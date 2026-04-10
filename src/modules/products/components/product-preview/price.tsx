@@ -23,6 +23,7 @@ export default async function PreviewPrice({ price }: { price: VariantPrice }) {
         }
         data-testid="price"
       >
+        <span className="font-inter font-normal text-[10px] tracking-[0.1em] uppercase text-on-surface-disabled mr-1">From</span>
         {price.calculated_price}
       </span>
     </div>

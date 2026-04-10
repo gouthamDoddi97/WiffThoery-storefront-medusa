@@ -9,9 +9,9 @@ export default async function Footer() {
     <footer className="bg-surface-lowest border-t border-surface-variant/30 w-full">
       <div className="content-container pt-20 pb-10">
         {/* Main grid */}
-        <div className="grid grid-cols-1 gap-12 small:grid-cols-4 small:gap-8 mb-16">
+        <div className="flex flex-col gap-10 small:grid small:grid-cols-4 small:gap-8 mb-16">
 
-          {/* Column 1 — Brand */}
+          {/* Row 1 (mobile) / Col 1 (desktop) — Brand */}
           <FadeIn delay={0}>
             <div className="flex flex-col gap-6 small:col-span-1">
               <LocalizedClientLink
@@ -51,48 +51,70 @@ export default async function Footer() {
             </div>
           </FadeIn>
 
-          {/* Column 2 — The Ladder */}
+          {/* Row 2 (mobile) / Col 2 (desktop) — The Ladder: breadcrumb row */}
           <FadeIn delay={120}>
             <div className="flex flex-col gap-4">
               <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
                 THE LADDER
               </span>
-              <ul className="flex flex-col gap-3">
-                <li><LocalizedClientLink href="/categories/popular" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Popular</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/categories/unique" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Unique</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/categories/idgf" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">IDGF</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/store" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Archive</LocalizedClientLink></li>
-              </ul>
+              {/* Tier breadcrumb — horizontal on all sizes */}
+              <div className="flex items-center gap-0">
+                {[
+                  { label: "POPULAR", href: "/categories/popular", color: "#4FDBCC" },
+                  { label: "UNIQUE",  href: "/categories/unique",  color: "#FFB547" },
+                  { label: "IDGF",    href: "/categories/idgf",    color: "#FF6B5A" },
+                ].map((tier, i) => (
+                  <span key={tier.href} className="flex items-center">
+                    {i > 0 && (
+                      <svg className="mx-2 text-on-surface-disabled flex-shrink-0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    )}
+                    <LocalizedClientLink
+                      href={tier.href}
+                      className="font-inter text-[10px] tracking-[0.18em] uppercase font-semibold transition-opacity duration-200 hover:opacity-70"
+                      style={{ color: tier.color }}
+                    >
+                      {tier.label}
+                    </LocalizedClientLink>
+                  </span>
+                ))}
+              </div>
             </div>
           </FadeIn>
 
-          {/* Column 3 — Company */}
-          <FadeIn delay={240}>
-            <div className="flex flex-col gap-4">
-              <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
-                COMPANY
-              </span>
-              <ul className="flex flex-col gap-3">
-                <li><LocalizedClientLink href="/about" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Our Story</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/journey" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Scent Journal</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/account" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Account</LocalizedClientLink></li>
-              </ul>
-            </div>
-          </FadeIn>
+          {/* Row 3 (mobile) — Company + Transparency side by side */}
+          <div className="grid grid-cols-2 gap-6 small:contents">
 
-          {/* Column 4 — Transparency */}
-          <FadeIn delay={360}>
-            <div className="flex flex-col gap-4">
-              <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
-                TRANSPARENCY
-              </span>
-              <ul className="flex flex-col gap-3">
-                <li><LocalizedClientLink href="/about#pricing" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Pricing Philosophy</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/about#sourcing" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Ingredient Sourcing</LocalizedClientLink></li>
-                <li><LocalizedClientLink href="/account/orders" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Returns</LocalizedClientLink></li>
-              </ul>
-            </div>
-          </FadeIn>
+            {/* Company */}
+            <FadeIn delay={240}>
+              <div className="flex flex-col gap-4">
+                <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                  COMPANY
+                </span>
+                <ul className="flex flex-col gap-3">
+                  <li><LocalizedClientLink href="/about" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Our Story</LocalizedClientLink></li>
+                  <li><LocalizedClientLink href="/journey" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Scent Journal</LocalizedClientLink></li>
+                  <li><LocalizedClientLink href="/account" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Account</LocalizedClientLink></li>
+                </ul>
+              </div>
+            </FadeIn>
+
+            {/* Transparency */}
+            <FadeIn delay={360}>
+              <div className="flex flex-col gap-4">
+                <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                  TRANSPARENCY
+                </span>
+                <ul className="flex flex-col gap-3">
+                  <li><LocalizedClientLink href="/about#pricing" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Pricing Philosophy</LocalizedClientLink></li>
+                  <li><LocalizedClientLink href="/about#sourcing" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Ingredient Sourcing</LocalizedClientLink></li>
+                  <li><LocalizedClientLink href="/account/orders" className="font-inter text-sm text-on-surface-variant hover:text-primary transition-colors duration-200">Returns</LocalizedClientLink></li>
+                </ul>
+              </div>
+            </FadeIn>
+
+          </div>
 
         </div>
 

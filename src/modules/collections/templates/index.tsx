@@ -1,9 +1,9 @@
 import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
-import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import PaginatedProducts from "@modules/store/templates/paginated-products"
+import FilteredPaginatedProducts from "@modules/store/templates/filtered-paginated-products"
+import CollectionSidebar from "@modules/collections/components/collection-sidebar"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import {
@@ -22,6 +22,12 @@ type ResolvedMeta = {
   accentColor: string
   accentClass: string
   nextTier?: { label: string; href: string; cta: string }
+}
+
+type FilterProps = {
+  longevity: string[]
+  sillage: string[]
+  notes: string[]
 }
 
 function resolveAccentClass(color: string | null | undefined): string {
@@ -59,7 +65,7 @@ function buildMeta(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Static fallbacks (used when admin hasn't populated the data yet)
+// Static fallbacks
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FALLBACK_META: Record<string, ResolvedMeta> = {
@@ -100,7 +106,58 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Generic fallback template
+// Shared products section (sidebar + grid)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ProductsSection({
+  collection,
+  sort,
+  page,
+  countryCode,
+  layout,
+  filters,
+}: {
+  collection: HttpTypes.StoreCollection
+  sort: SortOptions
+  page: number
+  countryCode: string
+  layout: "default" | "wave" | "s-curve" | "scattered"
+  filters: FilterProps
+}) {
+  return (
+    <div className="content-container py-16">
+      <h2 className="section-heading text-xl mb-10">THE COLLECTION</h2>
+      <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">
+        <CollectionSidebar
+          sortBy={sort}
+          longevity={filters.longevity}
+          sillage={filters.sillage}
+          notes={filters.notes}
+        />
+        <div className="flex-1 min-w-0">
+          <Suspense
+            key={`${sort}-${filters.longevity.join()}-${filters.sillage.join()}-${filters.notes.join()}`}
+            fallback={<SkeletonProductGrid numberOfProducts={collection.products?.length} />}
+          >
+            <FilteredPaginatedProducts
+              sortBy={sort}
+              page={page}
+              collectionId={collection.id}
+              countryCode={countryCode}
+              layout={layout}
+              longevity={filters.longevity}
+              sillage={filters.sillage}
+              notes={filters.notes}
+            />
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Generic collection template
 // ─────────────────────────────────────────────────────────────────────────────
 
 function GenericCollectionTemplate({
@@ -108,15 +165,16 @@ function GenericCollectionTemplate({
   sort,
   page,
   countryCode,
+  filters,
 }: {
   collection: HttpTypes.StoreCollection
   sort: SortOptions
   page: number
   countryCode: string
+  filters: FilterProps
 }) {
   return (
     <div className="bg-surface-lowest">
-      {/* Header */}
       <div className="bg-surface-low py-16">
         <div className="content-container">
           <h1 className="section-heading text-4xl small:text-5xl">
@@ -124,20 +182,14 @@ function GenericCollectionTemplate({
           </h1>
         </div>
       </div>
-      {/* Products */}
-      <div className="content-container py-12 flex flex-col small:flex-row small:items-start gap-8">
-        <RefinementList sortBy={sort} />
-        <div className="flex-1">
-          <Suspense fallback={<SkeletonProductGrid numberOfProducts={collection.products?.length} />}>
-            <PaginatedProducts
-              sortBy={sort}
-              page={page}
-              collectionId={collection.id}
-              countryCode={countryCode}
-            />
-          </Suspense>
-        </div>
-      </div>
+      <ProductsSection
+        collection={collection}
+        sort={sort}
+        page={page}
+        countryCode={countryCode}
+        layout="default"
+        filters={filters}
+      />
     </div>
   )
 }
@@ -152,20 +204,19 @@ function CrowdPleasersTemplate({
   page,
   countryCode,
   meta,
+  filters,
 }: {
   collection: HttpTypes.StoreCollection
   sort: SortOptions
   page: number
   countryCode: string
   meta: ResolvedMeta
+  filters: FilterProps
 }) {
   return (
     <div className="bg-surface-lowest">
       {/* Hero */}
-      <div
-        className="relative py-24 small:py-32 bg-surface-low overflow-hidden"
-      >
-        {/* Teal ambient glow */}
+      <div className="relative py-24 small:py-32 bg-surface-low overflow-hidden">
         <div
           className="absolute top-0 left-0 w-[500px] h-[500px] pointer-events-none"
           style={{
@@ -174,7 +225,6 @@ function CrowdPleasersTemplate({
           }}
         />
         <div className="content-container relative z-10 flex flex-col gap-6 max-w-[700px]">
-          {/* Tier badge */}
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-primary">
             {meta.number}
           </span>
@@ -185,27 +235,19 @@ function CrowdPleasersTemplate({
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">
             {meta.description}
           </p>
-          {/* Accent bar */}
           <div className="w-16 h-[2px] bg-primary" />
         </div>
       </div>
 
       {/* Products */}
-      <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </div>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={collection.products?.length} />}>
-          <PaginatedProducts
-            sortBy={sort}
-            page={page}
-            collectionId={collection.id}
-            countryCode={countryCode}
-            layout="wave"
-          />
-        </Suspense>
-      </div>
+      <ProductsSection
+        collection={collection}
+        sort={sort}
+        page={page}
+        countryCode={countryCode}
+        layout="wave"
+        filters={filters}
+      />
 
       {/* Next tier CTA */}
       {meta.nextTier && (
@@ -238,19 +280,19 @@ function IntroToNicheTemplate({
   page,
   countryCode,
   meta,
+  filters,
 }: {
   collection: HttpTypes.StoreCollection
   sort: SortOptions
   page: number
   countryCode: string
   meta: ResolvedMeta
+  filters: FilterProps
 }) {
-
   return (
     <div className="bg-surface-lowest">
       {/* Hero */}
       <div className="relative py-24 small:py-32 overflow-hidden bg-surface-low">
-        {/* Gold/amber ambient glow */}
         <div
           className="absolute top-0 right-0 w-[600px] h-[600px] pointer-events-none"
           style={{
@@ -271,7 +313,11 @@ function IntroToNicheTemplate({
             ].map((step, i) => (
               <div key={step.label} className="flex items-center gap-3">
                 {i > 0 && (
-                  <div className={`w-8 h-px ${step.done || step.active ? "bg-tertiary" : "bg-surface-variant"}`} />
+                  <div
+                    className={`w-8 h-px ${
+                      step.done || step.active ? "bg-tertiary" : "bg-surface-variant"
+                    }`}
+                  />
                 )}
                 <div className="flex flex-col items-center gap-1">
                   <div
@@ -307,21 +353,14 @@ function IntroToNicheTemplate({
       </div>
 
       {/* Products */}
-      <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </div>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={collection.products?.length} />}>
-          <PaginatedProducts
-            sortBy={sort}
-            page={page}
-            collectionId={collection.id}
-            countryCode={countryCode}
-            layout="s-curve"
-          />
-        </Suspense>
-      </div>
+      <ProductsSection
+        collection={collection}
+        sort={sort}
+        page={page}
+        countryCode={countryCode}
+        layout="s-curve"
+        filters={filters}
+      />
 
       {/* Pull quote */}
       <div className="bg-surface-low py-16">
@@ -364,19 +403,19 @@ function PolarizingArtTemplate({
   page,
   countryCode,
   meta,
+  filters,
 }: {
   collection: HttpTypes.StoreCollection
   sort: SortOptions
   page: number
   countryCode: string
   meta: ResolvedMeta
+  filters: FilterProps
 }) {
-
   return (
     <div className="bg-surface-lowest">
       {/* Hero — dramatic dark */}
       <div className="relative py-28 small:py-40 bg-surface-container overflow-hidden">
-        {/* Coral glow */}
         <div
           className="absolute bottom-0 right-0 w-[700px] h-[700px] pointer-events-none"
           style={{
@@ -416,21 +455,14 @@ function PolarizingArtTemplate({
       </div>
 
       {/* Products */}
-      <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </div>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={collection.products?.length} />}>
-          <PaginatedProducts
-            sortBy={sort}
-            page={page}
-            collectionId={collection.id}
-            countryCode={countryCode}
-            layout="scattered"
-          />
-        </Suspense>
-      </div>
+      <ProductsSection
+        collection={collection}
+        sort={sort}
+        page={page}
+        countryCode={countryCode}
+        layout="scattered"
+        filters={filters}
+      />
 
       {/* Curator's Note */}
       <div className="bg-surface-container py-16">
@@ -457,15 +489,22 @@ export default async function CollectionTemplate({
   collection,
   page,
   countryCode,
+  longevity = [],
+  sillage = [],
+  notes = [],
 }: {
   sortBy?: SortOptions
   collection: HttpTypes.StoreCollection
   page?: string
   countryCode: string
+  longevity?: string[]
+  sillage?: string[]
+  notes?: string[]
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
   const handle = collection.handle ?? ""
+  const filters: FilterProps = { longevity, sillage, notes }
 
   const tierMap = await getCollectionTiers()
 
@@ -477,6 +516,7 @@ export default async function CollectionTemplate({
         page={pageNumber}
         countryCode={countryCode}
         meta={buildMeta(tierMap[handle], FALLBACK_META["popular"])}
+        filters={filters}
       />
     )
   }
@@ -489,6 +529,7 @@ export default async function CollectionTemplate({
         page={pageNumber}
         countryCode={countryCode}
         meta={buildMeta(tierMap[handle], FALLBACK_META["unique"])}
+        filters={filters}
       />
     )
   }
@@ -501,6 +542,7 @@ export default async function CollectionTemplate({
         page={pageNumber}
         countryCode={countryCode}
         meta={buildMeta(tierMap[handle], FALLBACK_META["idgf"])}
+        filters={filters}
       />
     )
   }
@@ -511,6 +553,7 @@ export default async function CollectionTemplate({
       sort={sort}
       page={pageNumber}
       countryCode={countryCode}
+      filters={filters}
     />
   )
 }

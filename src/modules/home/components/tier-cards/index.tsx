@@ -67,89 +67,91 @@ export default async function TierCards() {
         </FadeIn>
 
         {/* Cards grid */}
-        <div className="grid grid-cols-1 small:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 small:grid-cols-3 gap-4 small:gap-6">
           {tiers.map((tier, index) => (
             <FadeIn key={tier.handle} delay={index * 120}>
               <LocalizedClientLink href={tier.href}>
                 <div
-                  className="relative bg-surface-low overflow-hidden flex flex-col group transition-all duration-500 hover:bg-surface-container"
-                  style={{ minHeight: "300px" }}
+                  className="relative overflow-hidden flex flex-col group transition-all duration-500"
+                  style={{ minHeight: "420px", background: "#0F111A" }}
                 >
-                  {/* Top accent line — replaces the left bar */}
+                  {/* Thick top accent bar */}
                   <div
-                    className="absolute top-0 left-0 right-0 h-[1px] z-20 transition-all duration-500"
+                    className="absolute top-0 left-0 right-0 h-[2px] z-20"
                     style={{ backgroundColor: tier.accentColor }}
                   />
 
-                  {/* Category image — full bleed with cinematic gradient */}
+                  {/* Background image */}
                   {tier.imageUrl && (
                     <>
                       <img
                         src={tier.imageUrl}
                         alt=""
                         aria-hidden
-                        className="absolute inset-0 h-full w-full object-cover object-center opacity-25 group-hover:opacity-45 transition-opacity duration-700"
+                        className="absolute inset-0 h-full w-full object-cover object-center opacity-40 group-hover:opacity-60 transition-opacity duration-700"
                       />
-                      {/* Bottom-to-top gradient — content stays legible, image shows on top half */}
+                      {/* Bottom-to-top gradient — keeps copy readable */}
                       <div
                         className="absolute inset-0 pointer-events-none z-10"
                         style={{
                           background:
-                            "linear-gradient(to top, rgba(23,27,40,0.98) 0%, rgba(23,27,40,0.85) 40%, rgba(23,27,40,0.50) 70%, rgba(23,27,40,0.20) 100%)",
+                            "linear-gradient(to top, rgba(10,13,20,0.98) 0%, rgba(10,13,20,0.88) 35%, rgba(10,13,20,0.55) 65%, rgba(10,13,20,0.15) 100%)",
                         }}
                       />
                     </>
                   )}
 
+                  {/* Ambient glow on hover */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"
+                    style={{ background: `radial-gradient(ellipse at bottom left, ${tier.accentColor}18 0%, transparent 65%)` }}
+                  />
+
                   {/* Content */}
-                  <div className="relative z-10 p-8 py-10 flex flex-col gap-4 flex-1">
+                  <div className="relative z-20 p-7 small:p-8 flex flex-col flex-1">
 
                     <span
-                      className="font-inter text-[9px] tracking-[0.32em] uppercase"
+                      className="font-inter text-[9px] tracking-[0.35em] uppercase mb-auto pb-8"
                       style={{ color: tier.accentColor }}
                     >
                       {tier.number}
                     </span>
 
-                    {/* Name — Garamond italic for luxury */}
-                    <h3
-                      className="font-garamond italic font-normal text-2xl text-on-surface leading-tight"
-                      style={{ letterSpacing: "-0.01em" }}
-                    >
-                      {tier.name}
-                    </h3>
-
-                    <p
-                      className="font-garamond italic text-base"
-                      style={{ color: tier.accentColor }}
-                    >
-                      {tier.tagline}
-                    </p>
-
-                    {/* Thin rule */}
-                    <div className="h-px w-12" style={{ background: "rgba(255,255,255,0.08)" }} />
-
-                    <p className="font-inter text-sm text-on-surface-variant leading-relaxed flex-1">
-                      {tier.description}
-                    </p>
-
-                    {/* CTA */}
-                    <div
-                      className="flex items-center gap-2.5 font-inter text-[10px] tracking-[0.2em] uppercase transition-all duration-300 mt-1 group-hover:gap-3"
-                      style={{ color: tier.accentColor }}
-                    >
-                      <span
-                        className="block h-px transition-all duration-500 group-hover:w-6"
-                        style={{ background: tier.accentColor, width: "14px" }}
-                      />
-                      <span>Explore</span>
-                      <svg
-                        width="11" height="11" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" strokeWidth="1.5"
-                        className="transition-transform duration-300 group-hover:translate-x-1"
+                    {/* Name — big, bold, display size */}
+                    <div>
+                      <h3
+                        className="font-grotesk font-bold text-on-surface leading-[0.88] tracking-[-0.03em]"
+                        style={{ fontSize: "clamp(2.4rem, 5vw, 3.2rem)" }}
                       >
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
+                        {tier.name}
+                      </h3>
+
+                      <p
+                        className="font-inter text-sm italic mt-3"
+                        style={{ color: tier.accentColor }}
+                      >
+                        {tier.tagline}
+                      </p>
+
+                      <p className="font-inter text-sm text-on-surface-variant leading-relaxed mt-3 line-clamp-3">
+                        {tier.description}
+                      </p>
+
+                      {/* CTA */}
+                      <div className="mt-6">
+                        <span
+                          className="inline-flex items-center gap-2.5 font-inter text-[10px] tracking-[0.22em] uppercase px-4 py-2.5 transition-all duration-300"
+                          style={{
+                            border: `1px solid ${tier.accentColor}60`,
+                            color: tier.accentColor,
+                          }}
+                        >
+                          EXPLORE
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

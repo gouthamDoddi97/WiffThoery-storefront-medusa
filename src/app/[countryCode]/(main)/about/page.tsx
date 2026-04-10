@@ -109,25 +109,38 @@ export default function AboutPage() {
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-start">
           {/* Text */}
           <FadeIn className="flex flex-col gap-6">
-            <span className="eyebrow">THE INDEPENDENT PATH</span>
+            <span className="eyebrow">HOW IT STARTED</span>
             <h2 className="section-heading text-3xl">
-              We didn't follow the playbook. There wasn't one worth following.
+              Dubai gave us a feeling we couldn't stop chasing.
             </h2>
             <div className="flex flex-col gap-4 font-inter text-sm text-on-surface-variant leading-relaxed">
               <p>
-                Whiff Theory started in Vizag with a single conviction: that Indians deserved access to
-                genuine extrait-concentration fragrances without paying luxury-import premiums or settling
-                for celebrity-endorsed mediocrity.
+                We were working in Dubai — two people from Vizag, far from home. The city is saturated
+                with fragrance. Every souk, every lobby, every passing stranger carries a scent that
+                stops you mid-step. We fell in love with it completely.
               </p>
               <p>
-                No investor meetings. No distribution deals. No compromises. Just a team obsessed with
-                olfactory art, transparent pricing, and building something that actually means something
-                to the people who wear it. <em>Also, a few months of paychecks and credit card debt.</em>
+                It started as gifting. We'd pick up bottles from the oud traders and perfumers in old
+                Dubai, bring them back for friends and family in Vizag, watch their faces light up at
+                something they'd never encountered before. That reaction became addictive.
               </p>
               <p>
-                The three-tier ladder — Popular, Unique, IDGF — isn't a
-                marketing segmentation exercise. It's a philosophy. Your nose grows. Your taste evolves.
-                We built the brand around that journey.
+                Somewhere in that loop — gift, reaction, repeat — a question formed:
+                why should this feeling be reserved for people who visit Dubai? Why couldn't Vizag have it?
+              </p>
+              <p>
+                So we started testing. Hundreds of fragrance oils sourced from Dubai — raw materials,
+                finished accords, oud bases, floral extracts. We spent months evaluating each one.
+                Mornings before work. Weekends. Savings poured into sample orders we'd never recoup if
+                we walked away. We didn't walk away.
+              </p>
+              <p>
+                Every fragrance in the catalogue exists because it survived that process — blind
+                evaluations, wear tests, longevity checks, projection assessments. Only the ones that
+                genuinely moved us made the cut. Nothing was picked for commercial value alone.
+              </p>
+              <p>
+                That's the origin. Not a business plan. A feeling that needed a home.
               </p>
             </div>
           </FadeIn>
@@ -135,7 +148,7 @@ export default function AboutPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <FadeIn delay={150}>
           <img
-            src="/Vizag.jpg"
+            src="/perfumery.webp"
             alt="Vizag coastline"
             className="aspect-square w-full object-cover sticky top-24"
           />
@@ -176,7 +189,7 @@ export default function AboutPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <FadeIn>
           <img
-            src="/bayOfbengal.jpeg"
+            src="/Vizag.jpg"
             alt="Bay of Bengal, Vizag"
             className="aspect-[16/10] w-full object-cover"
           />

@@ -2,9 +2,9 @@ import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
-import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import PaginatedProducts from "@modules/store/templates/paginated-products"
+import FilteredPaginatedProducts from "@modules/store/templates/filtered-paginated-products"
+import CollectionSidebar from "@modules/collections/components/collection-sidebar"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import FadeIn from "@modules/common/components/fade-in"
 import { HttpTypes } from "@medusajs/types"
@@ -144,6 +144,12 @@ function TierStepper({ activeIndex }: { activeIndex: 0 | 1 | 2 }) {
 // Shared props
 // ─────────────────────────────────────────────────────────────────────────────
 
+type FilterProps = {
+  longevity: string[]
+  sillage: string[]
+  notes: string[]
+}
+
 type TierProps = {
   category: HttpTypes.StoreProductCategory
   sort: SortOptions
@@ -151,13 +157,65 @@ type TierProps = {
   countryCode: string
   meta: ResolvedMeta
   heroImage: string | null
+  filters: FilterProps
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared products section (sidebar + grid)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CategoryProductsSection({
+  category,
+  sort,
+  page,
+  countryCode,
+  layout,
+  filters,
+}: {
+  category: HttpTypes.StoreProductCategory
+  sort: SortOptions
+  page: number
+  countryCode: string
+  layout: "default" | "wave" | "s-curve" | "scattered"
+  filters: FilterProps
+}) {
+  return (
+    <div className="content-container py-16">
+      <h2 className="section-heading text-xl mb-10">THE COLLECTION</h2>
+      <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">
+        <CollectionSidebar
+          sortBy={sort}
+          longevity={filters.longevity}
+          sillage={filters.sillage}
+          notes={filters.notes}
+        />
+        <div className="flex-1 min-w-0">
+          <Suspense
+            key={`${sort}-${filters.longevity.join()}-${filters.sillage.join()}-${filters.notes.join()}`}
+            fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}
+          >
+            <FilteredPaginatedProducts
+              sortBy={sort}
+              page={page}
+              categoryId={category.id}
+              countryCode={countryCode}
+              layout={layout}
+              longevity={filters.longevity}
+              sillage={filters.sillage}
+              notes={filters.notes}
+            />
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tier 01 — Crowd Pleaser
 // ─────────────────────────────────────────────────────────────────────────────
 
-function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
+function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroImage, filters }: TierProps) {
   return (
     <div className="bg-surface-lowest">
       <div className="relative py-24 small:py-32 bg-surface-low overflow-hidden min-h-[300px] small:min-h-0">
@@ -170,12 +228,10 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
               className="absolute inset-0 h-full w-full object-cover object-center"
               style={{ opacity: 0.75 }}
             />
-            {/* Mobile: light-touch overlay so image shows through */}
             <div
               className="absolute inset-0 block small:hidden"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
-            {/* Desktop: horizontal gradient — image shows on right */}
             <div
               className="absolute inset-0 hidden small:block"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)" }}
@@ -199,15 +255,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
           </FadeIn>
         </div>
       </div>
-      <div className="content-container py-16">
-        <FadeIn className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </FadeIn>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
-        </Suspense>
-      </div>
+      <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       {meta.nextTier && (
         <div className="bg-surface-low py-16">
           <FadeIn className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
@@ -231,7 +279,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
 // Tier 02 — Intro to Niche
 // ─────────────────────────────────────────────────────────────────────────────
 
-function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
+function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroImage, filters }: TierProps) {
   return (
     <div className="bg-surface-lowest">
       <div className="relative py-24 small:py-32 overflow-hidden bg-surface-low min-h-[300px] small:min-h-0">
@@ -244,12 +292,10 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
               className="absolute inset-0 h-full w-full object-cover object-center"
               style={{ opacity: 0.75 }}
             />
-            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
-            {/* Desktop: horizontal gradient */}
             <div
               className="absolute inset-0 hidden small:block"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.96) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.55) 68%, rgba(15,19,28,0.18) 100%)" }}
@@ -272,15 +318,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
           </FadeIn>
         </div>
       </div>
-      <div className="content-container py-16">
-        <FadeIn className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </FadeIn>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
-        </Suspense>
-      </div>
+      <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       <FadeIn>
       <div className="bg-surface-low py-16">
         <div className="content-container max-w-[600px]">
@@ -311,7 +349,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
 // Tier 03 — Polarizing Art
 // ─────────────────────────────────────────────────────────────────────────────
 
-function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroImage }: TierProps) {
+function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroImage, filters }: TierProps) {
   return (
     <div className="bg-surface-lowest">
       <div className="relative py-28 small:py-40 bg-surface-container overflow-hidden min-h-[300px] small:min-h-0">
@@ -324,12 +362,10 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
               className="absolute inset-0 h-full w-full object-cover object-center"
               style={{ opacity: 0.75 }}
             />
-            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
-            {/* Desktop: horizontal gradient */}
             <div
               className="absolute inset-0 hidden small:block"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.97) 0%, rgba(15,19,28,0.86) 44%, rgba(15,19,28,0.52) 68%, rgba(15,19,28,0.15) 100%)" }}
@@ -353,15 +389,7 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           </FadeIn>
         </div>
       </div>
-      <div className="content-container py-16">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="section-heading text-xl">THE COLLECTION</h2>
-          <RefinementList sortBy={sort} />
-        </div>
-        <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length} />}>
-          <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} layout="s-curve" />
-        </Suspense>
-      </div>
+      <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       <FadeIn>
       <div className="bg-surface-container py-16">
         <div className="content-container max-w-[640px]">
@@ -385,6 +413,7 @@ function GenericCategoryTemplate({
   page,
   countryCode,
   heroImage,
+  filters,
 }: Omit<TierProps, "meta">) {
   return (
     <div className="bg-surface-lowest">
@@ -398,12 +427,10 @@ function GenericCategoryTemplate({
               className="absolute inset-0 h-full w-full object-cover object-center"
               style={{ opacity: 0.75 }}
             />
-            {/* Mobile: light-touch overlay */}
             <div
               className="absolute inset-0 block small:hidden"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.80) 0%, rgba(15,19,28,0.70) 24%, rgba(15,19,28,0.60) 40%, rgba(15,19,28,0.50) 100%)" }}
             />
-            {/* Desktop: horizontal gradient */}
             <div
               className="absolute inset-0 hidden small:block"
               style={{ background: "linear-gradient(90deg, rgba(15,19,28,0.95) 0%, rgba(15,19,28,0.82) 44%, rgba(15,19,28,0.48) 68%, rgba(15,19,28,0.12) 100%)" }}
@@ -420,14 +447,7 @@ function GenericCategoryTemplate({
           {category.description && <p className="font-inter text-sm text-on-surface-variant mt-4 max-w-[600px]">{category.description}</p>}
         </div>
       </div>
-      <div className="content-container py-12 flex flex-col small:flex-row small:items-start gap-8">
-        <RefinementList sortBy={sort} />
-        <div className="flex-1">
-          <Suspense fallback={<SkeletonProductGrid numberOfProducts={category.products?.length ?? 8} />}>
-            <PaginatedProducts sortBy={sort} page={page} categoryId={category.id} countryCode={countryCode} />
-          </Suspense>
-        </div>
-      </div>
+      <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="default" filters={filters} />
     </div>
   )
 }
@@ -441,30 +461,37 @@ export default async function CategoryTemplate({
   sortBy,
   page,
   countryCode,
+  longevity = [],
+  sillage = [],
+  notes = [],
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  longevity?: string[]
+  sillage?: string[]
+  notes?: string[]
 }) {
   if (!category || !countryCode) notFound()
 
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
   const handle = category.handle ?? ""
+  const filters: FilterProps = { longevity, sillage, notes }
 
   const tierMap = await getCollectionTiers()
   const heroImage = resolveCategoryImage(category, tierMap[handle])
 
   if (handle === "popular") {
-    return <CrowdPleaserTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["popular"])} heroImage={heroImage} />
+    return <CrowdPleaserTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["popular"])} heroImage={heroImage} filters={filters} />
   }
   if (handle === "unique") {
-    return <IntroToNicheTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["unique"])} heroImage={heroImage} />
+    return <IntroToNicheTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["unique"])} heroImage={heroImage} filters={filters} />
   }
   if (handle === "idgf") {
-    return <PolarizingArtTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["idgf"])} heroImage={heroImage} />
+    return <PolarizingArtTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} meta={buildMeta(tierMap[handle], FALLBACK_META["idgf"])} heroImage={heroImage} filters={filters} />
   }
 
-  return <GenericCategoryTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} heroImage={heroImage} />
+  return <GenericCategoryTemplate category={category} sort={sort} page={pageNumber} countryCode={countryCode} heroImage={heroImage} filters={filters} />
 }

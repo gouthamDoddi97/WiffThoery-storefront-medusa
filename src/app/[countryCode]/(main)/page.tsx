@@ -1,7 +1,8 @@
 import { Metadata } from "next"
 
 import FeaturedProducts from "@modules/home/components/featured-products"
-import TierShowcase from "@modules/home/components/tier-showcase"
+// import TierShowcase from "@modules/home/components/tier-showcase"
+import HeroShowcase from "@modules/home/components/hero-showcase"
 import Hero from "@modules/home/components/hero"
 import TierCards from "@modules/home/components/tier-cards"
 import BrandValues from "@modules/home/components/brand-values"
@@ -107,29 +108,24 @@ export default async function Home(props: {
         }}
       />
 
-      {/* Fixed overlay showcase — sits above the page, dismisses to reveal content below */}
-      <TierShowcase />
+      {/* Fixed overlay hero — sits above the page, dismisses to reveal content below */}
+      <HeroShowcase />
 
       <OrderAlertBanner />
 
-      {/* Hero */}
-      <Hero />
-
-      {/* Tier cards */}
-      <TierCards />
-
-      {/* Art Objects — featured products per collection */}
-      <section className="bg-surface-lowest py-4" aria-label="Art Objects">
-        <div className="content-container pt-16 pb-4">
-          {/* <div className="flex flex-col gap-2">
-            <span className="eyebrow">CURRENTLY FEATURED</span>
-            <h2 className="section-heading text-2xl small:text-3xl">ART OBJECTS</h2>
-          </div> */}
-        </div>
+      <section className="bg-surface-lowest">
         <ul className="flex flex-col divide-y divide-surface-variant/20">
           <FeaturedProducts collections={collections} region={region} />
         </ul>
       </section>
+
+      {/* Hero */}
+      {/* <Hero /> */}
+
+      {/* Tier cards */}
+      <TierCards />
+
+
 
       {/* Brand values trio */}
       <BrandValues />

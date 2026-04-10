@@ -20,6 +20,7 @@ function InlinePrice({ price }: { price: VariantPrice }) {
             : "font-grotesk font-semibold text-sm text-primary"
         }
       >
+        <span className="font-inter font-normal text-[10px] tracking-[0.1em] uppercase text-on-surface-disabled mr-1">From</span>
         {price.calculated_price}
       </span>
     </div>

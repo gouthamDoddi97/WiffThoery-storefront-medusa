@@ -13,6 +13,9 @@ type Props = {
   searchParams: Promise<{
     page?: string
     sortBy?: SortOptions
+    longevity?: string
+    sillage?: string
+    notes?: string
   }>
 }
 
@@ -92,7 +95,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function CollectionPage(props: Props) {
   const searchParams = await props.searchParams
   const params = await props.params
-  const { sortBy, page } = searchParams
+  const { sortBy, page, longevity: longevityStr, sillage: sillageStr, notes: notesStr } = searchParams
+
+  const longevity = longevityStr ? longevityStr.split(",").filter(Boolean) : []
+  const sillage = sillageStr ? sillageStr.split(",").filter(Boolean) : []
+  const notes = notesStr ? notesStr.split(",").filter(Boolean) : []
 
   const collection = await getCollectionByHandle(params.handle).then(
     (collection: StoreCollection) => collection
@@ -135,6 +142,9 @@ export default async function CollectionPage(props: Props) {
         page={page}
         sortBy={sortBy}
         countryCode={params.countryCode}
+        longevity={longevity}
+        sillage={sillage}
+        notes={notes}
       />
     </>
   )
