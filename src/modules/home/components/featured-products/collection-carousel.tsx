@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useParams, useRouter } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { VariantPrice } from "types/global"
 
@@ -120,6 +121,9 @@ export default function CollectionCarousel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const router = useRouter()
+  const { countryCode } = useParams()
+
   const slide = slides[current]
 
   const textStyle = {
@@ -137,8 +141,9 @@ export default function CollectionCarousel({
 
   return (
     <div
-      className="relative overflow-hidden bg-surface-lowest"
+      className="relative overflow-hidden bg-surface-lowest cursor-pointer"
       style={{ minHeight: "80svh" }}
+      onClick={() => router.push(`/${countryCode}/products/${slide.handle}`)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => { touchStartX.current = e.targetTouches[0].clientX }}
@@ -177,6 +182,7 @@ export default function CollectionCarousel({
               {collectionTitle}
             </h2>
           </div>
+          <span onClick={(e) => e.stopPropagation()}>
           <LocalizedClientLink
             href={`/collections/${collectionHandle}`}
             className="font-inter text-xs tracking-[0.15em] uppercase text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center gap-2"
@@ -187,6 +193,7 @@ export default function CollectionCarousel({
               <polyline points="12 5 19 12 12 19"/>
             </svg>
           </LocalizedClientLink>
+          </span>
         </div>
 
         {/* ── MOBILE layout ── */}
@@ -229,6 +236,7 @@ export default function CollectionCarousel({
           </div>
 
           <div className="flex items-center justify-between mt-6 mb-6" style={staggerDelay(5)}>
+            <span onClick={(e) => e.stopPropagation()}>
             <LocalizedClientLink
               href={`/products/${slide.handle}`}
               className="group flex items-center gap-2 font-inter text-[10px] tracking-[0.22em] uppercase"
@@ -240,11 +248,12 @@ export default function CollectionCarousel({
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </LocalizedClientLink>
+            </span>
             <div className="flex items-center gap-2">
-              <button onClick={goPrev} aria-label="Previous" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               </button>
-              <button onClick={goNext} aria-label="Next" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
@@ -292,7 +301,8 @@ export default function CollectionCarousel({
             </div>
 
             <div className="flex items-center gap-6 mb-12" style={staggerDelay(5)}>
-              <LocalizedClientLink
+              <span onClick={(e) => e.stopPropagation()}>
+            <LocalizedClientLink
                 href={`/products/${slide.handle}`}
                 className="group flex items-center gap-2.5 font-inter text-[10px] tracking-[0.22em] uppercase transition-opacity duration-200 hover:opacity-70"
                 style={{ color: slide.accent }}
@@ -303,13 +313,14 @@ export default function CollectionCarousel({
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </LocalizedClientLink>
+            </span>
             </div>
 
             <div className="flex items-center gap-3">
-              <button onClick={goPrev} aria-label="Previous" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               </button>
-              <button onClick={goNext} aria-label="Next" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
@@ -319,7 +330,7 @@ export default function CollectionCarousel({
         {/* Progress bar */}
         <div className="flex items-center mb-6 gap-3 small:gap-4 pb-8 small:pb-12">
           {slides.map((s, i) => (
-            <button key={s.id} onClick={() => goTo(i)} className="flex flex-col gap-1.5 flex-1 text-left" aria-label={`Go to ${s.title}`}>
+            <button key={s.id} onClick={(e) => { e.stopPropagation(); goTo(i) }} className="flex flex-col gap-1.5 flex-1 text-left" aria-label={`Go to ${s.title}`}>
               <div className="h-px w-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
                 <div
                   className="h-full"
