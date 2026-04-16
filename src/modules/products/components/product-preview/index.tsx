@@ -1,11 +1,11 @@
 import { getPerfumeDetails } from "@lib/data/perfume-details"
-import { getProductPrice } from "@lib/util/get-product-price"
+import { getPricesForVariant, getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
 import Image from "next/image"
 import CardActions from "./card-actions"
-import PreviewPrice from "./price"
+import PreviewPrice, { VariantPriceList } from "./price"
 
 export default async function ProductPreview({
   product,
@@ -18,6 +18,20 @@ export default async function ProductPreview({
 }) {
   const { cheapestPrice } = getProductPrice({ product })
   const details = await getPerfumeDetails(product.id)
+
+  const rawVariants = (product.variants ?? []).filter((v: any) => !!v.calculated_price)
+  const isSingleVariant = rawVariants.length === 1
+
+  const variantPrices = rawVariants
+    .sort((a: any, b: any) => a.calculated_price.calculated_amount - b.calculated_price.calculated_amount)
+    .flatMap((v: any) => {
+      const price = getPricesForVariant(v)
+      if (!price) return []
+      const rawSize = v.options?.[0]?.value ?? v.title ?? ""
+      const isDefault = !rawSize || /default/i.test(rawSize)
+      const size = isDefault && isSingleVariant ? "50ml" : rawSize
+      return [{ size, price }]
+    })
 
   const allNotes = [details?.top_notes, details?.middle_notes, details?.base_notes]
     .filter(Boolean)
@@ -116,7 +130,10 @@ export default async function ProductPreview({
 
         {/* Price */}
         <div className="mt-1.5">
-          {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+          {variantPrices.length > 0
+            ? <VariantPriceList variantPrices={variantPrices} />
+            : cheapestPrice && <PreviewPrice price={cheapestPrice} />
+          }
         </div>
       </LocalizedClientLink>
 

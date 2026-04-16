@@ -1,22 +1,26 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 
 type ImageCarouselProps = {
   images: { url: string; alt: string }[]
+  /** When provided, the carousel is controlled externally */
+  activeIndex?: number
+  onActiveChange?: (index: number) => void
 }
 
-export default function ImageCarousel({ images }: ImageCarouselProps) {
-  const [active, setActive] = useState(0)
+export default function ImageCarousel({ images, activeIndex: controlledActive, onActiveChange }: ImageCarouselProps) {
+  const [internalActive, setInternalActive] = useState(0)
+  const isControlled = controlledActive !== undefined
+  const active = isControlled ? controlledActive! : internalActive
 
-  const prev = useCallback(
-    () => setActive((i) => (i - 1 + images.length) % images.length),
-    [images.length]
-  )
-  const next = useCallback(
-    () => setActive((i) => (i + 1) % images.length),
-    [images.length]
-  )
+  const setActive = (i: number) => {
+    if (!isControlled) setInternalActive(i)
+    onActiveChange?.(i)
+  }
+
+  const prev = () => setActive((active - 1 + images.length) % images.length)
+  const next = () => setActive((active + 1) % images.length)
 
   if (images.length === 0) return null
 

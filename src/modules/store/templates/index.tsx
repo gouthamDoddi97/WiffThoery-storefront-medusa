@@ -4,8 +4,10 @@ import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-g
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import FilteredPaginatedProducts from "./filtered-paginated-products"
 import CollectionSidebar from "@modules/collections/components/collection-sidebar"
+import { getActiveOffers } from "@lib/data/offers"
+import OffersPanel from "@modules/home/components/home-tabs/offers-panel"
 
-const StoreTemplate = ({
+const StoreTemplate = async ({
   sortBy,
   page,
   countryCode,
@@ -23,6 +25,8 @@ const StoreTemplate = ({
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
+  const sets = await getActiveOffers()
+
   return (
     <div className="bg-surface-lowest">
       <div className="bg-surface-low py-16">
@@ -38,6 +42,8 @@ const StoreTemplate = ({
           </p>
         </div>
       </div>
+
+      {sets.length > 0 && <OffersPanel sets={sets} />}
 
       <div className="content-container py-16">
         <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">

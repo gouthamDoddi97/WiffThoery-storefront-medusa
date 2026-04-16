@@ -1,9 +1,9 @@
 import { getPerfumeDetails } from "@lib/data/perfume-details"
-import { getProductPrice } from "@lib/util/get-product-price"
+import { getPricesForVariant, getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CardActions from "./card-actions"
-import PreviewPrice from "./price"
+import PreviewPrice, { VariantPriceList } from "./price"
 
 export default async function ProductPreviewHorizontal({
   product,
@@ -16,6 +16,20 @@ export default async function ProductPreviewHorizontal({
 }) {
   const { cheapestPrice } = getProductPrice({ product })
   const details = await getPerfumeDetails(product.id)
+
+  const rawVariants = (product.variants ?? []).filter((v: any) => !!v.calculated_price)
+  const isSingleVariant = rawVariants.length === 1
+
+  const variantPrices = rawVariants
+    .sort((a: any, b: any) => a.calculated_price.calculated_amount - b.calculated_price.calculated_amount)
+    .flatMap((v: any) => {
+      const price = getPricesForVariant(v)
+      if (!price) return []
+      const rawSize = v.options?.[0]?.value ?? v.title ?? ""
+      const isDefault = !rawSize || /default/i.test(rawSize)
+      const size = isDefault && isSingleVariant ? "50ml" : rawSize
+      return [{ size, price }]
+    })
 
   // Combine all note categories into a single dot-separated line (mobile)
   const allNotes = [details?.top_notes, details?.middle_notes, details?.base_notes]
@@ -144,11 +158,13 @@ export default async function ProductPreviewHorizontal({
 
         {/* Content aligns with info column, using same horizontal padding as infoBlock */}
         <div className="flex-1 flex items-center gap-8 px-10 small:px-14">
-          {cheapestPrice && (
+          {variantPrices.length > 0 ? (
+            <VariantPriceList variantPrices={variantPrices} priceTextClass="text-base" />
+          ) : cheapestPrice ? (
             <div className="font-grotesk font-semibold text-xl text-on-surface">
               <PreviewPrice price={cheapestPrice} />
             </div>
-          )}
+          ) : null}
           <CardActions
             product={product}
             price={cheapestPrice?.calculated_price}

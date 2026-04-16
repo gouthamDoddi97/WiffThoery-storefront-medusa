@@ -8,6 +8,8 @@ import TierCards from "@modules/home/components/tier-cards"
 import BrandValues from "@modules/home/components/brand-values"
 import FeaturedReviews from "@modules/home/components/featured-reviews"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
+import HomeOffersSection from "@modules/home/components/home-offers-section"
+import HomeNewArrivalsSection from "@modules/home/components/home-new-arrivals-section"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import { getSiteURL } from "@lib/util/env"
@@ -113,19 +115,14 @@ export default async function Home(props: {
 
       <OrderAlertBanner />
 
-      <section className="bg-surface-lowest">
-        <ul className="flex flex-col divide-y divide-surface-variant/20">
-          <FeaturedProducts collections={collections} region={region} />
-        </ul>
-      </section>
-
-      {/* Hero */}
-      {/* <Hero /> */}
+      {/* Offers carousel — shown first, before tier cards */}
+      <HomeOffersSection />
 
       {/* Tier cards */}
       <TierCards />
 
-
+      {/* New Arrivals carousel — shown after the three tiers */}
+      <HomeNewArrivalsSection region={region} countryCode={countryCode} />
 
       {/* Brand values trio */}
       <BrandValues />

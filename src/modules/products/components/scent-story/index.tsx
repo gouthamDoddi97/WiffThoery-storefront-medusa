@@ -507,6 +507,32 @@ export default function ScentStory({
             </div>
           )}
 
+          {/* Scroll hint — lives in the z-20 overlay so it's always on top */}
+          <div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+            style={{
+              opacity: scrollProgress < 0.04 ? 1 : 0,
+              transition: "opacity 0.5s ease",
+            }}
+          >
+            <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-white/60">
+              Scroll
+            </span>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"
+              style={{ animation: "scrollHintBounce 1.4s ease-in-out infinite" }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            <style>{`
+              @keyframes scrollHintBounce {
+                0%, 100% { transform: translateY(0); opacity: 0.55; }
+                50%       { transform: translateY(6px); opacity: 1; }
+              }
+            `}</style>
+          </div>
+
           {scentStory && (
             <div
               className="absolute inset-x-0 top-[73%] small:top-[76%] flex justify-center px-4 transition-opacity duration-300"

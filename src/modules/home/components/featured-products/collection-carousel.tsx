@@ -54,7 +54,6 @@ export default function CollectionCarousel({
   const [current, setCurrent] = useState(0)
   const [transitioning, setTransitioning] = useState(false)
   const [direction, setDirection] = useState<"next" | "prev">("next")
-  const [progress, setProgress] = useState(0)
   const [paused, setPaused] = useState(false)
 
   // Refs so interval callbacks always read the latest values without needing to restart
@@ -74,12 +73,10 @@ export default function CollectionCarousel({
   const goTo = useCallback(
     (index: number, dir?: "next" | "prev") => {
       if (transitioningRef.current || index === currentRef.current) return
-      // Reset the elapsed counter so the progress bar starts fresh on every navigation
       elapsedRef.current = 0
       setDirection(dir ?? (index > currentRef.current ? "next" : "prev"))
       setTransitioning(true)
       transitioningRef.current = true
-      setProgress(0)
       setTimeout(() => {
         setCurrent(index)
         currentRef.current = index
@@ -106,7 +103,6 @@ export default function CollectionCarousel({
     progressRef.current = setInterval(() => {
       if (pausedRef.current) return
       elapsedRef.current += 50
-      setProgress(Math.min((elapsedRef.current / SLIDE_DURATION) * 100, 100))
       if (elapsedRef.current >= SLIDE_DURATION) {
         elapsedRef.current = 0
         if (!transitioningRef.current) {
@@ -328,24 +324,36 @@ export default function CollectionCarousel({
         </div>
 
         {/* Progress bar */}
-        <div className="flex items-center mb-6 gap-3 small:gap-4 pb-8 small:pb-12">
-          {slides.map((s, i) => (
-            <button key={s.id} onClick={(e) => { e.stopPropagation(); goTo(i) }} className="flex flex-col gap-1.5 flex-1 text-left" aria-label={`Go to ${s.title}`}>
-              <div className="h-px w-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
-                <div
-                  className="h-full"
-                  style={{
-                    width: i === current ? `${progress}%` : i < current ? "100%" : "0%",
-                    backgroundColor: i <= current ? slide.accent : undefined,
-                  }}
-                />
-              </div>
-              <span className={`font-inter text-[8px] tracking-[0.14em] uppercase truncate transition-colors duration-300 ${i === current ? "text-on-surface-variant" : "text-on-surface-disabled"}`}>
-                {s.title}
-              </span>
-            </button>
-          ))}
-        </div>
+        <>
+          <style>{`@keyframes _collectionProgress { from { width: 0% } to { width: 100% } }`}</style>
+          <div className="flex items-center mb-6 gap-3 small:gap-4 pb-8 small:pb-12">
+            {slides.map((s, i) => (
+              <button key={s.id} onClick={(e) => { e.stopPropagation(); goTo(i) }} className="flex flex-col gap-1.5 flex-1 text-left" aria-label={`Go to ${s.title}`}>
+                <div className="h-px w-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
+                  <div
+                    key={i === current ? `a${current}` : `p${i}`}
+                    className="h-full"
+                    style={
+                      i === current
+                        ? {
+                            animationName: "_collectionProgress",
+                            animationDuration: `${SLIDE_DURATION}ms`,
+                            animationTimingFunction: "linear",
+                            animationFillMode: "forwards",
+                            animationPlayState: paused ? "paused" : "running",
+                            backgroundColor: slide.accent,
+                          }
+                        : { width: i < current ? "100%" : "0%", backgroundColor: i < current ? slide.accent : undefined }
+                    }
+                  />
+                </div>
+                <span className={`font-inter text-[8px] tracking-[0.14em] uppercase truncate transition-colors duration-300 ${i === current ? "text-on-surface-variant" : "text-on-surface-disabled"}`}>
+                  {s.title}
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
       </div>
     </div>
   )
