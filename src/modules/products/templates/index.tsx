@@ -133,11 +133,15 @@ const ProductTemplate = async ({
     perfume?.scene_image_3 ?? images[2]?.url ?? undefined,
   ]
   const sceneUrlSet = new Set(sceneImages.filter(Boolean) as string[])
-  const carouselImages = images.filter((img) => !sceneUrlSet.has(img.url ?? ""))
 
-  // Classify images by filename substring, sorted numerically (1, 2, 3 … first)
-  const regularImgs = images
-    .filter((img) => !/art|bg/i.test(img.url ?? ""))
+  // Carousel = everything that isn't a scene image or a bg image
+  const bottleImages = images
+    .filter((img) => {
+      if (!img.url) return false
+      if (sceneUrlSet.has(img.url)) return false
+      if (/\bbg\b/i.test(decodeURIComponent(img.url.split("/").pop() ?? ""))) return false
+      return true
+    })
     .sort((a, b) => {
       const num = (url: string) => {
         const match = url.split("/").pop()?.match(/^(\d+)/)
@@ -179,12 +183,13 @@ const ProductTemplate = async ({
               {/* Left: bottle images carousel */}
               <div className="small:sticky small:top-8">
                 <VariantImageCarousel
-                  allImages={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
+                  allImages={bottleImages.map((img) => ({
                     id: img.id ?? "",
                     url: img.url ?? "",
                     alt: product.title ?? "",
                   }))}
                   variants={(product.variants ?? []) as any}
+                  sceneUrls={Array.from(sceneUrlSet)}
                 />
               </div>
               {/* Right: blueprint content */}

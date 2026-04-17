@@ -21,7 +21,7 @@ export default async function SetDetailTemplate({
   const region = await getRegion(countryCode)
 
   // Fetch full product data for each item in the set (with variant prices)
-  const uniqueProductIds = [...new Set(set.items.map((i) => i.product_id))]
+  const uniqueProductIds = Array.from(new Set(set.items.map((i) => i.product_id)))
 
   const [productsResult, perfumeDetailsList] = await Promise.all([
     region
@@ -31,7 +31,8 @@ export default async function SetDetailTemplate({
             id: uniqueProductIds as string[],
             region_id: region.id,
             limit: uniqueProductIds.length,
-            fields: "*variants.calculated_price,*variants.images",
+            // No custom fields — use listProducts default which already includes
+            // *variants.calculated_price, *variants.images and product.images
           },
         })
       : null,
@@ -46,6 +47,14 @@ export default async function SetDetailTemplate({
     const detailsIndex = uniqueProductIds.indexOf(item.product_id)
     const details = detailsIndex >= 0 ? perfumeDetailsList[detailsIndex] : null
 
+    // Scene URLs from perfume details — these are used in the parallax, not the carousel
+    const sceneUrls = new Set(
+      [details?.scene_image_1, details?.scene_image_2, details?.scene_image_3]
+        .filter(Boolean) as string[]
+    )
+    const isBg = (url: string) =>
+      /\bbg\b/i.test(decodeURIComponent(url.split("/").pop() ?? ""))
+
     // Find the exact variant's price and variant-specific images
     let variantPrice: string | null = null
     let variantImages: { id: string; url: string }[] = []
@@ -53,12 +62,13 @@ export default async function SetDetailTemplate({
       const variant = product.variants?.find((v) => v.id === item.variant_id)
       const prices = getPricesForVariant(variant)
       if (prices?.calculated_price) variantPrice = prices.calculated_price
-      // Use images assigned to this variant; fallback to product images
+
+      // Use variant.images directly — filter out scene URLs and bg images
       const vImgs = (variant as any)?.images as { id: string; url: string }[] | null
       if (vImgs && vImgs.length > 0) {
         variantImages = vImgs
-      } else if (product.images && product.images.length > 0) {
-        variantImages = product.images.map((img) => ({ id: img.id ?? "", url: img.url ?? "" }))
+          .filter((img) => img.url && !sceneUrls.has(img.url) && !isBg(img.url))
+          .map((img) => ({ id: img.id, url: img.url }))
       }
     }
 

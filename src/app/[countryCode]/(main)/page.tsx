@@ -116,7 +116,7 @@ export default async function Home(props: {
       <OrderAlertBanner />
 
       {/* Offers carousel — shown first, before tier cards */}
-      <HomeOffersSection />
+      <HomeOffersSection countryCode={countryCode} />
 
       {/* Tier cards */}
       <TierCards />

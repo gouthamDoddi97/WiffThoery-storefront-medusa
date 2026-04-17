@@ -149,12 +149,12 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
           {/* Product thumbnails — side by side */}
           <div className="grid gap-2 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(thumbs.length, 2)}, 1fr)`, ...stagger(0) }}>
             {thumbs.slice(0, 4).map((src, i) => (
-              <div key={i} className="aspect-[2/3] overflow-hidden bg-surface-container">
+              <div key={i} className="aspect-[2/3] overflow-hidden bg-transparent">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={src!}
                   alt={set.items[i]?.product_title ?? ""}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-contain object-center"
                 />
               </div>
             ))}
@@ -323,12 +323,12 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
           {/* Right: product thumbnails side-by-side */}
           <div className="flex-1 flex items-center gap-3 py-10" style={stagger(1)}>
             {thumbs.slice(0, 4).map((src, i) => (
-              <div key={i} className="flex-1 h-full max-h-[380px] overflow-hidden bg-surface-container">
+              <div key={i} className="flex-1 h-full max-h-[380px] overflow-hidden bg-transparent">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={src!}
                   alt={set.items[i]?.product_title ?? ""}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-contain object-center"
                 />
               </div>
             ))}

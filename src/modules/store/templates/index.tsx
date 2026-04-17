@@ -5,6 +5,7 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import FilteredPaginatedProducts from "./filtered-paginated-products"
 import CollectionSidebar from "@modules/collections/components/collection-sidebar"
 import { getActiveOffers } from "@lib/data/offers"
+import { enrichSetThumbnails } from "@lib/data/enrich-set-thumbnails"
 import OffersPanel from "@modules/home/components/home-tabs/offers-panel"
 
 const StoreTemplate = async ({
@@ -25,7 +26,8 @@ const StoreTemplate = async ({
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
-  const sets = await getActiveOffers()
+  const rawSets = await getActiveOffers()
+  const sets = rawSets.length > 0 ? await enrichSetThumbnails(rawSets, countryCode) : rawSets
 
   return (
     <div className="bg-surface-lowest">
