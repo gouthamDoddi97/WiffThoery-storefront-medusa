@@ -31,7 +31,7 @@ export default async function SetDetailTemplate({
             id: uniqueProductIds as string[],
             region_id: region.id,
             limit: uniqueProductIds.length,
-            fields: "*variants.calculated_price",
+            fields: "*variants.calculated_price,*variants.images",
           },
         })
       : null,
@@ -46,15 +46,23 @@ export default async function SetDetailTemplate({
     const detailsIndex = uniqueProductIds.indexOf(item.product_id)
     const details = detailsIndex >= 0 ? perfumeDetailsList[detailsIndex] : null
 
-    // Find the exact variant's price
+    // Find the exact variant's price and variant-specific images
     let variantPrice: string | null = null
+    let variantImages: { id: string; url: string }[] = []
     if (product) {
       const variant = product.variants?.find((v) => v.id === item.variant_id)
       const prices = getPricesForVariant(variant)
       if (prices?.calculated_price) variantPrice = prices.calculated_price
+      // Use images assigned to this variant; fallback to product images
+      const vImgs = (variant as any)?.images as { id: string; url: string }[] | null
+      if (vImgs && vImgs.length > 0) {
+        variantImages = vImgs
+      } else if (product.images && product.images.length > 0) {
+        variantImages = product.images.map((img) => ({ id: img.id ?? "", url: img.url ?? "" }))
+      }
     }
 
-    return { item, product, details, variantPrice }
+    return { item, product, details, variantPrice, variantImages }
   })
 
   // Fetch reviews for all unique products in parallel

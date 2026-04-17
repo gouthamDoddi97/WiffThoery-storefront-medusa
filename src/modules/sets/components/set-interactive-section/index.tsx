@@ -15,6 +15,7 @@ export type EnrichedSetItem = {
   product: HttpTypes.StoreProduct | null
   details: PerfumeDetails | null
   variantPrice: string | null
+  variantImages: { id: string; url: string }[]
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -83,11 +84,11 @@ export default function SetInteractiveSection({
 }) {
   const [activeIndex, setActiveIndex] = useState(0)
 
-  const images = enrichedItems
-    .map((ei) =>
-      ei.item.thumbnail ? { url: ei.item.thumbnail, alt: ei.item.product_title } : null
-    )
-    .filter(Boolean) as { url: string; alt: string }[]
+  // Build carousel images: one per item, using first variantImage or thumbnail
+  const images = enrichedItems.map((ei) => {
+    const url = ei.variantImages[0]?.url ?? ei.item.thumbnail ?? ""
+    return { url, alt: ei.item.product_title }
+  }).filter((img) => !!img.url)
 
   const tagList = set.tags
     ? set.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -128,9 +129,9 @@ export default function SetInteractiveSection({
                   {ei.item.thumbnail && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={ei.item.thumbnail}
+                      src={ei.variantImages[0]?.url ?? ei.item.thumbnail}
                       alt={ei.item.product_title}
-                      className="w-10 h-10 object-cover shrink-0"
+                      className="w-10 h-10 object-contain shrink-0"
                     />
                   )}
                   <div className="flex-1 min-w-0">
@@ -311,13 +312,13 @@ export default function SetInteractiveSection({
               }}
             >
               {/* small thumbnail */}
-              <div className="w-14 h-14 shrink-0 overflow-hidden bg-surface-container">
-                {ei.item.thumbnail ? (
+              <div className="w-14 h-14 shrink-0 overflow-hidden bg-transparent">
+                {(ei.variantImages[0]?.url || ei.item.thumbnail) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={ei.item.thumbnail}
+                    src={ei.variantImages[0]?.url ?? ei.item.thumbnail!}
                     alt={ei.item.product_title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full bg-surface-container-high" />

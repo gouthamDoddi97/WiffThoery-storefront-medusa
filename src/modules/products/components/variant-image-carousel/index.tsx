@@ -1,50 +1,48 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
-import { useMemo } from "react"
+import { useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import ImageCarousel from "@modules/products/components/image-carousel"
 
+type ImageItem = { id: string; url: string; alt: string }
+
+type VariantWithImages = HttpTypes.StoreProductVariant & {
+  images?: { id: string }[] | null
+}
+
 type Props = {
-  images: { url: string; alt: string }[]
-  variants: HttpTypes.StoreProductVariant[]
+  allImages: ImageItem[]
+  variants: VariantWithImages[]
 }
 
-function getSizeNum(variant: HttpTypes.StoreProductVariant): string | null {
-  const val = (variant.options?.[0] as any)?.value ?? ""
-  return val.match(/^\d+/)?.[0] ?? null
-}
+export default function VariantImageCarousel({ allImages, variants }: Props) {
+  const [variantId, setVariantId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null
+    return new URLSearchParams(window.location.search).get("v_id")
+  })
 
-export default function VariantImageCarousel({ images, variants }: Props) {
-  const searchParams = useSearchParams()
-  const vId = searchParams.get("v_id")
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setVariantId((e as CustomEvent<{ variantId: string | null }>).detail.variantId)
+    }
+    window.addEventListener("variant-changed", handler)
+    return () => window.removeEventListener("variant-changed", handler)
+  }, [])
 
-  const filteredImages = useMemo(() => {
-    const selectedVariant = vId
-      ? variants.find((v) => v.id === vId)
-      : variants.length === 1
-      ? variants[0]
-      : null
+  const selectedVariant = variantId
+    ? variants.find((v) => v.id === variantId) ?? null
+    : variants.length === 1
+    ? variants[0]
+    : null
 
-    const selectedSize = selectedVariant ? getSizeNum(selectedVariant) : null
+  const variantImageIds = selectedVariant?.images?.map((i) => i.id) ?? []
 
-    if (!selectedSize) return images
+  const filteredImages =
+    variantImageIds.length > 0
+      ? allImages.filter((img) => variantImageIds.includes(img.id))
+      : allImages
 
-    // Collect all known sizes across all variants
-    const allSizes = variants
-      .map((v) => getSizeNum(v))
-      .filter((s): s is string => !!s)
+  const displayImages = filteredImages.length > 0 ? filteredImages : allImages
 
-    const otherSizes = allSizes.filter((s) => s !== selectedSize)
-
-    return images.filter((img) => {
-      const url = img.url
-      const hasOtherSize = otherSizes.some((s) => url.includes(s))
-      // Exclude images that belong to a different size
-      if (hasOtherSize) return false
-      return true
-    })
-  }, [images, variants, vId])
-
-  return <ImageCarousel images={filteredImages.length > 0 ? filteredImages : images} />
+  return <ImageCarousel key={variantId ?? "default"} images={displayImages} />
 }

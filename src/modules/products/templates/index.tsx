@@ -179,7 +179,8 @@ const ProductTemplate = async ({
               {/* Left: bottle images carousel */}
               <div className="small:sticky small:top-8">
                 <VariantImageCarousel
-                  images={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
+                  allImages={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
+                    id: img.id ?? "",
                     url: img.url ?? "",
                     alt: product.title ?? "",
                   }))}

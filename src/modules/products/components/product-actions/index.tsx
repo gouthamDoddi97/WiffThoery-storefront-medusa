@@ -88,6 +88,9 @@ export default function ProductActions({
     }
 
     window.history.replaceState(null, "", pathname + "?" + params.toString())
+    window.dispatchEvent(
+      new CustomEvent("variant-changed", { detail: { variantId: value } })
+    )
   }, [selectedVariant, isValidVariant])
 
   // check if the selected variant is in stock
