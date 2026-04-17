@@ -30,7 +30,7 @@ export default function ImageCarousel({ images, activeIndex: controlledActive, o
       <img
         src={images[0].url}
         alt={images[0].alt}
-        className="w-full aspect-[3/4] object-cover bg-surface-low"
+        className="w-full aspect-[3/4] object-contain bg-transparent"
       />
     )
   }
@@ -38,14 +38,14 @@ export default function ImageCarousel({ images, activeIndex: controlledActive, o
   return (
     <div className="relative select-none">
       {/* Main image */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-surface-low">
+      <div className="relative aspect-[3/4] overflow-hidden bg-transparent">
         {images.map((img, i) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={i}
             src={img.url}
             alt={img.alt}
-            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+            className="absolute inset-0 w-full h-full object-contain transition-opacity duration-500"
             style={{ opacity: i === active ? 1 : 0 }}
           />
         ))}

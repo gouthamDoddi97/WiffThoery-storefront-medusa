@@ -17,7 +17,7 @@ import PerformanceChart from "@modules/products/components/performance-chart"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 import ScentStory, { FgPreset, Bg2Preset } from "@modules/products/components/scent-story"
-import ImageCarousel from "@modules/products/components/image-carousel"
+import VariantImageCarousel from "@modules/products/components/variant-image-carousel"
 
 // ─── Tier metadata ───────────────────────────────────────────────────────────
 
@@ -178,11 +178,12 @@ const ProductTemplate = async ({
             <div className="grid grid-cols-1 small:grid-cols-2 gap-12 items-start">
               {/* Left: bottle images carousel */}
               <div className="small:sticky small:top-8">
-                <ImageCarousel
+                <VariantImageCarousel
                   images={(carouselImages.length > 0 ? carouselImages : regularImgs.slice(0, 3)).map((img) => ({
                     url: img.url ?? "",
                     alt: product.title ?? "",
                   }))}
+                  variants={(product.variants ?? []) as any}
                 />
               </div>
               {/* Right: blueprint content */}
