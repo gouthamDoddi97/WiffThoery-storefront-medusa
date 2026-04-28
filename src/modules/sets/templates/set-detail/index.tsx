@@ -31,8 +31,7 @@ export default async function SetDetailTemplate({
             id: uniqueProductIds as string[],
             region_id: region.id,
             limit: uniqueProductIds.length,
-            // No custom fields — use listProducts default which already includes
-            // *variants.calculated_price, *variants.images and product.images
+            fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*images",
           },
         })
       : null,
@@ -42,7 +41,7 @@ export default async function SetDetailTemplate({
   const fetchedProducts = productsResult?.response.products ?? []
 
   // Build enriched items — match each set item to its fetched product + details
-  const enrichedItems: EnrichedSetItem[] = set.items.map((item, idx) => {
+  const enrichedItems: EnrichedSetItem[] = set.items.map((item) => {
     const product = fetchedProducts.find((p) => p.id === item.product_id) ?? null
     const detailsIndex = uniqueProductIds.indexOf(item.product_id)
     const details = detailsIndex >= 0 ? perfumeDetailsList[detailsIndex] : null
@@ -63,12 +62,26 @@ export default async function SetDetailTemplate({
       const prices = getPricesForVariant(variant)
       if (prices?.calculated_price) variantPrice = prices.calculated_price
 
-      // Use variant.images directly — filter out scene URLs and bg images
-      const vImgs = (variant as any)?.images as { id: string; url: string }[] | null
-      if (vImgs && vImgs.length > 0) {
-        variantImages = vImgs
-          .filter((img) => img.url && !sceneUrls.has(img.url) && !isBg(img.url))
-          .map((img) => ({ id: img.id, url: img.url }))
+      // Find images exclusive to this variant (not shared with any other variant).
+      // These are the truly variant-specific images. Falls back to all variant images when
+      // no exclusive images exist (e.g. single-variant products).
+      const allVariants = product.variants ?? []
+      const currentImgIds = new Set(
+        ((variant as any)?.images ?? []).map((i: any) => i.id as string)
+      )
+      const sharedImgIds = new Set(
+        allVariants
+          .filter((v) => v.id !== variant?.id)
+          .flatMap((v) => ((v as any)?.images ?? []).map((i: any) => i.id as string))
+      )
+      const exclusiveIds = Array.from(currentImgIds).filter((id) => !sharedImgIds.has(id))
+      const targetIds = exclusiveIds.length > 0 ? new Set(exclusiveIds) : currentImgIds
+
+      if (targetIds.size > 0) {
+        variantImages = (product.images ?? [])
+          .filter((img) => img.id && targetIds.has(img.id) && img.url && !sceneUrls.has(img.url) && !isBg(img.url))
+          .sort((a, b) => ((a as any).rank ?? 0) - ((b as any).rank ?? 0))
+          .map((img) => ({ id: img.id!, url: img.url! }))
       }
     }
 

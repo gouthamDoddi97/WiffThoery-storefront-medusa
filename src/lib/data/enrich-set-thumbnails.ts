@@ -24,6 +24,7 @@ export async function enrichSetThumbnails(
       queryParams: {
         id: uniqueProductIds as string[],
         limit: uniqueProductIds.length,
+        fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*images",
       },
     }),
     ...uniqueProductIds.map((pid) => getPerfumeDetails(pid)),
@@ -49,12 +50,25 @@ export async function enrichSetThumbnails(
           .filter(Boolean) as string[]
       )
 
-      const variant = product.variants?.find((v) => v.id === item.variant_id)
-      const vImgs = (variant as any)?.images as { id: string; url: string }[] | null
+      const allVariants = product.variants ?? []
+      const variant = allVariants.find((v) => v.id === item.variant_id)
 
       let thumbnail: string | undefined
-      if (vImgs && vImgs.length > 0) {
-        const bottle = vImgs.find((img) => img.url && !sceneUrls.has(img.url) && !isBg(img.url))
+      if (variant) {
+        const currentImgIds = new Set(
+          ((variant as any)?.images ?? []).map((i: any) => i.id as string)
+        )
+        const sharedImgIds = new Set(
+          allVariants
+            .filter((v) => v.id !== variant.id)
+            .flatMap((v) => ((v as any)?.images ?? []).map((i: any) => i.id as string))
+        )
+        const exclusiveIds = Array.from(currentImgIds).filter((id) => !sharedImgIds.has(id))
+        const targetIds = exclusiveIds.length > 0 ? new Set(exclusiveIds) : currentImgIds
+
+        const bottle = (product.images ?? [])
+          .filter((img) => img.id && targetIds.has(img.id) && img.url && !sceneUrls.has(img.url) && !isBg(img.url))
+          .sort((a, b) => ((a as any).rank ?? 0) - ((b as any).rank ?? 0))[0]
         thumbnail = bottle?.url
       }
 

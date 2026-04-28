@@ -52,8 +52,21 @@ export default function VariantImageCarousel({ allImages, variants, sceneUrls = 
     ?.filter((i) => !!(i as any).url && keep((i as any).url))
     .map((i) => ({ id: i.id, url: (i as any).url as string, alt: allImages[0]?.alt ?? "" }))
 
-  const displayImages =
-    variantImages && variantImages.length > 0 ? variantImages : allImages
+  // IDs of images belonging to the selected variant (used for reordering when URLs aren't present)
+  const variantImageIds = selectedVariant?.images?.length
+    ? new Set(selectedVariant.images.map((i) => i.id).filter(Boolean))
+    : null
+
+  const displayImages = (() => {
+    if (variantImages && variantImages.length > 0) return variantImages
+    if (variantImageIds) {
+      const matching = allImages.filter((img) => variantImageIds.has(img.id))
+      if (matching.length > 0) {
+        return [...matching, ...allImages.filter((img) => !variantImageIds.has(img.id))]
+      }
+    }
+    return allImages
+  })()
 
   return <ImageCarousel key={variantId ?? "default"} images={displayImages} />
 }

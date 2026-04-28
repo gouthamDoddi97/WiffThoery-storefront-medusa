@@ -41,7 +41,7 @@ export const getActiveOffers = async (): Promise<FragranceSet[]> => {
 export const getOfferById = async (id: string): Promise<FragranceSet | null> => {
   try {
     const data = await sdk.client.fetch<{ set: FragranceSet }>(`/store/offers/${id}`, {
-      next: { tags: [`offer-${id}`], revalidate: 60 },
+      next: { tags: ["offers", `offer-${id}`], revalidate: 60 },
       cache: "force-cache",
     })
     return data.set ?? null
