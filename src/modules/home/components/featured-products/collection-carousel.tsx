@@ -137,8 +137,7 @@ export default function CollectionCarousel({
 
   return (
     <div
-      className="relative overflow-hidden bg-surface-lowest cursor-pointer"
-      style={{ minHeight: "80svh" }}
+      className="relative overflow-hidden bg-surface-lowest cursor-pointer min-h-[60svh] small:min-h-[80svh]"
       onClick={() => router.push(`/${countryCode}/products/${slide.handle}`)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -165,7 +164,7 @@ export default function CollectionCarousel({
         </>
       )}
       {/* Inner content — padded */}
-      <div className="content-container relative z-[2] flex flex-col" style={{ minHeight: "inherit" }}>
+      <div className="content-container relative z-[2] flex flex-col">
 
         {/* Collection header: FEATURED + name + VIEW ALL */}
         <div className="flex items-end justify-between pt-10 small:pt-14 pb-6 small:pb-8">
@@ -257,7 +256,7 @@ export default function CollectionCarousel({
         </div>
 
         {/* ── DESKTOP layout ── */}
-        <div className="hidden small:flex items-stretch" style={{ minHeight: "420px" }}>
+        <div className="hidden small:flex items-stretch min-h-[300px] small:min-h-[420px]">
           <div className="flex flex-col justify-center pb-10 max-w-[600px]">
             <div className="flex items-center gap-3 mb-8" style={staggerDelay(0)}>
               <span className="font-inter text-[9px] tracking-[0.28em] uppercase" style={{ color: slide.accent }}>

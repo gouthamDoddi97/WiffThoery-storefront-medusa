@@ -72,8 +72,8 @@ export default async function TierCards() {
             <FadeIn key={tier.handle} delay={index * 120}>
               <LocalizedClientLink href={tier.href}>
                 <div
-                  className="relative overflow-hidden flex flex-col group transition-all duration-500"
-                  style={{ minHeight: "420px", background: "#0F111A" }}
+                  className="relative overflow-hidden flex flex-col group transition-all duration-500 min-h-[300px] small:min-h-[420px]"
+                  style={{ background: "#0F111A" }}
                 >
                   {/* Thick top accent bar */}
                   <div

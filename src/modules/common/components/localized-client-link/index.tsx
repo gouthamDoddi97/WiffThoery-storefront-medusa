@@ -17,7 +17,7 @@ const LocalizedClientLink = ({
   children?: React.ReactNode
   href: string
   className?: string
-  onClick?: () => void
+  onClick?: (e?: React.MouseEvent) => void
   passHref?: true
   [x: string]: any
 }) => {
@@ -32,7 +32,7 @@ const LocalizedClientLink = ({
       href={fullHref}
       onClick={(e) => {
         e.preventDefault()
-        onClick?.()
+        onClick?.(e)
         startTransition(() => {
           router.push(fullHref)
         })

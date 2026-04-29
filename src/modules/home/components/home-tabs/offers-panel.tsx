@@ -43,7 +43,7 @@ function SetSlide({
   }
 
   return (
-    <div className="relative overflow-hidden" style={{ minHeight: 520 }}>
+    <div className="relative overflow-hidden min-h-[360px] small:min-h-[520px]">
       {/* Set image as background */}
       {set.set_image && (
         <>
@@ -65,7 +65,7 @@ function SetSlide({
       )}
 
       {/* Content */}
-      <div className="relative flex flex-col" style={{ padding: "28px 22px 26px", minHeight: 520 }}>
+      <div className="relative flex flex-col min-h-[360px] small:min-h-[520px]" style={{ padding: "28px 22px 26px" }}>
         {/* Eyebrow */}
         <div
           className="font-inter text-[10px] tracking-[0.22em] uppercase mb-3.5 flex items-center gap-2.5"

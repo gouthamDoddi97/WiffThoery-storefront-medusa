@@ -135,7 +135,7 @@ export default function SetInteractiveSection({
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-garamond italic text-on-surface text-base leading-tight">
+                    <p className="font-garamond italic text-on-surface text-lg leading-tight">
                       {ei.item.product_title}
                     </p>
                     <p className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled mt-0.5">
@@ -174,24 +174,24 @@ export default function SetInteractiveSection({
           {/* set title */}
           <h1
             className="font-garamond italic text-on-surface leading-[1.1]"
-            style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
+            style={{ fontSize: "clamp(2.2rem, 5vw, 3.4rem)" }}
           >
             {set.title}
           </h1>
 
           {/* set description */}
           {set.description && (
-            <p className="font-inter text-sm text-on-surface-variant leading-relaxed mt-4">
+            <p className="font-inter text-base text-on-surface-variant leading-relaxed mt-4">
               {set.description}
             </p>
           )}
 
           {/* set price */}
           <div className="mt-6 pt-5 border-t border-surface-variant/40">
-            <p className="font-inter text-[9px] tracking-[0.25em] uppercase text-on-surface-disabled mb-1">
+            <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-on-surface-disabled mb-1">
               Set Price
             </p>
-            <span className="font-grotesk font-semibold text-2xl text-primary">
+            <span className="font-grotesk font-semibold text-3xl text-primary">
               {formatPrice(set.price_amount, set.currency_code)}
             </span>
           </div>
@@ -200,11 +200,11 @@ export default function SetInteractiveSection({
           {activeItem && (
             <div className="mt-6 border-t border-surface-variant/40 pt-5">
               <div className="flex items-center justify-between mb-4">
-                <p className="font-inter text-[9px] tracking-[0.25em] uppercase text-on-surface-disabled">
+                <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-on-surface-disabled">
                   Now Viewing
                 </p>
                 {activeItem.variantPrice && (
-                  <span className="font-grotesk text-sm text-on-surface-variant">
+                  <span className="font-grotesk text-base text-on-surface-variant">
                     {activeItem.variantPrice}
                   </span>
                 )}
@@ -212,17 +212,17 @@ export default function SetInteractiveSection({
 
               <h2
                 className="font-garamond italic text-on-surface leading-tight mb-1"
-                style={{ fontSize: "clamp(1.4rem, 3vw, 1.9rem)" }}
+                style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)" }}
               >
                 {activeItem.item.product_title}
               </h2>
-              <p className="font-inter text-[9px] tracking-[0.18em] uppercase text-on-surface-disabled mb-4">
+              <p className="font-inter text-[10px] tracking-[0.18em] uppercase text-on-surface-disabled mb-4">
                 {activeItem.item.variant_title}
               </p>
 
               {/* Scent story or fallback to product description */}
               {(activeItem.details?.scent_story || activeItem.product?.description) && (
-                <p className="font-garamond italic text-base text-on-surface-variant leading-relaxed mb-5">
+                <p className="font-garamond italic text-lg text-on-surface-variant leading-relaxed mb-5">
                   {activeItem.details?.scent_story ?? activeItem.product?.description}
                 </p>
               )}
@@ -264,7 +264,7 @@ export default function SetInteractiveSection({
               {activeItem.product?.handle && (
                 <LocalizedClientLink
                   href={`/products/${activeItem.product.handle}`}
-                  className="inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.22em] uppercase text-on-surface-disabled hover:text-on-surface transition-colors duration-200"
+                  className="inline-flex items-center gap-2 font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled hover:text-on-surface transition-colors duration-200"
                 >
                   <span>Full details</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -288,7 +288,7 @@ export default function SetInteractiveSection({
           <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled">
             What You're Getting
           </span>
-          <h2 className="font-garamond italic text-on-surface" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>
+          <h2 className="font-garamond italic text-on-surface" style={{ fontSize: "clamp(1.6rem, 3.4vw, 2.2rem)" }}>
             Every piece, included in one set.
           </h2>
           <p className="font-inter text-sm text-on-surface-variant mt-1 max-w-md">
@@ -327,15 +327,15 @@ export default function SetInteractiveSection({
 
               {/* info */}
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                <p className="font-garamond italic text-on-surface text-base leading-tight">
+                <p className="font-garamond italic text-on-surface text-lg leading-tight">
                   {ei.item.product_title}
                 </p>
-                <p className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled">
+                <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-on-surface-disabled">
                   {ei.item.variant_title}
                 </p>
                 {ei.variantPrice && (
                   <p className="font-grotesk text-xs text-on-surface-variant">
-                    {ei.variantPrice} <span className="text-on-surface-disabled font-inter font-normal text-[9px]">individually</span>
+                    {ei.variantPrice} <span className="text-on-surface-disabled font-inter font-normal text-[10px]">individually</span>
                   </p>
                 )}
               </div>
