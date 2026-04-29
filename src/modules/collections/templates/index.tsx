@@ -10,6 +10,7 @@ import {
   getCollectionTiers,
   CollectionTierMeta,
 } from "@lib/data/collection-tier"
+import TierTabNav from "@modules/common/components/tier-tab-nav"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Resolved tier meta type (after falling back to defaults)
@@ -22,6 +23,8 @@ type ResolvedMeta = {
   accentColor: string
   accentClass: string
   nextTier?: { label: string; href: string; cta: string }
+  energyLabel: string
+  fromPriceDisplay: string
 }
 
 type FilterProps = {
@@ -61,6 +64,8 @@ function buildMeta(
           cta: tier.next_tier_cta!,
         }
       : fallback.nextTier,
+    energyLabel: fallback.energyLabel,
+    fromPriceDisplay: fallback.fromPriceDisplay,
   }
 }
 
@@ -81,6 +86,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
       href: "/collections/unique",
       cta: "EXPLORE UNIQUE",
     },
+    energyLabel: "Universal",
+    fromPriceDisplay: "₹300+",
   },
   "unique": {
     number: "TIER 02 / 03",
@@ -94,6 +101,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
       href: "/collections/idgf",
       cta: "EXPLORE IDGF",
     },
+    energyLabel: "Distinct",
+    fromPriceDisplay: "₹249+",
   },
   "idgf": {
     number: "TIER 03 / 03",
@@ -102,6 +111,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
       "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
     accentColor: "#FF6B5A",
     accentClass: "text-secondary",
+    energyLabel: "Divisive",
+    fromPriceDisplay: "₹449+",
   },
 }
 
@@ -124,9 +135,18 @@ function ProductsSection({
   layout: "default" | "wave" | "s-curve" | "scattered"
   filters: FilterProps
 }) {
+  const productCount = collection.products?.length
+
   return (
     <div className="content-container py-16">
-      <h2 className="section-heading text-xl mb-10">THE COLLECTION</h2>
+      <div className="flex items-baseline justify-between mb-10">
+        <h2 className="section-heading text-xl">THE COLLECTION</h2>
+        {productCount != null && productCount > 0 && (
+          <span className="font-inter text-[10px] tracking-[0.14em] uppercase text-on-surface-disabled">
+            {String(productCount).padStart(2, "0")} ITEMS
+          </span>
+        )}
+      </div>
       <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">
         <CollectionSidebar
           sortBy={sort}
@@ -228,6 +248,7 @@ function CrowdPleasersTemplate({
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-primary">
             {meta.number}
           </span>
+          <TierTabNav activeHandle="popular" basePath="/collections" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
             {collection.title}
           </h1>
@@ -236,8 +257,43 @@ function CrowdPleasersTemplate({
             {meta.description}
           </p>
           <div className="w-16 h-[2px] bg-primary" />
+          <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+            {([
+              { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+              { value: meta.fromPriceDisplay, label: "From (20ml)" },
+              { value: meta.energyLabel, label: "Energy" },
+            ]).map((s, i) => (
+              <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+            Wear this if —
+          </div>
+          <div className="flex flex-col gap-5 max-w-[500px]">
+            {[
+              "You want your fragrance to be loved by the room, not debated.",
+              "You need a reliable signature that works from 9am to midnight.",
+              "You're buying your first extrait and want to start somewhere safe.",
+            ].map((line, i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-primary mt-0.5 min-w-[24px]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Products */}
       <ProductsSection
@@ -304,43 +360,7 @@ function IntroToNicheTemplate({
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tertiary">
             {meta.number}
           </span>
-          {/* Journey stepper */}
-          <div className="flex items-center gap-3">
-            {[
-              { label: "Popular", done: true },
-              { label: "Unique", active: true },
-              { label: "IDGF", done: false },
-            ].map((step, i) => (
-              <div key={step.label} className="flex items-center gap-3">
-                {i > 0 && (
-                  <div
-                    className={`w-8 h-px ${
-                      step.done || step.active ? "bg-tertiary" : "bg-surface-variant"
-                    }`}
-                  />
-                )}
-                <div className="flex flex-col items-center gap-1">
-                  <div
-                    className={`w-2 h-2 ${
-                      step.active
-                        ? "bg-tertiary"
-                        : step.done
-                        ? "border border-tertiary"
-                        : "border border-surface-variant"
-                    }`}
-                  />
-                  <span
-                    className={`font-inter text-[9px] tracking-[0.15em] uppercase ${
-                      step.active ? "text-tertiary" : "text-on-surface-disabled"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
+          <TierTabNav activeHandle="unique" basePath="/collections" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
             {collection.title}
           </h1>
@@ -349,8 +369,43 @@ function IntroToNicheTemplate({
             {meta.description}
           </p>
           <div className="w-16 h-[2px] bg-tertiary" />
+          <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+            {([
+              { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+              { value: meta.fromPriceDisplay, label: "From (20ml)" },
+              { value: meta.energyLabel, label: "Energy" },
+            ]).map((s, i) => (
+              <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+            Wear this if —
+          </div>
+          <div className="flex flex-col gap-5 max-w-[500px]">
+            {[
+              "You've outgrown mass-market scents and want something with a point of view.",
+              "You want compliments, but also the occasional \"what are you wearing?\"",
+              "You're ready to let a fragrance say something about who you are.",
+            ].map((line, i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-tertiary mt-0.5 min-w-[24px]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Products */}
       <ProductsSection
@@ -442,6 +497,7 @@ function PolarizingArtTemplate({
             <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-secondary">
               {meta.number}
             </span>
+            <TierTabNav activeHandle="idgf" basePath="/collections" />
             <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
               {collection.title}
             </h1>
@@ -450,9 +506,44 @@ function PolarizingArtTemplate({
               {meta.description}
             </p>
             <div className="w-16 h-[2px] bg-secondary" />
+            <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+              {([
+                { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+                { value: meta.fromPriceDisplay, label: "From (20ml)" },
+                { value: meta.energyLabel, label: "Energy" },
+              ]).map((s, i) => (
+                <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                  <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                  <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+            Wear this if —
+          </div>
+          <div className="flex flex-col gap-5 max-w-[500px]">
+            {[
+              "You'd rather be remembered than agreed with.",
+              "You collect fragrances that most people can't pull off — and wear them anyway.",
+              "You think \"compliment bait\" is a personality flaw.",
+            ].map((line, i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-secondary mt-0.5 min-w-[24px]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Products */}
       <ProductsSection

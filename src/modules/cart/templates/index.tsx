@@ -32,7 +32,7 @@ const CartTemplate = ({
             {/* Left: Items */}
             <div className="flex flex-col gap-6">
               {!customer && (
-                <div className="bg-surface-low p-5 border-l-2 border-primary">
+                <div className="bg-surface-high p-5 border-l-2 border-primary">
                   <SignInPrompt />
                 </div>
               )}

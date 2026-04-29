@@ -19,6 +19,7 @@ export type FragranceSet = {
   items: SetItem[]
   is_active: boolean
   badge: string | null
+  set_image: string | null
   tags: string | null
   usage_tips: string | null
   ingredients: string | null

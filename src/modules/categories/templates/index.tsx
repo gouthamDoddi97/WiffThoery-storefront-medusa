@@ -9,6 +9,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import FadeIn from "@modules/common/components/fade-in"
 import { HttpTypes } from "@medusajs/types"
 import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tier"
+import TierTabNav from "@modules/common/components/tier-tab-nav"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -22,6 +23,8 @@ type ResolvedMeta = {
   accentClass: string
   imageUrl?: string | null
   nextTier?: { label: string; href: string; cta: string }
+  energyLabel: string
+  fromPriceDisplay: string
 }
 
 function resolveAccentClass(color: string | null | undefined): string {
@@ -45,6 +48,8 @@ function buildMeta(tier: CollectionTierMeta | undefined, fallback: ResolvedMeta)
     nextTier: hasNext
       ? { label: tier.next_tier_label!, href: tier.next_tier_href!, cta: tier.next_tier_cta! }
       : fallback.nextTier,
+    energyLabel: fallback.energyLabel,
+    fromPriceDisplay: fallback.fromPriceDisplay,
   }
 }
 
@@ -71,6 +76,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     accentColor: "#4FDBCC",
     accentClass: "text-primary",
     nextTier: { label: "Ready for More?", href: "/categories/unique", cta: "EXPLORE UNIQUE" },
+    energyLabel: "Universal",
+    fromPriceDisplay: "₹300+",
   },
   "unique": {
     number: "TIER 02 / 03",
@@ -79,6 +86,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     accentColor: "#FFB547",
     accentClass: "text-tertiary",
     nextTier: { label: "Ready for the deepest end?", href: "/categories/idgf", cta: "EXPLORE IDGF" },
+    energyLabel: "Distinct",
+    fromPriceDisplay: "₹249+",
   },
   "idgf": {
     number: "TIER 03 / 03",
@@ -86,6 +95,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     description: "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
     accentColor: "#FF6B5A",
     accentClass: "text-secondary",
+    energyLabel: "Divisive",
+    fromPriceDisplay: "₹449+",
   },
 }
 
@@ -179,9 +190,18 @@ function CategoryProductsSection({
   layout: "default" | "wave" | "s-curve" | "scattered"
   filters: FilterProps
 }) {
+  const productCount = category.products?.length
+
   return (
     <div className="content-container py-16">
-      <h2 className="section-heading text-xl mb-10">THE COLLECTION</h2>
+      <div className="flex items-baseline justify-between mb-10">
+        <h2 className="section-heading text-xl">THE COLLECTION</h2>
+        {productCount != null && productCount > 0 && (
+          <span className="font-inter text-[10px] tracking-[0.14em] uppercase text-on-surface-disabled">
+            {String(productCount).padStart(2, "0")} ITEMS
+          </span>
+        )}
+      </div>
       <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">
         <CollectionSidebar
           sortBy={sort}
@@ -247,14 +267,52 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
             <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-primary">{category.name}</span>
           </div>
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-primary">{meta.number}</span>
-          <TierStepper activeIndex={0} />
+          <TierTabNav activeHandle="popular" basePath="/categories" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">{category.name}</h1>
           <p className="font-inter text-lg italic text-primary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
           <div className="w-16 h-[2px] bg-primary" />
+          <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+            {([
+              { value: category.products?.length != null ? String(category.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+              { value: meta.fromPriceDisplay, label: "From (20ml)" },
+              { value: meta.energyLabel, label: "Energy" },
+            ]).map((s, i) => (
+              <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
           </FadeIn>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <FadeIn>
+            <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+              Wear this if —
+            </div>
+            <div className="flex flex-col gap-5 max-w-[500px]">
+              {[
+                "You want your fragrance to be loved by the room, not debated.",
+                "You need a reliable signature that works from 9am to midnight.",
+                "You're buying your first extrait and want to start somewhere safe.",
+              ].map((line, i) => (
+                <div key={i} className="flex gap-4 items-start">
+                  <span className="font-inter text-[10px] tracking-[0.16em] text-primary mt-0.5 min-w-[24px]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       {meta.nextTier && (
         <div className="bg-surface-low py-16">
@@ -310,14 +368,52 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
             <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-tertiary">{category.name}</span>
           </div>
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tertiary">{meta.number}</span>
-          <TierStepper activeIndex={1} />
+          <TierTabNav activeHandle="unique" basePath="/categories" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">{category.name}</h1>
           <p className="font-inter text-lg italic text-tertiary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
           <div className="w-16 h-[2px] bg-tertiary" />
+          <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+            {([
+              { value: category.products?.length != null ? String(category.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+              { value: meta.fromPriceDisplay, label: "From (20ml)" },
+              { value: meta.energyLabel, label: "Energy" },
+            ]).map((s, i) => (
+              <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
           </FadeIn>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <FadeIn>
+            <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+              Wear this if —
+            </div>
+            <div className="flex flex-col gap-5 max-w-[500px]">
+              {[
+                "You've outgrown mass-market scents and want something with a point of view.",
+                "You want compliments, but also the occasional \"what are you wearing?\"",
+                "You're ready to let a fragrance say something about who you are.",
+              ].map((line, i) => (
+                <div key={i} className="flex gap-4 items-start">
+                  <span className="font-inter text-[10px] tracking-[0.16em] text-tertiary mt-0.5 min-w-[24px]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       <FadeIn>
       <div className="bg-surface-low py-16">
@@ -381,14 +477,52 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
           </div>
           <FadeIn className="flex flex-col gap-6 max-w-[700px]">
             <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-secondary">{meta.number}</span>
-            <TierStepper activeIndex={2} />
+            <TierTabNav activeHandle="idgf" basePath="/categories" />
             <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">{category.name}</h1>
             <p className="font-inter text-lg italic text-secondary">{meta.tagline}</p>
             <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
             <div className="w-16 h-[2px] bg-secondary" />
+            <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
+              {([
+                { value: category.products?.length != null ? String(category.products.length).padStart(2, "0") : "—", label: "Fragrances" },
+                { value: meta.fromPriceDisplay, label: "From (20ml)" },
+                { value: meta.energyLabel, label: "Energy" },
+              ]).map((s, i) => (
+                <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
+                  <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                  <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </FadeIn>
         </div>
       </div>
+
+      {/* Wear this if — */}
+      <section className="bg-surface-lowest py-10 small:py-14 border-b border-white/[0.06]">
+        <div className="content-container">
+          <FadeIn>
+            <div className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled mb-6">
+              Wear this if —
+            </div>
+            <div className="flex flex-col gap-5 max-w-[500px]">
+              {[
+                "You'd rather be remembered than agreed with.",
+                "You collect fragrances that most people can't pull off — and wear them anyway.",
+                "You think \"compliment bait\" is a personality flaw.",
+              ].map((line, i) => (
+                <div key={i} className="flex gap-4 items-start">
+                  <span className="font-inter text-[10px] tracking-[0.16em] text-secondary mt-0.5 min-w-[24px]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       <CategoryProductsSection category={category} sort={sort} page={page} countryCode={countryCode} layout="s-curve" filters={filters} />
       <FadeIn>
       <div className="bg-surface-container py-16">

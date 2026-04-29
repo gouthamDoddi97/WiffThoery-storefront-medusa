@@ -39,7 +39,7 @@ const StoreTemplate = async ({
           >
             All Fragrances
           </h1>
-          <p className="font-inter text-sm text-on-surface-variant mt-3">
+          <p className="font-garamond italic text-base text-on-surface-variant mt-3">
             Every scent, every tier — the full wardrobe.
           </p>
         </div>
