@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import ImageCarousel from "@modules/products/components/image-carousel"
+import PerformanceChart from "@modules/products/components/performance-chart"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { FragranceSet, SetItem } from "@lib/data/offers"
 import { PerfumeDetails } from "types/perfume"
@@ -41,14 +42,14 @@ function NoteChip({ label, values }: { label: string; values: string }) {
   if (!list.length) return null
   return (
     <div className="flex flex-col gap-1">
-      <span className="font-inter text-[8px] tracking-[0.22em] uppercase text-on-surface-disabled">
+      <span className="font-inter text-[10px] tracking-[0.22em] uppercase text-on-surface-disabled">
         {label}
       </span>
       <div className="flex flex-wrap gap-1">
         {list.map((v) => (
           <span
             key={v}
-            className="font-inter text-[9px] text-on-surface-variant border border-surface-variant/50 px-2 py-0.5"
+            className="font-inter text-sm text-on-surface-variant border border-surface-variant/50 px-2 py-0.5"
           >
             {v}
           </span>
@@ -102,7 +103,7 @@ export default function SetInteractiveSection({
       <div className="grid grid-cols-1 small:grid-cols-2 gap-10 small:gap-16 pt-6">
 
         {/* ── LEFT: carousel + thumbnail strip ── */}
-        <div className="sticky top-20 self-start">
+          <div className="relative small:sticky small:top-8 self-start">
           {images.length > 0 ? (
             <ImageCarousel
               images={images}
@@ -157,14 +158,14 @@ export default function SetInteractiveSection({
           {/* badge + tags */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {set.badge && (
-              <span className="font-inter text-[8px] tracking-[0.22em] uppercase text-primary border border-primary/30 px-2 py-0.5">
+              <span className="font-inter text-[10px] tracking-[0.22em] uppercase text-primary border border-primary/30 px-2 py-0.5">
                 {set.badge}
               </span>
             )}
             {tagList.map((tag) => (
               <span
                 key={tag}
-                className="font-inter text-[8px] tracking-[0.18em] uppercase text-on-surface-disabled border border-surface-variant/60 px-2 py-0.5"
+                className="font-inter text-[10px] tracking-[0.18em] uppercase text-on-surface-disabled border border-surface-variant/60 px-2 py-0.5"
               >
                 {tag}
               </span>
@@ -227,38 +228,30 @@ export default function SetInteractiveSection({
                 </p>
               )}
 
-              {/* Notes grid */}
-              {(activeItem.details?.top_notes || activeItem.details?.middle_notes || activeItem.details?.base_notes) && (
-                <div className="grid grid-cols-3 gap-3 mb-5">
-                  {activeItem.details.top_notes && (
-                    <NoteChip label="Top" values={activeItem.details.top_notes} />
+                  {/* Notes grid */}
+                  {(activeItem.details?.top_notes || activeItem.details?.middle_notes || activeItem.details?.base_notes) && (
+                    <div className="grid grid-cols-1 small:grid-cols-3 gap-3 mb-5">
+                      {activeItem.details.top_notes && (
+                        <NoteChip label="Top" values={activeItem.details.top_notes} />
+                      )}
+                      {activeItem.details.middle_notes && (
+                        <NoteChip label="Heart" values={activeItem.details.middle_notes} />
+                      )}
+                      {activeItem.details.base_notes && (
+                        <NoteChip label="Base" values={activeItem.details.base_notes} />
+                      )}
+                    </div>
                   )}
-                  {activeItem.details.middle_notes && (
-                    <NoteChip label="Heart" values={activeItem.details.middle_notes} />
-                  )}
-                  {activeItem.details.base_notes && (
-                    <NoteChip label="Base" values={activeItem.details.base_notes} />
-                  )}
-                </div>
-              )}
 
-              {/* Longevity / sillage */}
-              {(activeItem.details?.longevity || activeItem.details?.sillage) && (
-                <div className="flex gap-6 mb-5">
-                  {activeItem.details.longevity && (
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-inter text-[8px] tracking-[0.2em] uppercase text-on-surface-disabled">Longevity</span>
-                      <span className="font-inter text-xs text-on-surface-variant">{activeItem.details.longevity}</span>
+                  {/* Longevity / sillage (use product PerformanceChart for consistency) */}
+                  {(activeItem.details?.longevity || activeItem.details?.sillage) && (
+                    <div className="mb-5">
+                      <PerformanceChart
+                        sillage={activeItem.details?.sillage as any}
+                        longevity={activeItem.details?.longevity as any}
+                      />
                     </div>
                   )}
-                  {activeItem.details.sillage && (
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-inter text-[8px] tracking-[0.2em] uppercase text-on-surface-disabled">Sillage</span>
-                      <span className="font-inter text-xs text-on-surface-variant">{activeItem.details.sillage}</span>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Link to full product page */}
               {activeItem.product?.handle && (
