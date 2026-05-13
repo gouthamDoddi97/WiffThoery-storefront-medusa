@@ -3,6 +3,7 @@ import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
 import { HttpTypes } from "@medusajs/types"
+import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 
 const CartTemplate = ({
   cart,
@@ -25,6 +26,10 @@ const CartTemplate = ({
               {cart.items.length} {cart.items.length === 1 ? "FRAGMENT" : "FRAGMENTS"} IN YOUR CURATION
             </p>
           ) : null}
+        </div>
+
+        <div className="mb-8" data-testid="order-alert-banner" >
+          <OrderAlertBanner />
         </div>
 
         {cart?.items?.length ? (
