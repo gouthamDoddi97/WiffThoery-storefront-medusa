@@ -15,6 +15,7 @@ const StoreTemplate = async ({
   longevity = [],
   sillage = [],
   notes = [],
+  showOffers = true,
 }: {
   sortBy?: SortOptions
   page?: string
@@ -22,6 +23,7 @@ const StoreTemplate = async ({
   longevity?: string[]
   sillage?: string[]
   notes?: string[]
+  showOffers?: boolean
 }) => {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
@@ -34,18 +36,18 @@ const StoreTemplate = async ({
       <div className="bg-surface-low py-16">
         <div className="content-container">
           <h1
-            className="font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]"
+            className="display-m font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]"
             data-testid="store-page-title"
           >
             All Fragrances
           </h1>
-          <p className="font-garamond italic text-base text-on-surface-variant mt-3">
+          <p className="font-garamond text-base text-on-surface-variant mt-3">
             Every scent, every tier — the full wardrobe.
           </p>
         </div>
       </div>
 
-      {sets.length > 0 && <OffersPanel sets={sets} />}
+      {showOffers && sets.length > 0 && <OffersPanel sets={sets} />}
 
       <div className="content-container py-16">
         <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">

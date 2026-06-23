@@ -369,9 +369,9 @@ const ProductTemplate = async ({
         data-testid="related-products-container"
       >
         <div className="flex flex-col gap-2 mb-10">
-          <span className="eyebrow">YOUR NEXT CHAPTER</span>
+          <span className="eyebrow">Recommended</span>
           <h2 className="font-garamond font-semibold text-2xl text-on-surface">
-            There is always a next chapter waiting.
+            You may also like.
           </h2>
         </div>
         <Suspense fallback={<SkeletonRelatedProducts />}>

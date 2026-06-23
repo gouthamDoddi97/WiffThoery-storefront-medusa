@@ -11,7 +11,7 @@ const TIERS_FALLBACK = [
       "Universally adored, immediately wearable. These fragrances win rooms.",
     href: "/categories/popular",
     handle: "popular",
-    accentColor: "#4FDBCC",
+    accentColor: "var(--accent-popular)",
   },
   {
     number: "TIER 02 / 03",
@@ -21,7 +21,7 @@ const TIERS_FALLBACK = [
       "Beyond the mainstream. Scents that reward attention and develop over time.",
     href: "/categories/unique",
     handle: "unique",
-    accentColor: "#FFB547",
+    accentColor: "var(--tertiary)",
   },
   {
     number: "TIER 03 / 03",
@@ -31,7 +31,7 @@ const TIERS_FALLBACK = [
       "Challenging, unforgettable, unapologetically complex. Only the committed need apply.",
     href: "/categories/idgf",
     handle: "idgf",
-    accentColor: "#FF6B5A",
+    accentColor: "var(--secondary)",
   },
 ]
 
@@ -73,7 +73,7 @@ export default async function TierCards() {
               <LocalizedClientLink href={tier.href}>
                 <div
                   className="relative overflow-hidden flex flex-col group transition-all duration-500 min-h-[300px] small:min-h-[420px]"
-                  style={{ background: "#0F111A" }}
+                  style={{ background: "var(--on-surface)" }}
                 >
                   {/* Thick top accent bar */}
                   <div
@@ -104,7 +104,7 @@ export default async function TierCards() {
                   {/* Ambient glow on hover */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"
-                    style={{ background: `radial-gradient(ellipse at bottom left, ${tier.accentColor}18 0%, transparent 65%)` }}
+                    style={{ background: `radial-gradient(ellipse at bottom left, color-mix(in srgb, ${tier.accentColor} 9%, transparent) 0%, transparent 65%)` }}
                   />
 
                   {/* Content */}
@@ -142,7 +142,7 @@ export default async function TierCards() {
                         <span
                           className="inline-flex items-center gap-2.5 font-inter text-[10px] tracking-[0.22em] uppercase px-4 py-2.5 transition-all duration-300"
                           style={{
-                            border: `1px solid ${tier.accentColor}60`,
+                            border: `1px solid color-mix(in srgb, ${tier.accentColor} 38%, transparent)`,
                             color: tier.accentColor,
                           }}
                         >

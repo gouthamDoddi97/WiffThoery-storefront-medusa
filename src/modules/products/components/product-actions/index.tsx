@@ -87,10 +87,10 @@ export default function ProductActions({
       params.delete("v_id")
     }
 
-    window.history.replaceState(null, "", pathname + "?" + params.toString())
-    window.dispatchEvent(
-      new CustomEvent("variant-changed", { detail: { variantId: value } })
-    )
+    const qs = params.toString()
+    const newUrl = pathname + (qs ? `?${qs}` : "")
+    window.history.replaceState(null, "", newUrl)
+    window.dispatchEvent(new CustomEvent("variant-changed", { detail: { variantId: value } }))
   }, [selectedVariant, isValidVariant])
 
   // check if the selected variant is in stock
@@ -136,6 +136,22 @@ export default function ProductActions({
     setIsAdding(false)
   }
 
+  // Primary action: if no variant is selected, focus/scroll to options
+  const handlePrimaryAction = () => {
+    if (!selectedVariant) {
+      const optionButton = actionsRef.current?.querySelector('[data-testid="product-options"] button')
+      if (optionButton && optionButton instanceof HTMLElement) {
+        optionButton.focus()
+        optionButton.scrollIntoView({ behavior: "smooth", block: "center" })
+      } else {
+        actionsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+      return
+    }
+
+    void handleAddToCart()
+  }
+
   return (
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
@@ -164,13 +180,11 @@ export default function ProductActions({
         <ProductPrice product={product} variant={selectedVariant} />
 
         <button
-          onClick={handleAddToCart}
+          onClick={handlePrimaryAction}
           disabled={
-            !inStock ||
-            !selectedVariant ||
             !!disabled ||
             isAdding ||
-            !isValidVariant
+            (selectedVariant ? (!inStock || !isValidVariant) : false)
           }
           className="w-full bg-gradient-cta text-surface-lowest font-grotesk font-semibold text-xs tracking-[0.15em] uppercase py-4 transition-opacity duration-300 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
           data-testid="add-product-button"
@@ -180,7 +194,7 @@ export default function ProductActions({
               <Spinner size="14" color="currentColor" />
               <span>ADDING...</span>
             </>
-          ) : !selectedVariant && !options ? (
+          ) : !selectedVariant ? (
             "SELECT VARIANT"
           ) : !inStock || !isValidVariant ? (
             "OUT OF STOCK"

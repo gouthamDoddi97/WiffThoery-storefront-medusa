@@ -456,23 +456,26 @@ export default function ScentStory({
               pointerEvents: titleAlpha > 0.05 ? "auto" : "none",
             }}
           >
-            <div className="pointer-events-auto w-fit max-w-[min(88vw,340px)] rounded-[18px] border border-white/25 bg-[rgba(4,5,8,0.62)] px-3 py-2 backdrop-blur-md small:max-w-[680px] small:px-5 small:py-4">
-              <div className="flex flex-col items-center gap-2 text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
+            <div
+              className="pointer-events-auto w-fit max-w-[min(88vw,340px)] rounded-[18px] border px-3 py-2 backdrop-blur-md small:max-w-[680px] small:px-5 small:py-4"
+              style={{ backgroundColor: "rgba(250,247,242,0.92)", borderColor: "color-mix(in srgb, var(--on-surface) 12%, transparent)" }}
+            >
+              <div className="flex flex-col items-center gap-2 text-center">
                 <div className="w-6 small:w-10 h-px" style={{ background: "var(--primary)" }} />
                 {tierBadge ? (
-                  <span className={`font-inter text-[7px] small:text-[8px] tracking-[0.35em] small:tracking-[0.4em] uppercase ${accentClass}`}>
+                  <span className={`kicker text-[7px] small:text-[8px] tracking-[0.35em] small:tracking-[0.4em] uppercase ${accentClass}`}>
                     {tierBadge}
                   </span>
                 ) : (
-                  <span className="font-inter text-[7px] small:text-[8px] tracking-[0.35em] small:tracking-[0.4em] uppercase text-white/55">
+                  <span className="kicker text-[7px] small:text-[8px] tracking-[0.35em] small:tracking-[0.4em] uppercase text-on-surface-variant">
                     WHIFF THEORY · EXTRAIT DE PARFUM
                   </span>
                 )}
-                <h1 className="font-garamond font-bold text-[clamp(1.8rem,8vw,4.5rem)] small:text-[clamp(2.2rem,6vw,7rem)] text-white tracking-[-0.02em] leading-[0.92]">
+                <h1 className="display-lg font-fraunces italic font-normal text-[clamp(1.8rem,8vw,4.5rem)] small:text-[clamp(2.2rem,6vw,7rem)] text-on-surface tracking-[-0.02em] leading-[0.92]">
                   {productTitle}
                 </h1>
                 {caption && (
-                  <p className="font-inter text-[0.72rem] small:text-sm italic text-white/70 leading-tight small:leading-relaxed max-w-[18ch] small:max-w-[32ch]">
+                  <p className="font-inter text-[0.72rem] small:text-sm italic text-on-surface-variant leading-tight small:leading-relaxed max-w-[18ch] small:max-w-[32ch]">
                     {caption}
                   </p>
                 )}
@@ -489,15 +492,18 @@ export default function ScentStory({
                 pointerEvents: notesAlpha > 0.05 ? "auto" : "none",
               }}
             >
-              <div className="pointer-events-auto w-fit max-w-[min(90vw,360px)] rounded-[18px] border border-white/25 bg-[rgba(4,5,8,0.62)] px-3 py-2 backdrop-blur-md small:max-w-[720px] small:px-5 small:py-4">
-                <div className="flex flex-col gap-2 text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
+              <div
+                className="pointer-events-auto w-fit max-w-[min(90vw,360px)] rounded-[18px] border px-3 py-2 backdrop-blur-md small:max-w-[720px] small:px-5 small:py-4"
+                style={{ backgroundColor: "rgba(250,247,242,0.9)", borderColor: "color-mix(in srgb, var(--on-surface) 12%, transparent)" }}
+              >
+                <div className="flex flex-col gap-2 text-center">
                   <div className="mx-auto w-6 h-px" style={{ background: "var(--primary)" }} />
                   <span className="font-inter text-[7px] small:text-[8px] tracking-[0.32em] small:tracking-[0.35em] uppercase text-primary">
                     SMELLS LIKE
                   </span>
                   <div className="flex flex-col items-center gap-2">
                     {topNotes && (
-                      <p className="font-grotesk text-[1rem] small:text-[1.35rem] text-white font-light leading-tight">
+                      <p className="font-grotesk text-[1rem] small:text-[1.35rem] text-on-surface font-light leading-tight">
                         {topNotes}
                       </p>
                     )}
@@ -542,13 +548,16 @@ export default function ScentStory({
                 pointerEvents: storyAlpha > 0.05 ? "auto" : "none",
               }}
             >
-              <div className="pointer-events-auto w-fit max-w-[min(90vw,380px)] rounded-[18px] border border-white/25 bg-[rgba(4,5,8,0.62)] px-3 py-2 backdrop-blur-md small:max-w-[680px] small:px-5 small:py-4">
-                <div className="flex flex-col gap-2 text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
+              <div
+                className="pointer-events-auto w-fit max-w-[min(90vw,380px)] rounded-[18px] border px-3 py-2 backdrop-blur-md small:max-w-[680px] small:px-5 small:py-4"
+                style={{ backgroundColor: "rgba(250,247,242,0.9)", borderColor: "color-mix(in srgb, var(--on-surface) 12%, transparent)" }}
+              >
+                <div className="flex flex-col gap-2 text-center">
                   <div className="mx-auto w-6 h-px" style={{ background: "var(--primary)" }} />
                   <span className="font-inter text-[7px] small:text-[8px] tracking-[0.32em] small:tracking-[0.35em] uppercase text-primary">
                     THE STORY
                   </span>
-                  <p className="font-inter text-[0.85rem] small:text-[1.05rem] italic text-white/90 leading-[1.55] small:leading-[1.7] font-light">
+                  <p className="font-inter text-[0.85rem] small:text-[1.05rem] italic text-on-surface-variant leading-[1.55] small:leading-[1.7] font-light">
                     {scentStory}
                   </p>
                 </div>

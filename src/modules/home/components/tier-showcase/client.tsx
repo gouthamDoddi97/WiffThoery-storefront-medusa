@@ -337,25 +337,25 @@ function TierSlide({ tier }: { tier: TierItem }) {
       <div
         className="absolute bottom-0 left-0 w-[900px] h-[900px] pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at bottom left, ${tier.accentColor}22 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse at bottom left, color-mix(in srgb, ${tier.accentColor} 13%, transparent) 0%, transparent 65%)`,
         }}
       />
-
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="content-container">
-          <div className="flex flex-col max-w-[560px]" style={{ gap: "1.4rem" }}>
-
-            {/* Eyebrow — thin accent rule + tier number */}
-            <div className="flex items-center gap-3">
-              <div
-                className="h-px w-7 shrink-0"
-                style={{ background: tier.accentColor }}
-              />
-              <span
-                className="font-inter text-[9px] tracking-[0.38em] uppercase"
-                style={{ color: tier.accentColor }}
-              >
+            <span
+              className="block rounded-full"
+              style={{
+                width: "2px",
+                height: i === active ? "28px" : "10px",
+                background:
+                  i === active
+                    ? tiers[active]?.accentColor
+                    : "rgba(255,255,255,0.18)",
+                transition: `all 0.5s ${SPRING_CSS}`,
+                boxShadow:
+                  i === active
+                    ? `0 0 8px color-mix(in srgb, ${tiers[active]?.accentColor} 56%, transparent)`
+                    : "none",
+              }}
+            />
                 {tier.number}
               </span>
             </div>
@@ -431,7 +431,7 @@ function TierSlide({ tier }: { tier: TierItem }) {
       <div
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{
-          background: `linear-gradient(to right, transparent, ${tier.accentColor}50, transparent)`,
+          background: `linear-gradient(to right, transparent, color-mix(in srgb, ${tier.accentColor} 31%, transparent), transparent)`,
         }}
       />
     </div>

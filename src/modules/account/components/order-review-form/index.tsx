@@ -19,7 +19,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (v: number) =
           onMouseLeave={() => setHovered(0)}
           aria-label={`Rate ${s} star${s > 1 ? "s" : ""}`}
           className="text-xl leading-none transition-colors"
-          style={{ color: s <= display ? "#FFB547" : "rgba(255,255,255,0.2)" }}
+          style={{ color: s <= display ? "var(--tertiary)" : "rgba(26,31,26,0.15)" }}
         >
           ★
         </button>

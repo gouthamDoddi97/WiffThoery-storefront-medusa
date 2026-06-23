@@ -6,7 +6,8 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import { addToCart } from "@lib/data/cart"
 import { FragranceSet } from "@lib/data/offers"
 
-const ACCENT = "#C9A84C"
+const ACCENT = "var(--primary)"
+const BACKGROUND = "var(--surface-lowest)"
 
 function formatPrice(amount: number, currencyCode: string): string {
   try {
@@ -52,14 +53,7 @@ function SetSlide({
             src={set.set_image}
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(10,13,20,0.45) 0%, rgba(10,13,20,0.2) 40%, rgba(10,13,20,0.88) 100%)",
-            }}
+            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none photo-frame"
           />
         </>
       )}
@@ -98,9 +92,9 @@ function SetSlide({
         {/* Price */}
         <div
           className="flex items-baseline gap-3 pt-3.5 mb-4"
-          style={{ borderTop: `1px solid ${ACCENT}33` }}
+          style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
         >
-          <span className="font-inter font-bold text-xl" style={{ color: ACCENT }}>
+          <span className="font-inter font-bold text-xl" style={{ color: BACKGROUND }}>
             {formatPrice(set.price_amount, set.currency_code)}
           </span>
         </div>
@@ -111,7 +105,7 @@ function SetSlide({
             onClick={handleAddToCart}
             disabled={isAdding}
             className="flex-1 py-3.5 font-inter text-[11px] tracking-[0.18em] uppercase font-bold disabled:opacity-50 transition-opacity"
-            style={{ background: ACCENT, color: "#0a0410", border: "none" }}
+            style={{ background: ACCENT, color: "var(--on-surface)", border: "none" }}
           >
             {isAdding ? "ADDING..." : "ADD SET TO BAG"}
           </button>
@@ -121,7 +115,7 @@ function SetSlide({
           >
             <button
               className="py-3.5 px-4 font-inter text-[11px] tracking-[0.18em] uppercase text-on-surface"
-              style={{ background: "transparent", border: `1px solid ${ACCENT}66` }}
+              style={{ background: "transparent", border: '1px solid color-mix(in srgb, var(--primary) 40%, transparent)' }}
             >
               View Set
             </button>
@@ -209,6 +203,68 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
         className="relative overflow-hidden"
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
+        {/* Visible nav arrows */}
+        <button
+          onClick={(e) => { e.stopPropagation(); if (idx > 0) setIdx(idx - 1) }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          aria-label="Previous offer"
+          disabled={idx === 0}
+          style={{
+            position: "absolute",
+            left: 12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 30,
+            width: 44,
+            height: 44,
+            borderRadius: 9999,
+            border: `1px solid ${ACCENT}`,
+            background: "var(--surface-lowest)",
+            color: "var(--primary)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 6px 18px rgba(10,12,16,0.06)",
+            cursor: idx === 0 ? "not-allowed" : "pointer",
+            opacity: idx === 0 ? 0.38 : 1,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <button
+          onClick={(e) => { e.stopPropagation(); if (idx < sets.length - 1) setIdx(idx + 1) }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          aria-label="Next offer"
+          disabled={idx === sets.length - 1}
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 30,
+            width: 44,
+            height: 44,
+            borderRadius: 9999,
+            border: `1px solid ${ACCENT}`,
+            background: "var(--surface-lowest)",
+            color: "var(--primary)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 6px 18px rgba(10,12,16,0.06)",
+            cursor: idx === sets.length - 1 ? "not-allowed" : "pointer",
+            opacity: idx === sets.length - 1 ? 0.38 : 1,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
         <div
           className="flex"
           style={{
@@ -234,7 +290,7 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
             style={{
               width: i === idx ? 28 : 6,
               height: 4,
-              background: i === idx ? ACCENT : "rgba(255,255,255,0.2)",
+              background: i === idx ? ACCENT : "color-mix(in srgb, var(--on-surface) 8%, transparent)",
               border: "none",
               padding: 0,
               cursor: "pointer",

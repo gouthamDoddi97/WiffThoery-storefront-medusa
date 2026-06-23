@@ -113,7 +113,7 @@ function buildJourneyData(
   // Persona
   let persona = "The Beginner"
   let personaDesc =
-    "Your first steps into the world of niche fragrance. Every purchase is a new chapter waiting to be written."
+    "Your first steps into niche fragrance. Every purchase is a new discovery."
   if (total === 0) {
     persona = "The Unscented"
     personaDesc = "Your journey hasn't begun yet."
@@ -124,7 +124,7 @@ function buildJourneyData(
   } else if (tierCounts["unique"] >= 2) {
     persona = "The Explorer"
     personaDesc =
-      "Curiosity is your compass. You seek out scents that tell a story — complex narratives crafted from rare ingredients and bold artistic vision."
+      "Curiosity is your compass. You seek scents that offer complexity — crafted from rare ingredients and bold artistic vision."
   } else if (tierCounts["popular"] >= 2) {
     persona = "The Popular Pick"
     personaDesc =
@@ -536,7 +536,7 @@ export default function JourneyClient({ customer, orders, perfumeMap, productTie
           >
             <div className="flex flex-col gap-1">
               <span className="font-inter text-[8px] tracking-[0.2em] text-on-surface-disabled uppercase">
-                YOUR NEXT CHAPTER
+                NEXT TIER
               </span>
               <span className="font-grotesk text-base text-on-surface">
                 Ready for <strong>{nextTier.label}</strong>?

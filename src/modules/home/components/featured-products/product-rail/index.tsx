@@ -5,9 +5,9 @@ import { getPerfumeDetails } from "@lib/data/perfume-details"
 import CollectionCarousel from "../collection-carousel"
 
 const TIER_ACCENTS: Record<string, string> = {
-  popular: "#4FDBCC",
-  unique:  "#FFB547",
-  idgf:    "#FF6B5A",
+  popular: "var(--accent-popular)",
+  unique:  "var(--tertiary)",
+  idgf:    "var(--secondary)",
 }
 
 export default async function ProductRail({
@@ -31,7 +31,7 @@ export default async function ProductRail({
     return null
   }
 
-  const accent = TIER_ACCENTS[collection.handle ?? ""] ?? "#C9A84C"
+  const accent = TIER_ACCENTS[collection.handle ?? ""] ?? "var(--primary)"
 
   // Fetch perfume details for all products in parallel
   const detailsList = await Promise.all(

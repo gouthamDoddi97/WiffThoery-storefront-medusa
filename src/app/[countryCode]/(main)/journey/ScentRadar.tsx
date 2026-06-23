@@ -45,7 +45,7 @@ export default function ScentRadar({ scores }: { scores: RadarScores }) {
           key={g}
           points={ring(cx, cy, maxR, s, n)}
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
+          stroke="rgba(26,31,26,0.07)"
           strokeWidth={0.8}
         />
       ))}
@@ -58,7 +58,7 @@ export default function ScentRadar({ scores }: { scores: RadarScores }) {
             key={ax.key}
             x1={cx} y1={cy}
             x2={p.x} y2={p.y}
-            stroke="rgba(255,255,255,0.1)"
+            stroke="rgba(26,31,26,0.1)"
             strokeWidth={0.8}
           />
         )
@@ -91,7 +91,7 @@ export default function ScentRadar({ scores }: { scores: RadarScores }) {
             textAnchor="middle"
             fontSize={6.5}
             fontFamily="monospace"
-            fill="rgba(255,255,255,0.42)"
+            fill="rgba(26,31,26,0.42)"
             letterSpacing={1}
           >
             {ax.label}

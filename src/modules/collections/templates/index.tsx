@@ -79,7 +79,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "Your entry point. Instantly loved.",
     description:
       "Universally adored, immediately wearable. These fragrances win rooms, open conversations, and leave lasting impressions — without demanding anything from your nose.",
-    accentColor: "#4FDBCC",
+    accentColor: "var(--accent-popular)",
     accentClass: "text-primary",
     nextTier: {
       label: "Ready for More?",
@@ -94,7 +94,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "For the curious nose.",
     description:
       "Beyond the mainstream. These scents reward attention and develop beautifully over time. Your nose has grown. These fragrances know it.",
-    accentColor: "#FFB547",
+    accentColor: "var(--tertiary)",
     accentClass: "text-tertiary",
     nextTier: {
       label: "Ready for the deepest end?",
@@ -109,7 +109,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "Not for everyone. Definitely for you.",
     description:
       "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
-    accentColor: "#FF6B5A",
+    accentColor: "var(--secondary)",
     accentClass: "text-secondary",
     energyLabel: "Divisive",
     fromPriceDisplay: "₹449+",
@@ -252,7 +252,7 @@ function CrowdPleasersTemplate({
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
             {collection.title}
           </h1>
-          <p className="font-inter text-lg italic text-primary">{meta.tagline}</p>
+          <p className="font-inter text-lg text-primary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">
             {meta.description}
           </p>
@@ -264,7 +264,7 @@ function CrowdPleasersTemplate({
               { value: meta.energyLabel, label: "Energy" },
             ]).map((s, i) => (
               <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-garamond text-lg text-on-surface leading-none">{s.value}</div>
                 <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
               </div>
             ))}
@@ -288,7 +288,7 @@ function CrowdPleasersTemplate({
                 <span className="font-inter text-[10px] tracking-[0.16em] text-primary mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
               </div>
             ))}
           </div>
@@ -310,7 +310,7 @@ function CrowdPleasersTemplate({
         <div className="bg-surface-low py-16">
           <div className="content-container flex flex-col small:flex-row items-center justify-between gap-8">
             <div className="flex flex-col gap-2">
-              <span className="eyebrow">THE JOURNEY</span>
+              <span className="eyebrow">EXPLORE TIERS</span>
               <h3 className="section-heading text-2xl">{meta.nextTier.label}</h3>
               <p className="font-inter text-sm text-on-surface-variant">
                 Your nose is ready for the next level.
@@ -376,7 +376,7 @@ function IntroToNicheTemplate({
               { value: meta.energyLabel, label: "Energy" },
             ]).map((s, i) => (
               <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-garamond text-lg text-on-surface leading-none">{s.value}</div>
                 <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
               </div>
             ))}
@@ -400,7 +400,7 @@ function IntroToNicheTemplate({
                 <span className="font-inter text-[10px] tracking-[0.16em] text-tertiary mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
               </div>
             ))}
           </div>
@@ -420,7 +420,7 @@ function IntroToNicheTemplate({
       {/* Pull quote */}
       <div className="bg-surface-low py-16">
         <div className="content-container max-w-[600px]">
-          <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface italic leading-[1.2] tracking-[-0.02em]">
+          <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface leading-[1.2] tracking-[-0.02em]">
             "I didn't know fragrance could feel like this."
           </p>
           <span className="block mt-4 font-inter text-xs tracking-[0.2em] uppercase text-on-surface-variant">
@@ -513,7 +513,7 @@ function PolarizingArtTemplate({
                 { value: meta.energyLabel, label: "Energy" },
               ]).map((s, i) => (
                 <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                  <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                  <div className="font-garamond text-lg text-on-surface leading-none">{s.value}</div>
                   <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
                 </div>
               ))}
@@ -538,7 +538,7 @@ function PolarizingArtTemplate({
                 <span className="font-inter text-[10px] tracking-[0.16em] text-secondary mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
               </div>
             ))}
           </div>

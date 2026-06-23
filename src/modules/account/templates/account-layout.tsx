@@ -15,7 +15,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
   children,
 }) => {
   return (
-    <div className="flex-1 small:py-12 relative" data-testid="account-page">
+    <div className="flex-1 small:py-12 relative text-on-surface" data-testid="account-page">
       {/* Mobile: video background; desktop: theme surface */}
       <video
         src="/homeHero.webm"

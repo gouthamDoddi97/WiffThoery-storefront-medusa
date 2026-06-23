@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@medusajs/ui"
+import EditorialButton from "@modules/common/components/editorial-button"
 import { useMemo, useState } from "react"
 
 import Thumbnail from "@modules/products/components/thumbnail"
@@ -87,10 +87,10 @@ const OrderCard = ({ order }: OrderCardProps) => {
         })}
         {numberOfProducts > 4 && (
           <div className="w-full h-full flex flex-col items-center justify-center">
-            <span className="text-small-regular text-ui-fg-base">
+            <span className="text-small-regular text-on-surface">
               + {numberOfLines - 4}
             </span>
-            <span className="text-small-regular text-ui-fg-base">more</span>
+            <span className="text-small-regular text-on-surface">more</span>
           </div>
         )}
       </div>
@@ -108,9 +108,13 @@ const OrderCard = ({ order }: OrderCardProps) => {
 
       <div className="flex justify-end">
         <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
-          <Button data-testid="order-details-link" variant="secondary">
+          <EditorialButton
+            data-testid="order-details-link"
+            variant="secondary"
+            className="bg-transparent shadow-none text-on-surface hover:underline p-0"
+          >
             See details
-          </Button>
+          </EditorialButton>
         </LocalizedClientLink>
       </div>
     </div>

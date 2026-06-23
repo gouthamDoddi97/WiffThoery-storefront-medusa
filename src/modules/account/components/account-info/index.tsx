@@ -1,5 +1,6 @@
 import { Disclosure } from "@headlessui/react"
-import { Badge, Button, clx } from "@medusajs/ui"
+import { Badge, clx } from "@medusajs/ui"
+import EditorialButton from "@modules/common/components/editorial-button"
 import { useEffect } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -45,7 +46,7 @@ const AccountInfo = ({
     <div className="text-small-regular" data-testid={dataTestid}>
       <div className="flex items-end justify-between">
         <div className="flex flex-col">
-          <span className="uppercase text-ui-fg-base">{label}</span>
+          <span className="uppercase text-ui-fg-base subheading-medium ink-muted">{label}</span>
           <div className="flex items-center flex-1 basis-0 justify-end gap-x-4">
             {typeof currentInfo === "string" ? (
               <span className="font-semibold" data-testid="current-info">{currentInfo}</span>
@@ -55,16 +56,16 @@ const AccountInfo = ({
           </div>
         </div>
         <div>
-          <Button
+          <EditorialButton
             variant="secondary"
-            className="w-[100px] min-h-[25px] py-1"
+            className="w-[100px] min-h-[25px] py-1 bg-on-surface text-surface-lowest hover:bg-on-surface/90"
             onClick={handleToggle}
             type={state ? "reset" : "button"}
             data-testid="edit-button"
             data-active={state}
           >
             {state ? "Cancel" : "Edit"}
-          </Button>
+          </EditorialButton>
         </div>
       </div>
 
@@ -120,14 +121,14 @@ const AccountInfo = ({
           <div className="flex flex-col gap-y-2 py-4">
             <div>{children}</div>
             <div className="flex items-center justify-end mt-2">
-              <Button
+              <EditorialButton
                 isLoading={pending}
                 className="w-full small:max-w-[140px]"
                 type="submit"
                 data-testid="save-button"
               >
                 Save changes
-              </Button>
+              </EditorialButton>
             </div>
           </div>
         </Disclosure.Panel>

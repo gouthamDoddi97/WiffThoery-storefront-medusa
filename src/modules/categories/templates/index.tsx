@@ -73,7 +73,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     number: "TIER 01 / 03",
     tagline: "Your entry point. Instantly loved.",
     description: "Universally adored, immediately wearable. These fragrances win rooms, open conversations, and leave lasting impressions — without demanding anything from your nose.",
-    accentColor: "#4FDBCC",
+    accentColor: "var(--accent-popular)",
     accentClass: "text-primary",
     nextTier: { label: "Ready for More?", href: "/categories/unique", cta: "EXPLORE UNIQUE" },
     energyLabel: "Universal",
@@ -83,7 +83,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     number: "TIER 02 / 03",
     tagline: "For the curious nose.",
     description: "Beyond the mainstream. These scents reward attention and develop beautifully over time. Your nose has grown. These fragrances know it.",
-    accentColor: "#FFB547",
+    accentColor: "var(--tertiary)",
     accentClass: "text-tertiary",
     nextTier: { label: "Ready for the deepest end?", href: "/categories/idgf", cta: "EXPLORE IDGF" },
     energyLabel: "Distinct",
@@ -93,7 +93,7 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     number: "TIER 03 / 03",
     tagline: "Not for everyone. Definitely for you.",
     description: "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
-    accentColor: "#FF6B5A",
+    accentColor: "var(--secondary)",
     accentClass: "text-secondary",
     energyLabel: "Divisive",
     fromPriceDisplay: "₹449+",
@@ -269,7 +269,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
           <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-primary">{meta.number}</span>
           <TierTabNav activeHandle="popular" basePath="/categories" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">{category.name}</h1>
-          <p className="font-inter text-lg italic text-primary">{meta.tagline}</p>
+          <p className="font-inter text-lg text-primary">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">{meta.description}</p>
           <div className="w-16 h-[2px] bg-primary" />
           <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
@@ -279,7 +279,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
               { value: meta.energyLabel, label: "Energy" },
             ]).map((s, i) => (
               <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-garamond text-lg text-on-surface leading-none">{s.value}</div>
                 <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
               </div>
             ))}
@@ -305,7 +305,7 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
                   <span className="font-inter text-[10px] tracking-[0.16em] text-primary mt-0.5 min-w-[24px]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <p className="font-garamond italic text-base text-on-surface leading-[1.45]">{line}</p>
+                  <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
                 </div>
               ))}
             </div>
@@ -418,7 +418,7 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
       <FadeIn>
       <div className="bg-surface-low py-16">
         <div className="content-container max-w-[600px]">
-          <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface italic leading-[1.2] tracking-[-0.02em]">"I didn't know fragrance could feel like this."</p>
+          <p className="font-grotesk font-bold text-2xl small:text-3xl text-on-surface leading-[1.2] tracking-[-0.02em]">"I didn't know fragrance could feel like this."</p>
           <span className="block mt-4 font-inter text-xs tracking-[0.2em] uppercase text-on-surface-variant">— Whiff Theory Community</span>
         </div>
       </div>

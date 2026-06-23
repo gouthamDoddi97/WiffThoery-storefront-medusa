@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@medusajs/ui"
+import EditorialButton from "@modules/common/components/editorial-button"
 
 import OrderCard from "../order-card"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -13,7 +13,7 @@ const OrderOverview = ({ orders }: { orders: HttpTypes.StoreOrder[] }) => {
         {orders.map((o) => (
           <div
             key={o.id}
-            className="border-b border-gray-200 pb-6 last:pb-0 last:border-none"
+            className="border-b border-surface-variant/20 pb-6 last:pb-0 last:border-none"
           >
             <OrderCard order={o} />
           </div>
@@ -33,9 +33,9 @@ const OrderOverview = ({ orders }: { orders: HttpTypes.StoreOrder[] }) => {
       </p>
       <div className="mt-4">
         <LocalizedClientLink href="/" passHref>
-          <Button data-testid="continue-shopping-button">
+          <EditorialButton data-testid="continue-shopping-button">
             Continue shopping
-          </Button>
+          </EditorialButton>
         </LocalizedClientLink>
       </div>
     </div>

@@ -8,7 +8,7 @@ import OffersPanel from "./offers-panel"
 import NewArrivalsPanel from "./new-arrivals-panel"
 import { CarouselSlide } from "@modules/home/components/featured-products/collection-carousel"
 
-const NEW_ARRIVALS_ACCENT = "#C9A84C"
+const NEW_ARRIVALS_ACCENT = "var(--primary)"
 
 export default async function HomeDiscovery({
   region,

@@ -4,19 +4,20 @@
 
 /* ─── Coastal Gallery Design System ─────────────────────────────────────────── */
 :root {
-  --surface-lowest: #0A0E1A;
-  --surface: #0F131F;
-  --surface-low: #171B28;
-  --surface-container: #1D2130;
-  --surface-high: #262A37;
-  --surface-variant: #313442;
-  --primary: #C9A84C;
-  --primary-container: #8B6914;
-  --secondary: #FF6B5A;
-  --tertiary: #FFB547;
-  --on-surface: #E8EAF0;
-  --on-surface-variant: #8B8FA8;
-  --on-surface-disabled: #4A4E63;
+  --surface-lowest: #FBF7F0; /* Warm Ivory (brand primary light) */
+  --surface: #F4EFE7; /* Light surface for reading */
+  --surface-low: #F2ECE3;
+  --surface-container: #F0E9DE;
+  --surface-high: #E9E1D3;
+  --surface-variant: #E0D6C6;
+  --primary: #A07E44; /* Richer gold for better contrast on light surfaces */
+  --primary-container: #7a6448; /* darker container / hover state */
+  --secondary: #A9C8E8; /* Sky Blue (brand secondary accent) */
+  --tertiary: #B8C7B0; /* Sage (warm accent) */
+  --accent-popular: #4FDBCC;
+  --on-surface: #0A0805; /* Ink (brand text primary) - Darker */
+  --on-surface-variant: #5A4A3A; /* Sand (neutral mid / secondary text) - Darker */
+  --on-surface-disabled: #7a7a6e;
 }
 
 html {
@@ -85,7 +86,27 @@ body {
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-[rgb(79,137,219)] text-[#4f5bdb] hover:bg-[#4f9cdb] hover:text-[#0A0E1A] transition-colors duration-200 ease-in;
+    @apply px-4 py-2 transition-colors duration-200 ease-in;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+  }
+
+  .contrast-btn:hover {
+    background-color: color-mix(in srgb, var(--primary) 16%, var(--surface-lowest));
+    color: var(--on-surface);
+  }
+
+  /* ─── Text Color Utilities ────────────────────────────────────────── */
+  .text-on-surface {
+    color: var(--on-surface);
+  }
+
+  .text-on-surface-variant {
+    color: var(--on-surface-variant);
+  }
+
+  .text-on-surface-disabled {
+    color: var(--on-surface-variant);
   }
 
   /* ─── Coastal Gallery Utilities ────────────────────────────────────────── */

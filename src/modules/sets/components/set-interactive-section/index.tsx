@@ -135,10 +135,10 @@ export default function SetInteractiveSection({
                       className="w-10 h-10 object-contain shrink-0"
                     />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-garamond italic text-on-surface text-lg leading-tight">
-                      {ei.item.product_title}
-                    </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-garamond text-on-surface text-lg leading-tight">
+                              {ei.item.product_title}
+                            </p>
                     <p className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled mt-0.5">
                       {ei.item.variant_title}
                     </p>
@@ -174,7 +174,7 @@ export default function SetInteractiveSection({
 
           {/* set title */}
           <h1
-            className="font-garamond italic text-on-surface leading-[1.1]"
+            className="font-garamond font-semibold text-on-surface leading-[1.1]"
             style={{ fontSize: "clamp(2.2rem, 5vw, 3.4rem)" }}
           >
             {set.title}
@@ -212,7 +212,7 @@ export default function SetInteractiveSection({
               </div>
 
               <h2
-                className="font-garamond italic text-on-surface leading-tight mb-1"
+                className="font-garamond text-on-surface leading-tight mb-1"
                 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)" }}
               >
                 {activeItem.item.product_title}
@@ -223,7 +223,7 @@ export default function SetInteractiveSection({
 
               {/* Scent story or fallback to product description */}
               {(activeItem.details?.scent_story || activeItem.product?.description) && (
-                <p className="font-garamond italic text-lg text-on-surface-variant leading-relaxed mb-5">
+                <p className="font-garamond text-lg text-on-surface-variant leading-relaxed mb-5">
                   {activeItem.details?.scent_story ?? activeItem.product?.description}
                 </p>
               )}
@@ -281,7 +281,7 @@ export default function SetInteractiveSection({
           <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled">
             What You're Getting
           </span>
-          <h2 className="font-garamond italic text-on-surface" style={{ fontSize: "clamp(1.6rem, 3.4vw, 2.2rem)" }}>
+          <h2 className="font-garamond text-on-surface" style={{ fontSize: "clamp(1.6rem, 3.4vw, 2.2rem)" }}>
             Every piece, included in one set.
           </h2>
           <p className="font-inter text-sm text-on-surface-variant mt-1 max-w-md">
@@ -320,7 +320,7 @@ export default function SetInteractiveSection({
 
               {/* info */}
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                <p className="font-garamond italic text-on-surface text-lg leading-tight">
+                <p className="font-garamond text-on-surface text-lg leading-tight">
                   {ei.item.product_title}
                 </p>
                 <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-on-surface-disabled">

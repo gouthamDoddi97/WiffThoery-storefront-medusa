@@ -1,13 +1,36 @@
 import { getBaseURL, getMediaURL, getSiteURL } from "@lib/util/env"
 import { Metadata } from "next"
-import { Space_Grotesk, Inter, Cormorant_Garamond } from "next/font/google"
+import { Space_Grotesk, Inter, Cormorant_Garamond, Fraunces, Nunito_Sans, DM_Mono } from "next/font/google"
 import "styles/globals.css"
+import "styles/editorial.css"
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-garamond",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
+})
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  weight: ["400", "500", "700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+})
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito",
+  weight: ["400", "600", "700"],
+  display: "swap",
+})
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
+  weight: ["400", "500"],
   display: "swap",
 })
 
@@ -127,9 +150,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable} dark`}
+      className={`${fraunces.variable} ${dmMono.variable} ${nunitoSans.variable} ${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable} dark`}
     >
-      <body className="bg-surface-lowest text-on-surface">
+      <body className="bg-surface-lowest text-on-surface editorial">
 <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(sitewideSchema) }}

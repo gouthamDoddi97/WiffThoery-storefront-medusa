@@ -5,7 +5,7 @@ import { HttpTypes } from "@medusajs/types"
 import { CarouselSlide } from "@modules/home/components/featured-products/collection-carousel"
 import NewArrivalsPanel from "@modules/home/components/home-tabs/new-arrivals-panel"
 
-const NEW_ARRIVALS_ACCENT = "#C9A84C"
+const NEW_ARRIVALS_ACCENT = "var(--primary)"
 
 export default async function HomeNewArrivalsSection({
   region,

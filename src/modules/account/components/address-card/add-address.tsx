@@ -1,7 +1,8 @@
 "use client"
 
 import { Plus } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
+import { Heading } from "@medusajs/ui"
+import EditorialButton from "@modules/common/components/editorial-button"
 import { useEffect, useState, useActionState } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -49,7 +50,7 @@ const AddAddress = ({
   return (
     <>
       <button
-        className="border border-ui-border-base rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between"
+        className="border border-surface-variant rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between"
         onClick={open}
         data-testid="add-address-button"
       >
@@ -145,8 +146,8 @@ const AddAddress = ({
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
-              <Button
+              <div className="flex gap-3 mt-6">
+              <EditorialButton
                 type="reset"
                 variant="secondary"
                 onClick={close}
@@ -154,7 +155,7 @@ const AddAddress = ({
                 data-testid="cancel-button"
               >
                 Cancel
-              </Button>
+              </EditorialButton>
               <SubmitButton data-testid="save-button">Save</SubmitButton>
             </div>
           </Modal.Footer>

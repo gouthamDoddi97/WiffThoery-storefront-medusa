@@ -9,9 +9,9 @@ import SideMenu from "@modules/layout/components/side-menu"
 import { getCollectionTiers } from "@lib/data/collection-tier"
 
 const LEFT_LINKS = [
-  { label: "POPULAR", href: "/categories/popular", accent: "#4FDBCC", num: "01" },
-  { label: "UNIQUE",  href: "/categories/unique",  accent: "#FFB547", num: "02" },
-  { label: "IDGF",   href: "/categories/idgf",    accent: "#FF6B5A", num: "03" },
+  { label: "POPULAR", href: "/categories/popular", accent: "var(--taupe)", num: "01" },
+  { label: "UNIQUE",  href: "/categories/unique",  accent: "var(--rose-deep)", num: "02" },
+  { label: "IDGF",     href: "/categories/idgf",    accent: "var(--forest)", num: "03" },
 ]
 
 const RIGHT_LINKS = [
@@ -38,9 +38,10 @@ export default async function Nav() {
       <header
         className="relative h-16 mx-auto"
         style={{
-          background: "rgba(49, 52, 66, 0.6)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          background: "rgba(250,247,242,0.9)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(26,31,26,0.06)",
         }}
       >
         <nav className="content-container flex items-center justify-between w-full h-full">

@@ -1,0 +1,113 @@
+/* Minimal editorial theme based on IMPLEMENTATION_PLAN.md */
+:root {
+  --paper: #faf7f2;
+  --paper-2: #f2ede4;
+  --paper-deep: #e8dfd0;
+  --ink: #1a1f1a;
+  --ink-muted: #5a6354;
+  --ink-soft: #7a7a6e;
+  --rose-deep: #b07888;
+  --taupe: #a89070;
+  --forest: #2d3b2a;
+}
+
+/* Apply editorial surface and base type */
+body.editorial {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-nunito, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display headings use Fraunces (italic) with subtle letterpress */
+body.editorial h1,
+body.editorial h2,
+body.editorial h3,
+body.editorial h4 {
+  font-family: var(--font-fraunces, var(--font-garamond), Georgia, "Times New Roman", serif);
+  font-style: italic;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+/* Kicker / mono labels */
+body.editorial .kicker {
+  font-family: var(--font-dm-mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+}
+
+/* Minimal drop cap used only in long editorial features */
+body.editorial .dropcap {
+  float: left;
+  font-size: 56px;
+  line-height: 0.7;
+  margin-right: 12px;
+  font-family: var(--font-fraunces, var(--font-garamond));
+  color: var(--rose-deep);
+}
+
+/* Photo frame inset hairline for visual continuity */
+body.editorial .photo-frame {
+  box-shadow: inset 0 0 0 10px rgba(26,31,26,0.03);
+  border-radius: 2px;
+}
+
+/* Subtle hairline rule */
+body.editorial .hairline {
+  border-top: 1px solid rgba(26,31,26,0.08);
+}
+
+/* Letterpress / embossed feel for rare cover or hero headings */
+body.editorial .letterpress {
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85), 0 -1px 0 rgba(0,0,0,0.03);
+}
+
+/* Display size helper (mobile-first) */
+body.editorial .display-xl { font-size: 64px; line-height: 0.95; font-weight: 700; }
+@media (min-width: 640px) { body.editorial .display-xl { font-size: 80px; } }
+
+/* Additional display helpers for varied headings */
+body.editorial .display-lg { font-size: 48px; line-height: 1; font-weight: 700; }
+@media (min-width: 640px) { body.editorial .display-lg { font-size: 64px; } }
+
+body.editorial .display-m { font-size: 32px; line-height: 1.05; font-weight: 700; }
+@media (min-width: 640px) { body.editorial .display-m { font-size: 40px; } }
+
+/* Editorial overrides: remap Tailwind white text utilities and inline white colors
+  to the editorial ink token so text remains readable on the light paper background. */
+.editorial .text-white,
+.editorial [class*="text-white/"] {
+  color: var(--ink) !important;
+}
+
+/* Override inline rgba white colors (common in overlays) to editorial ink.
+  This is a conservative fallback; specific components may require manual tweaks. */
+.editorial [style*="rgba(255,255,255"] {
+  color: var(--ink) !important;
+}
+
+/* Note: keep targeted, manual fixes where components intentionally need white text
+  (e.g., dark hero overlays); this global rule prevents low-contrast remnants. */
+
+/* Editorial utility color helpers */
+body.editorial .ink { color: var(--ink) !important; }
+body.editorial .ink-muted { color: var(--ink-muted) !important; }
+body.editorial .ink-soft { color: var(--ink-soft) !important; }
+
+/* Ensure the small account 'Edit' button stays high-contrast when toggled/active. */
+body.editorial button[data-testid="edit-button"] {
+  background-color: var(--on-surface) !important;
+  color: var(--surface-lowest) !important;
+  border-color: transparent !important;
+}
+
+/* Also enforce on active/focus states to prevent vendor defaults turning the button white */
+body.editorial button[data-testid="edit-button"]:active,
+body.editorial button[data-testid="edit-button"]:focus {
+  background-color: color-mix(in srgb, var(--on-surface) 90%, black 0%) !important;
+  color: var(--surface-lowest) !important;
+}

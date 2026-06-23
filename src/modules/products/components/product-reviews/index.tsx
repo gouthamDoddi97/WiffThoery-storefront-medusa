@@ -21,7 +21,7 @@ export function ReviewCard({ review }: { review: ProductReview }) {
             <span
               key={s}
               className="text-[13px] leading-none"
-              style={{ color: s <= review.rating ? "#FFB547" : "rgba(255,255,255,0.15)" }}
+              style={{ color: s <= review.rating ? "var(--tertiary)" : "rgba(26,31,26,0.15)" }}
             >
               ★
             </span>

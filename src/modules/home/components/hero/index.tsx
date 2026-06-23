@@ -52,10 +52,10 @@ const Hero = () => {
 
           <FadeIn delay={100}>
             <h1
-              className="font-garamond font-bold text-[clamp(2.8rem,6vw,5.5rem)] text-on-surface leading-[0.9] tracking-[-0.02em]"
+              className="display-xl font-garamond font-bold text-[clamp(2.8rem,6vw,5.5rem)] text-on-surface leading-[0.9] tracking-[-0.02em]"
             >
               Every fragrance,{" "}
-              <span className="text-primary italic">a chapter.</span>
+              <span className="text-primary italic">a story.</span>
             </h1>
           </FadeIn>
 

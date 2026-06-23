@@ -198,7 +198,7 @@ export default function HeroShowcase() {
                 style={{ fontSize: "clamp(2.8rem, 6vw, 5.5rem)" }}
               >
                 Every fragrance,{" "}
-                <span className="text-primary italic">a chapter.</span>
+                <span className="text-primary italic">a story.</span>
               </h1>
 
               <p className="font-inter text-base text-on-surface-variant leading-relaxed max-w-[380px]">

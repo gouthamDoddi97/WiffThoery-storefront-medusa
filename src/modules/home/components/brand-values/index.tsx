@@ -3,8 +3,8 @@ import FadeIn from "@modules/common/components/fade-in"
 const VALUES = [
   {
     numeral: "I",
-    heading: "Every fragrance, a chapter.",
-    copy: "Each scent in our collection carries its own story, mood, and reason to exist. We craft the narrative, you wear it.",
+    heading: "Every fragrance, a story.",
+    copy: "Each scent in our collection carries its own mood and reason to exist. We craft the scent, you wear it.",
   },
   {
     numeral: "II",
@@ -14,7 +14,7 @@ const VALUES = [
   {
     numeral: "III",
     heading: "A wardrobe, not a dump.",
-    copy: "Three deliberate tiers that evolve with your nose. Start anywhere. Follow the progression. Build your story.",
+    copy: "Three deliberate tiers that evolve with your nose. Start anywhere. Follow the progression. Build your collection.",
   },
 ]
 

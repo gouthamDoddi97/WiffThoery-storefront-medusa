@@ -145,15 +145,15 @@ export default async function SetDetailTemplate({
         initialStats={combinedStats}
       />
 
-      {/* ── YOUR NEXT CHAPTER ── */}
+      {/* ── Recommended ── */}
       {region && relatedProducts.length > 0 && (
         <div className="content-container py-16">
           <div className="flex flex-col gap-2 mb-10">
             <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled">
-              YOUR NEXT CHAPTER
+              Recommended
             </span>
             <h2 className="font-garamond font-semibold text-2xl text-on-surface">
-              There is always a next chapter waiting.
+              You may also like.
             </h2>
           </div>
           <ul className="grid grid-cols-2 small:grid-cols-4 gap-x-4 gap-y-8">

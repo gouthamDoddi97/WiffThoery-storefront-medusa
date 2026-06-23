@@ -64,8 +64,8 @@ export default function PerformanceChart({
 
   return (
     <div className={`flex flex-col gap-3 ${compact ? "" : "py-2"}`}>
-      <Bar label="Sillage" value={sillage as Level} color="#4FDBCC" labelMap={SILLAGE_LABELS} />
-      <Bar label="Longevity" value={longevity as Level} color="#FFB547" labelMap={LONGEVITY_LABELS} />
+      <Bar label="Sillage" value={sillage as Level} color="var(--accent-popular)" labelMap={SILLAGE_LABELS} />
+      <Bar label="Longevity" value={longevity as Level} color="var(--tertiary)" labelMap={LONGEVITY_LABELS} />
     </div>
   )
 }

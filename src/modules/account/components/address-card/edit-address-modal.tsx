@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useActionState } from "react"
 import { PencilSquare as Edit, Trash } from "@medusajs/icons"
-import { Button, Heading, Text, clx } from "@medusajs/ui"
+import { Heading, Text, clx } from "@medusajs/ui"
+import EditorialButton from "@modules/common/components/editorial-button"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
 import CountrySelect from "@modules/checkout/components/country-select"
@@ -65,9 +66,9 @@ const EditAddress: React.FC<EditAddressProps> = ({
     <>
       <div
         className={clx(
-          "border rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between transition-colors",
+          "border border-surface-variant rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between transition-colors",
           {
-            "border-gray-900": isActive,
+            "border-on-surface": isActive,
           }
         )}
         data-testid="address-container"
@@ -103,7 +104,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
         </div>
         <div className="flex items-center gap-x-4">
           <button
-            className="text-small-regular text-ui-fg-base flex items-center gap-x-2"
+            className="text-small-regular text-on-surface flex items-center gap-x-2"
             onClick={open}
             data-testid="address-edit-button"
           >
@@ -111,7 +112,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
             Edit
           </button>
           <button
-            className="text-small-regular text-ui-fg-base flex items-center gap-x-2"
+            className="text-small-regular text-on-surface flex items-center gap-x-2"
             onClick={removeAddress}
             data-testid="address-delete-button"
           >
@@ -217,8 +218,8 @@ const EditAddress: React.FC<EditAddressProps> = ({
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
-              <Button
+              <div className="flex gap-3 mt-6">
+              <EditorialButton
                 type="reset"
                 variant="secondary"
                 onClick={close}
@@ -226,7 +227,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
                 data-testid="cancel-button"
               >
                 Cancel
-              </Button>
+              </EditorialButton>
               <SubmitButton data-testid="save-button">Save</SubmitButton>
             </div>
           </Modal.Footer>

@@ -15,6 +15,7 @@ export interface CarouselSlide {
   cheapestPrice: VariantPrice | undefined | null
   scentStory: string | null
   accent: string
+  href?: string
 }
 
 const SLIDE_DURATION = 5000
@@ -61,19 +62,20 @@ export default function CollectionCarousel({
   const transitioningRef = useRef(false)
   const pausedRef = useRef(false)
   const slidesLenRef = useRef(slides.length)
-  const elapsedRef = useRef(0)
-
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const currentProgressRef = useRef<HTMLDivElement | null>(null)
+  const progressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const startTimeRef = useRef<number>(0)
+  const remainingRef = useRef<number>(SLIDE_DURATION)
   const touchStartX = useRef(0)
+  const dragStartX = useRef(0)
+  const isDraggingRef = useRef(false)
 
   // Keep refs in sync with state/props
   useEffect(() => { slidesLenRef.current = slides.length }, [slides.length])
-  useEffect(() => { pausedRef.current = paused }, [paused])
 
   const goTo = useCallback(
     (index: number, dir?: "next" | "prev") => {
       if (transitioningRef.current || index === currentRef.current) return
-      elapsedRef.current = 0
       setDirection(dir ?? (index > currentRef.current ? "next" : "prev"))
       setTransitioning(true)
       transitioningRef.current = true
@@ -97,25 +99,78 @@ export default function CollectionCarousel({
     goTo((currentRef.current - 1 + slidesLenRef.current) % slidesLenRef.current, "prev")
   }, [goTo])
 
-  // Single interval — started once on mount, never recreated on slide change.
-  // All mutable values are read via refs, so closures are always fresh.
+  // Use the progress-bar CSS animation for visuals but add a JS timeout
+  // fallback so slides advance even when the animation is throttled.
   useEffect(() => {
-    progressRef.current = setInterval(() => {
+    const el = currentProgressRef.current
+
+    // clear any existing fallback
+    if (progressTimeoutRef.current) {
+      clearTimeout(progressTimeoutRef.current)
+      progressTimeoutRef.current = null
+    }
+
+    // reset timers
+    startTimeRef.current = performance.now()
+    remainingRef.current = SLIDE_DURATION
+
+    const scheduleFallback = (delay: number) => {
+      progressTimeoutRef.current = setTimeout(() => {
+        if (pausedRef.current) return
+        if (!transitioningRef.current) goNext()
+      }, delay)
+    }
+
+    const onAnimationEnd = () => {
       if (pausedRef.current) return
-      elapsedRef.current += 50
-      if (elapsedRef.current >= SLIDE_DURATION) {
-        elapsedRef.current = 0
-        if (!transitioningRef.current) {
-          goNext()
-        }
-      }
-    }, 50)
+      if (!transitioningRef.current) goNext()
+    }
+
+    if (el) {
+      el.addEventListener("animationend", onAnimationEnd)
+      try { el.style.animationPlayState = pausedRef.current ? "paused" : "running" } catch {}
+    }
+
+    if (!pausedRef.current) scheduleFallback(remainingRef.current)
 
     return () => {
-      if (progressRef.current) clearInterval(progressRef.current)
+      if (el) el.removeEventListener("animationend", onAnimationEnd)
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current)
+        progressTimeoutRef.current = null
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [current, goNext])
+
+  // Pause/resume handling — keep refs and animation state in sync
+  useEffect(() => {
+    pausedRef.current = paused
+    const el = currentProgressRef.current
+    try {
+      if (el) el.style.animationPlayState = paused ? "paused" : "running"
+    } catch {}
+
+    if (paused) {
+      // compute remaining and clear fallback
+      const elapsed = performance.now() - startTimeRef.current
+      remainingRef.current = Math.max(0, remainingRef.current - elapsed)
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current)
+        progressTimeoutRef.current = null
+      }
+    } else {
+      // resume: schedule fallback with remaining time
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current)
+      }
+      progressTimeoutRef.current = setTimeout(() => {
+        if (pausedRef.current) return
+        if (!transitioningRef.current) goNext()
+      }, remainingRef.current)
+      startTimeRef.current = performance.now()
+    }
+  }, [paused, goNext])
 
   const router = useRouter()
   const { countryCode } = useParams()
@@ -134,13 +189,31 @@ export default function CollectionCarousel({
     ...textStyle,
     transitionDelay: transitioning ? "0ms" : `${step * 40}ms`,
   })
+  // Restructured layout: image on top, content below
 
   return (
     <div
       className="relative overflow-hidden bg-surface-lowest cursor-pointer min-h-[60svh] small:min-h-[80svh]"
-      onClick={() => router.push(`/${countryCode}/products/${slide.handle}`)}
+      onClick={() => {
+        const href = slide.href ?? `/products/${slide.handle}`
+        const full = href.startsWith("/") ? `/${countryCode}${href}` : `/${countryCode}/${href}`
+        router.push(full)
+      }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onMouseDown={(e) => {
+        dragStartX.current = e.clientX
+        isDraggingRef.current = true
+      }}
+      onMouseMove={(e) => {
+        if (!isDraggingRef.current) return
+      }}
+      onMouseUp={(e) => {
+        if (!isDraggingRef.current) return
+        isDraggingRef.current = false
+        const diff = dragStartX.current - e.clientX
+        if (Math.abs(diff) > 60) diff > 0 ? goNext() : goPrev()
+      }}
       onTouchStart={(e) => { touchStartX.current = e.targetTouches[0].clientX }}
       onTouchEnd={(e) => {
         const diff = touchStartX.current - e.changedTouches[0].clientX
@@ -148,26 +221,19 @@ export default function CollectionCarousel({
       }}
     >
       {slide.bgImage && (
-        <>
-          <img
-            src={slide.bgImage}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
-            style={{ opacity: 0.35 }}
-          />
-          {/* Gradient: solid dark on the text side, fades to transparent on the image side */}
-          <div
-            className="absolute inset-0 pointer-events-none z-[1]"
-            style={{ background: "linear-gradient(to right, rgba(10,13,20,1) 30%, rgba(10,13,20,0.85) 50%, rgba(10,13,20,0.3) 75%, transparent 100%)" }}
-          />
-        </>
+        <img
+          src={slide.bgImage}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none z-0 photo-frame"
+        />
       )}
-      {/* Inner content — padded */}
+
+      {/* Content section — overlays on image */}
       <div className="content-container relative z-[2] flex flex-col">
 
         {/* Collection header: FEATURED + name + VIEW ALL */}
-        <div className="flex items-end justify-between pt-10 small:pt-14 pb-6 small:pb-8">
+        <div className="flex items-end justify-between pb-6 small:pb-8">
           <div className="flex flex-col gap-1">
             <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-on-surface-disabled">FEATURED</span>
             <h2
@@ -216,14 +282,14 @@ export default function CollectionCarousel({
           {slide.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-8" style={staggerDelay(3)}>
               {slide.tags.map((tag) => (
-                <span key={tag.id} className="font-inter text-[10px] tracking-[0.18em] uppercase px-2 py-0.5 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.14)" }}>
+                <span key={tag.id} className="font-inter text-[10px] tracking-[0.18em] uppercase px-2 py-0.5 border text-on-surface-variant" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 12%, transparent)" }}>
                   {tag.value}
                 </span>
               ))}
             </div>
           )}
 
-          {/* Spacer pushes price+controls to bottom */}
+          {/* Spacer pushes content to bottom */}
           <div className="flex-1" />
 
           <div className="mt-8" style={staggerDelay(4)}>
@@ -233,7 +299,7 @@ export default function CollectionCarousel({
           <div className="flex items-center justify-between mt-6 mb-6" style={staggerDelay(5)}>
             <span onClick={(e) => e.stopPropagation()}>
             <LocalizedClientLink
-              href={`/products/${slide.handle}`}
+              href={slide.href ?? `/products/${slide.handle}`}
               className="group flex items-center gap-2 font-inter text-[10px] tracking-[0.22em] uppercase"
               style={{ color: slide.accent }}
             >
@@ -245,10 +311,10 @@ export default function CollectionCarousel({
             </LocalizedClientLink>
             </span>
             <div className="flex items-center gap-2">
-              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 10%, transparent)" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-7 h-7 border text-on-surface-variant" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 10%, transparent)" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
@@ -284,9 +350,9 @@ export default function CollectionCarousel({
             {slide.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-7" style={staggerDelay(3)}>
                 {slide.tags.map((tag) => (
-                  <span key={tag.id} className="font-inter text-[8px] tracking-[0.18em] uppercase px-2 py-0.5 border text-on-surface-variant" style={{ borderColor: "rgba(255,255,255,0.14)" }}>
-                    {tag.value}
-                  </span>
+                    <span key={tag.id} className="font-inter text-[8px] tracking-[0.18em] uppercase px-2 py-0.5 border text-on-surface-variant" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 12%, transparent)" }}>
+                      {tag.value}
+                    </span>
                 ))}
               </div>
             )}
@@ -298,7 +364,7 @@ export default function CollectionCarousel({
             <div className="flex items-center gap-6 mb-12" style={staggerDelay(5)}>
               <span onClick={(e) => e.stopPropagation()}>
             <LocalizedClientLink
-                href={`/products/${slide.handle}`}
+                href={slide.href ?? `/products/${slide.handle}`}
                 className="group flex items-center gap-2.5 font-inter text-[10px] tracking-[0.22em] uppercase transition-opacity duration-200 hover:opacity-70"
                 style={{ color: slide.accent }}
               >
@@ -312,10 +378,10 @@ export default function CollectionCarousel({
             </div>
 
             <div className="flex items-center gap-3">
-              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="Previous" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 10%, transparent)" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <button onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="Next" className="flex items-center justify-center w-8 h-8 border text-on-surface-variant hover:text-on-surface transition-all duration-200" style={{ borderColor: "color-mix(in srgb, var(--on-surface) 10%, transparent)" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
@@ -324,28 +390,31 @@ export default function CollectionCarousel({
 
         {/* Progress bar */}
         <>
-          <style>{`@keyframes _collectionProgress { from { width: 0% } to { width: 100% } }`}</style>
+          <style>{`@keyframes _collectionProgress { from { transform: scaleX(0) } to { transform: scaleX(1) } }`}</style>
           <div className="flex items-center mb-6 gap-3 small:gap-4 pb-8 small:pb-12">
             {slides.map((s, i) => (
               <button key={s.id} onClick={(e) => { e.stopPropagation(); goTo(i) }} className="flex flex-col gap-1.5 flex-1 text-left" aria-label={`Go to ${s.title}`}>
-                <div className="h-px w-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
-                  <div
-                    key={i === current ? `a${current}` : `p${i}`}
-                    className="h-full"
-                    style={
-                      i === current
-                        ? {
-                            animationName: "_collectionProgress",
-                            animationDuration: `${SLIDE_DURATION}ms`,
-                            animationTimingFunction: "linear",
-                            animationFillMode: "forwards",
-                            animationPlayState: paused ? "paused" : "running",
-                            backgroundColor: slide.accent,
+                <div className="h-px w-full overflow-hidden" style={{ backgroundColor: "color-mix(in srgb, var(--on-surface) 6%, transparent)" }}>
+                        <div
+                          key={i === current ? `a${current}` : `p${i}`}
+                          ref={i === current ? currentProgressRef : null}
+                          className="h-full"
+                          style={
+                            i === current
+                              ? {
+                                  animationName: "_collectionProgress",
+                                  animationDuration: `${SLIDE_DURATION}ms`,
+                                  animationTimingFunction: "linear",
+                                  animationFillMode: "forwards",
+                                  animationPlayState: paused ? "paused" : "running",
+                                  backgroundColor: slide.accent,
+                                  transformOrigin: "left center",
+                                  willChange: "transform",
+                                }
+                              : { transform: i < current ? "scaleX(1)" : "scaleX(0)", transformOrigin: "left center", width: "100%", backgroundColor: i < current ? slide.accent : undefined }
                           }
-                        : { width: i < current ? "100%" : "0%", backgroundColor: i < current ? slide.accent : undefined }
-                    }
-                  />
-                </div>
+                        />
+                      </div>
                 <span className={`font-inter text-[8px] tracking-[0.14em] uppercase truncate transition-colors duration-300 ${i === current ? "text-on-surface-variant" : "text-on-surface-disabled"}`}>
                   {s.title}
                 </span>

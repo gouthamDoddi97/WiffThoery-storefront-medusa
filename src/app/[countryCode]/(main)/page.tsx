@@ -9,10 +9,13 @@ import BrandValues from "@modules/home/components/brand-values"
 import FeaturedReviews from "@modules/home/components/featured-reviews"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 import HomeOffersSection from "@modules/home/components/home-offers-section"
-import HomeNewArrivalsSection from "@modules/home/components/home-new-arrivals-section"
+import HomeOffersNewArrivalsSection from "@modules/home/components/home-offers-new-arrivals-section"
+import StoreTemplate from "@modules/store/templates"
+import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import { getSiteURL } from "@lib/util/env"
+import HomeNewArrivalsSection from "../../../modules/home/components/home-new-arrivals-section";
 
 
 export const metadata: Metadata = {
@@ -40,8 +43,20 @@ export const metadata: Metadata = {
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
+  searchParams: Promise<{
+    sortBy?: SortOptions
+    page?: string
+    longevity?: string
+    sillage?: string
+    notes?: string
+  }>
 }) {
   const params = await props.params
+  const searchParams = await props.searchParams
+  const { sortBy, page, longevity: longevityStr, sillage: sillageStr, notes: notesStr } = searchParams
+  const longevity = longevityStr ? longevityStr.split(",").filter(Boolean) : []
+  const sillage = sillageStr ? sillageStr.split(",").filter(Boolean) : []
+  const notes = notesStr ? notesStr.split(",").filter(Boolean) : []
   const { countryCode } = params
 
   const [regionResult, { collections }] = await Promise.all([
@@ -115,14 +130,27 @@ export default async function Home(props: {
 
       <OrderAlertBanner />
 
-      {/* Offers carousel — shown first, before tier cards */}
-      <HomeOffersSection countryCode={countryCode} />
+
 
       {/* Tier cards */}
-      <TierCards />
+      {/* <TierCards /> */}
 
       {/* New Arrivals carousel — shown after the three tiers */}
       <HomeNewArrivalsSection region={region} countryCode={countryCode} />
+
+      {/* Store catalog (same layout as /store) — filters, sort, pagination */}
+      <StoreTemplate
+        sortBy={sortBy}
+        page={page}
+        countryCode={countryCode}
+        longevity={longevity}
+        sillage={sillage}
+        notes={notes}
+        showOffers={false}
+      />
+
+      {/* Offers carousel — shown first, before tier cards */}
+      <HomeOffersSection countryCode={countryCode} />
 
       {/* Brand values trio */}
       <BrandValues />
