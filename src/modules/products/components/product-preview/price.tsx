@@ -34,16 +34,16 @@ export function VariantPriceList({
   variantPrices,
   priceTextClass = "text-sm",
 }: {
-  variantPrices: { size: string; price: VariantPrice }[]
+  variantPrices: { id?: string; size: string; price: VariantPrice }[]
   priceTextClass?: string
 }) {
   if (!variantPrices.length) return null
 
   return (
     <div className="flex flex-col gap-1">
-      {variantPrices.map(({ size, price }) => (
-        <div key={size} className="flex items-center gap-2">
-          <span className="font-inter text-[9px] tracking-[0.15em] uppercase text-on-surface-disabled w-8 shrink-0">
+      {variantPrices.map(({ id, size, price }, i) => (
+        <div key={id ?? `${size}-${i}`} className="flex items-center gap-2">
+          <span className="font-inter text-[9px] tracking-[0.12em] uppercase text-on-surface-disabled shrink-0 min-w-[2.75rem]">
             {size}
           </span>
           <span className="font-inter text-[9px] text-on-surface-disabled">—</span>

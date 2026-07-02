@@ -34,48 +34,28 @@ type TierDisplayMeta = {
 const TIER_META_FALLBACK: Record<string, TierDisplayMeta> = {
   "popular": {
     badge: "01 — POPULAR",
-    accentClass: "text-primary",
-    glowColor: "rgba(79,219,204,0.07)",
+    accentClass: "text-tier-popular",
+    glowColor: "rgba(117,84,46,0.07)",
     nextHref: "/categories/unique",
     nextBadge: "LADDER TIER: 01 — POPULAR",
     nextLabel: "EXPLORE UNIQUE",
   },
   "unique": {
     badge: "02 — UNIQUE",
-    accentClass: "text-tertiary",
-    glowColor: "rgba(255,181,71,0.07)",
+    accentClass: "text-tier-unique",
+    glowColor: "rgba(138,53,80,0.07)",
     nextHref: "/categories/idgf",
     nextBadge: "LADDER TIER: 02 — UNIQUE",
     nextLabel: "EXPLORE IDGF",
   },
   "idgf": {
     badge: "03 — IDGF",
-    accentClass: "text-secondary",
-    glowColor: "rgba(255,107,90,0.07)",
+    accentClass: "text-tier-idgf",
+    glowColor: "rgba(27,69,56,0.07)",
   },
 }
 
 const TIER_HANDLES = Object.keys(TIER_META_FALLBACK)
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function hexToGlow(hex: string | null | undefined): string | null {
-  if (!hex) return null
-  const h = hex.replace("#", "")
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return null
-  return `rgba(${r},${g},${b},0.07)`
-}
-
-function resolveAccentClass(color: string | null | undefined): string | null {
-  if (!color) return null
-  const c = color.toLowerCase()
-  if (c.includes("ffb") || c.includes("ffd")) return "text-tertiary"
-  if (c.includes("ff6") || c.includes("ff4")) return "text-secondary"
-  return "text-primary"
-}
 
 function mergeTierMeta(
   backend: CollectionTierMeta | undefined,
@@ -85,8 +65,8 @@ function mergeTierMeta(
   const fb = fallback ?? ({} as TierDisplayMeta)
   return {
     badge: fb.badge,
-    accentClass: resolveAccentClass(backend?.accent_color) ?? fb.accentClass,
-    glowColor: hexToGlow(backend?.accent_color) ?? fb.glowColor,
+    accentClass: fb.accentClass,
+    glowColor: fb.glowColor,
     nextHref: backend?.next_tier_href ?? fb.nextHref,
     nextBadge: fb.nextBadge,
     nextLabel: backend?.next_tier_cta ?? fb.nextLabel,

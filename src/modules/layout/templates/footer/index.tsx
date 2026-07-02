@@ -60,9 +60,9 @@ export default async function Footer() {
               {/* Tier breadcrumb — horizontal on all sizes */}
               <div className="flex items-center gap-0">
                 {[
-                  { label: "POPULAR", href: "/categories/popular", color: "var(--accent-popular)" },
-                  { label: "UNIQUE",  href: "/categories/unique",  color: "var(--tertiary)" },
-                  { label: "IDGF",    href: "/categories/idgf",    color: "var(--secondary)" },
+                  { label: "POPULAR", href: "/categories/popular", color: "var(--tier-popular)" },
+                  { label: "UNIQUE",  href: "/categories/unique",  color: "var(--tier-unique)" },
+                  { label: "IDGF",    href: "/categories/idgf",    color: "var(--tier-idgf)" },
                 ].map((tier, i) => (
                   <span key={tier.href} className="flex items-center">
                     {i > 0 && (

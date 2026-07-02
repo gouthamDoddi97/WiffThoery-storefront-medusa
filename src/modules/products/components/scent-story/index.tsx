@@ -515,28 +515,31 @@ export default function ScentStory({
 
           {/* Scroll hint — lives in the z-20 overlay so it's always on top */}
           <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+            className="absolute bottom-10 small:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2.5 pointer-events-none scroll-hint-below z-30"
             style={{
-              opacity: scrollProgress < 0.04 ? 1 : 0,
+              opacity: scrollProgress < 0.06 ? 1 : 0,
               transition: "opacity 0.5s ease",
             }}
           >
-            <span className="font-inter text-[9px] tracking-[0.3em] uppercase text-white/60">
-              Scroll
-            </span>
-            <svg
-              width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"
-              style={{ animation: "scrollHintBounce 1.4s ease-in-out infinite" }}
+            <div
+              className="flex flex-col items-center gap-2 px-4 py-2.5 rounded-full scroll-hint-below__pill"
+              style={{
+                background: "rgba(10, 8, 5, 0.45)",
+                border: "1px solid rgba(255, 255, 255, 0.28)",
+                boxShadow: "0 4px 24px rgba(0, 0, 0, 0.35)",
+              }}
             >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-            <style>{`
-              @keyframes scrollHintBounce {
-                0%, 100% { transform: translateY(0); opacity: 0.55; }
-                50%       { transform: translateY(6px); opacity: 1; }
-              }
-            `}</style>
+              <span className="font-grotesk font-bold text-[11px] small:text-xs tracking-[0.32em] uppercase scroll-hint-below__label">
+                Scroll below
+              </span>
+              <svg
+                width="22" height="22" viewBox="0 0 24 24" fill="none"
+                stroke="#FFFFFF" strokeWidth="2.25" strokeLinecap="round"
+                className="scroll-hint-below__chevron"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
           </div>
 
           {scentStory && (

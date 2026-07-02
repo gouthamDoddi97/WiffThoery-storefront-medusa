@@ -36,9 +36,13 @@ module.exports = {
         },
         secondary: "var(--secondary)",
         tertiary: "var(--tertiary)",
+        "tier-popular": "var(--tier-popular)",
+        "tier-unique": "var(--tier-unique)",
+        "tier-idgf": "var(--tier-idgf)",
         "on-surface": "var(--on-surface)",
         "on-surface-variant": "var(--on-surface-variant)",
         "on-surface-disabled": "var(--on-surface-disabled)",
+        "on-surface-muted": "var(--on-surface-muted)",
         // Keep grey for any legacy Medusa UI components
         grey: {
           0: "#FFFFFF",

@@ -8,6 +8,8 @@ import X from "@modules/common/icons/x"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
+import VariantSelect from "./variant-select"
+import { formatVariantOptionLabel } from "@lib/util/variant-label"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
 
@@ -15,6 +17,9 @@ type MobileActionsProps = {
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
   options: Record<string, string | undefined>
+  selectedVariantId?: string
+  usesVariantPicker?: boolean
+  onSelectVariant?: (variantId: string) => void
   updateOptions: (title: string, value: string) => void
   inStock?: boolean
   handleAddToCart: () => void
@@ -27,6 +32,9 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   product,
   variant,
   options,
+  selectedVariantId,
+  usesVariantPicker = false,
+  onSelectVariant,
   updateOptions,
   inStock,
   handleAddToCart,
@@ -110,7 +118,9 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 <div className="flex items-center justify-between w-full">
                   <span>
                       {variant
-                        ? Object.values(options).join(" /\u00A0")
+                        ? usesVariantPicker
+                          ? formatVariantOptionLabel(variant)
+                          : Object.values(options).join(" /\u00A0")
                         : "SELECT OPTIONS"}
                   </span>
                   <ChevronDown />
@@ -180,8 +190,16 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <div className="bg-surface-lowest px-6 py-12">
                     {(product.variants?.length ?? 0) > 1 && (
                       <div className="flex flex-col gap-y-6">
-                        {(product.options || []).map((option) => {
-                          return (
+                        {usesVariantPicker ? (
+                          <VariantSelect
+                            variants={product.variants ?? []}
+                            currentVariantId={selectedVariantId}
+                            onSelect={(id) => onSelectVariant?.(id)}
+                            title="Variant"
+                            disabled={optionsDisabled}
+                          />
+                        ) : (
+                          (product.options || []).map((option) => (
                             <div key={option.id}>
                               <OptionSelect
                                 option={option}
@@ -191,8 +209,8 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                                 disabled={optionsDisabled}
                               />
                             </div>
-                          )
-                        })}
+                          ))
+                        )}
                       </div>
                     )}
                   </div>

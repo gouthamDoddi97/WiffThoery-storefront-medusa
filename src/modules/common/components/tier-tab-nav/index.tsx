@@ -1,9 +1,9 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const TIER_TABS = [
-  { number: "01", name: "Popular", handle: "popular", accentClass: "text-primary" },
-  { number: "02", name: "Unique", handle: "unique", accentClass: "text-tertiary" },
-  { number: "03", name: "IDGF", handle: "idgf", accentClass: "text-secondary" },
+  { number: "01", name: "Popular", handle: "popular", accentClass: "text-tier-popular" },
+  { number: "02", name: "Unique", handle: "unique", accentClass: "text-tier-unique" },
+  { number: "03", name: "IDGF", handle: "idgf", accentClass: "text-tier-idgf" },
 ] as const
 
 export default function TierTabNav({

@@ -40,7 +40,7 @@ export default function BrandValues() {
 
                 <span
                   className="font-garamond italic text-5xl leading-none select-none"
-                  style={{ color: "color-mix(in srgb, var(--primary) 30%, transparent)" }}
+                  style={{ color: "var(--primary-container)" }}
                 >
                   {value.numeral}
                 </span>

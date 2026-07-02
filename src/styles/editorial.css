@@ -6,9 +6,9 @@
   --ink: #1a1f1a;
   --ink-muted: #5a6354;
   --ink-soft: #7a7a6e;
-  --rose-deep: #b07888;
-  --taupe: #a89070;
-  --forest: #2d3b2a;
+  --rose-deep: var(--tier-unique, #8A3550);
+  --taupe: var(--tier-popular, #75542E);
+  --forest: var(--tier-idgf, #1B4538);
 }
 
 /* Apply editorial surface and base type */

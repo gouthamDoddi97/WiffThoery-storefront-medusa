@@ -12,12 +12,20 @@
   --surface-variant: #E0D6C6;
   --primary: #A07E44; /* Richer gold for better contrast on light surfaces */
   --primary-container: #7a6448; /* darker container / hover state */
-  --secondary: #A9C8E8; /* Sky Blue (brand secondary accent) */
-  --tertiary: #B8C7B0; /* Sage (warm accent) */
-  --accent-popular: #4FDBCC;
-  --on-surface: #0A0805; /* Ink (brand text primary) - Darker */
-  --on-surface-variant: #5A4A3A; /* Sand (neutral mid / secondary text) - Darker */
-  --on-surface-disabled: #7a7a6e;
+  --secondary: #5A89A8; /* Muted sky — general UI accents (not tier) */
+  --tertiary: #5C7354; /* Muted sage — charts, stars (not tier) */
+  /* Tier accents — darker, distinct on ivory */
+  --tier-popular: #75542E;
+  --tier-unique: #8A3550;
+  --tier-idgf: #1B4538;
+  --accent-popular: var(--tier-popular);
+  --taupe: var(--tier-popular);
+  --rose-deep: var(--tier-unique);
+  --forest: var(--tier-idgf);
+  --on-surface: #0A0805; /* Ink (brand text primary) */
+  --on-surface-variant: #0A0805; /* Body / secondary — same ink for readable Inter text */
+  --on-surface-disabled: #0A0805; /* Labels, captions, filter text */
+  --on-surface-muted: #6E6860; /* Placeholders & truly de-emphasized hints only */
 }
 
 html {
@@ -29,6 +37,12 @@ body {
   background-color: var(--surface-lowest);
   color: var(--on-surface);
   font-family: var(--font-inter), Inter, sans-serif;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--on-surface-muted);
+  opacity: 1;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -46,6 +60,31 @@ body {
   .no-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+
+  /* Product scent-story — scroll below hint */
+  .scroll-hint-below__pill {
+    animation: scroll-hint-blink 2.2s ease-in-out infinite;
+  }
+
+  .scroll-hint-below__label {
+    color: #ffffff;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  }
+
+  .scroll-hint-below__chevron {
+    animation: scroll-hint-bounce 1.3s ease-in-out infinite;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
+  }
+
+  @keyframes scroll-hint-blink {
+    0%, 100% { opacity: 0.72; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes scroll-hint-bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.8; }
+    50% { transform: translateY(7px); opacity: 1; }
   }
 
   input:focus ~ label,
@@ -106,7 +145,15 @@ body {
   }
 
   .text-on-surface-disabled {
-    color: var(--on-surface-variant);
+    color: var(--on-surface-disabled);
+  }
+
+  .text-on-surface-muted {
+    color: var(--on-surface-muted);
+  }
+
+  .line-through.text-on-surface-disabled {
+    color: var(--on-surface-muted);
   }
 
   /* ─── Coastal Gallery Utilities ────────────────────────────────────────── */
@@ -126,7 +173,7 @@ body {
   }
 
   .input-coastal {
-    @apply bg-transparent border-0 border-b border-surface-variant text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:outline-none pb-2 w-full font-inter transition-colors duration-200;
+    @apply bg-transparent border-0 border-b border-surface-variant text-on-surface placeholder:text-on-surface-muted focus:border-primary focus:outline-none pb-2 w-full font-inter transition-colors duration-200;
   }
 
   .card-coastal {

@@ -19,8 +19,14 @@ export interface TierItem {
 const SPRING_CSS = "cubic-bezier(0.34, 1.22, 0.64, 1)"
 const MAX_PEEK = 20   // max % of viewport height for rubber-band drag
 const THRESHOLD = 0.28 // 28% of vh triggers snap
+const EXIT_THRESHOLD = 0.16 // lower bar to dismiss from last slide
 const LOCK_MS = 850    // lock scrolling during animation
 const SHOWCASE_SEEN_KEY = "whiff-home-tier-showcase-seen"
+
+function peekAmount(deltaPx: number, vh: number): number {
+  const rawPct = (deltaPx / vh) * 100
+  return Math.sign(rawPct) * Math.min(Math.sqrt(Math.abs(rawPct)) * 5.5, MAX_PEEK)
+}
 
 function shouldStartDismissed() {
   if (typeof window === "undefined") return false
@@ -40,34 +46,21 @@ function shouldStartDismissed() {
 }
 
 export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
-  // active is React state only for breadcrumb re-render; all position logic uses activeRef
   const [active, setActive] = useState(0)
+  const [dragPeek, setDragPeek] = useState(0)
   const [dismissed, setDismissed] = useState(false)
   const activeRef = useRef(0)
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([])
   const isLocked = useRef(false)
-  const exitedRef = useRef(false)   // once exited, stop intercepting scroll
+  const exitedRef = useRef(false)
   const accDelta = useRef(0)
+  const gestureResolved = useRef(false)
   const wheelEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchStartY = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Imperatively update slide transforms — avoids React batching issues with transitions
-  const setSlidePositions = useCallback(
-    (targetActive: number, animate: boolean, dragOff = 0) => {
-      slideRefs.current.forEach((el, i) => {
-        if (!el) return
-        el.style.transition = animate ? `transform 0.82s ${SPRING_CSS}` : "none"
-        el.style.transform = `translateY(${(i - targetActive) * 100 - dragOff}%)`
-      })
-    },
-    []
-  )
-
-  // Set initial positions without animation on mount
   useEffect(() => {
-    setSlidePositions(0, false, 0)
-  }, [setSlidePositions])
+    activeRef.current = active
+  }, [active])
 
   // Resolve SSR/client mismatch — always render on server, dismiss after hydration if already seen.
   // Must NOT use shouldStartDismissed() in useState() because sessionStorage is unavailable on server,
@@ -88,46 +81,66 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
     return () => { document.body.style.overflow = "" }
   }, [dismissed])
 
+  const clearWheelTimer = useCallback(() => {
+    if (wheelEndTimer.current) {
+      clearTimeout(wheelEndTimer.current)
+      wheelEndTimer.current = null
+    }
+  }, [])
+
   // Exit the showcase — just unlock body scroll, dismiss instantly
   const exitShowcase = useCallback(() => {
     if (exitedRef.current) return
     exitedRef.current = true
     accDelta.current = 0
+    gestureResolved.current = true
     isLocked.current = false
+    clearWheelTimer()
     document.body.style.overflow = ""
     window.sessionStorage.setItem(SHOWCASE_SEEN_KEY, "true")
     setDismissed(true)
-  }, [])
+  }, [clearWheelTimer])
 
   const snapTo = useCallback(
     (index: number) => {
       if (index < 0) {
-        // Top edge — bounce back
-        setSlidePositions(activeRef.current, true, 0)
+        setDragPeek(0)
         accDelta.current = 0
+        gestureResolved.current = false
         return
       }
       if (index >= tiers.length) {
-        // Past last tier — exit to page
         exitShowcase()
         return
       }
       isLocked.current = true
+      gestureResolved.current = true
+      accDelta.current = 0
+      setDragPeek(0)
       activeRef.current = index
       setActive(index)
-      setSlidePositions(index, true, 0)
-      accDelta.current = 0
       setTimeout(() => {
         isLocked.current = false
       }, LOCK_MS)
     },
-    [tiers.length, setSlidePositions, exitShowcase]
+    [tiers.length, exitShowcase]
   )
 
   const snapBack = useCallback(() => {
-    setSlidePositions(activeRef.current, true, 0)
+    setDragPeek(0)
     accDelta.current = 0
-  }, [setSlidePositions])
+    gestureResolved.current = false
+  }, [])
+
+  const scheduleWheelEnd = useCallback(() => {
+    clearWheelTimer()
+    wheelEndTimer.current = setTimeout(() => {
+      if (!isLocked.current && !gestureResolved.current) {
+        snapBack()
+      }
+      gestureResolved.current = false
+    }, 180)
+  }, [clearWheelTimer, snapBack])
 
   useEffect(() => {
     const el = containerRef.current
@@ -138,60 +151,71 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
       e.preventDefault()
       if (isLocked.current) return
 
-      accDelta.current += e.deltaY
-      const vh = window.innerHeight
-      const rawPct = (accDelta.current / vh) * 100
-      const isLast = activeRef.current === tiers.length - 1
-      // Suppress downward peek on last tier — no rubber-band hint, just exit cleanly
-      if (!(isLast && accDelta.current > 0)) {
-        const peek =
-          Math.sign(rawPct) * Math.min(Math.sqrt(Math.abs(rawPct)) * 5.5, MAX_PEEK)
-        setSlidePositions(activeRef.current, false, peek)
+      if (!gestureResolved.current) {
+        accDelta.current += e.deltaY
       }
 
-      const threshold = vh * THRESHOLD
-      if (accDelta.current > threshold) {
-        if (activeRef.current < tiers.length - 1) snapTo(activeRef.current + 1)
+      const vh = window.innerHeight
+      const current = activeRef.current
+      const isLast = current === tiers.length - 1
+      const scrollingDown = accDelta.current > 0
+
+      if (!gestureResolved.current) {
+        setDragPeek(
+          isLast && scrollingDown
+            ? -Math.min(Math.sqrt(Math.abs(accDelta.current / vh) * 100) * 2.5, 12)
+            : peekAmount(accDelta.current, vh)
+        )
+      }
+
+      const threshold = vh * (isLast && scrollingDown ? EXIT_THRESHOLD : THRESHOLD)
+
+      if (!gestureResolved.current && accDelta.current > threshold) {
+        if (current < tiers.length - 1) snapTo(current + 1)
         else exitShowcase()
-      } else if (accDelta.current < -threshold) {
-        if (activeRef.current > 0) snapTo(activeRef.current - 1)
+      } else if (!gestureResolved.current && accDelta.current < -threshold) {
+        if (current > 0) snapTo(current - 1)
         else snapBack()
       }
 
-      // Wheel end debounce
-      if (wheelEndTimer.current) clearTimeout(wheelEndTimer.current)
-      wheelEndTimer.current = setTimeout(() => {
-        if (!isLocked.current) snapBack()
-      }, 180)
+      scheduleWheelEnd()
     }
 
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY
+      gestureResolved.current = false
     }
 
     const handleTouchMove = (e: TouchEvent) => {
       if (exitedRef.current) return
       e.preventDefault()
       if (isLocked.current) return
+
       const delta = touchStartY.current - e.touches[0].clientY
-      const isLast = activeRef.current === tiers.length - 1
       accDelta.current = delta
-      if (!(isLast && delta > 0)) {
-        const vh = window.innerHeight
-        const rawPct = (delta / vh) * 100
-        const peek =
-          Math.sign(rawPct) * Math.min(Math.sqrt(Math.abs(rawPct)) * 5.5, MAX_PEEK)
-        setSlidePositions(activeRef.current, false, peek)
-      }
+      const vh = window.innerHeight
+      const isLast = activeRef.current === tiers.length - 1
+      const scrollingDown = delta > 0
+
+      setDragPeek(
+        isLast && scrollingDown
+          ? -Math.min(Math.sqrt(Math.abs((delta / vh) * 100)) * 2.5, 12)
+          : peekAmount(delta, vh)
+      )
     }
 
     const handleTouchEnd = () => {
       if (exitedRef.current) return
-      const threshold = window.innerHeight * THRESHOLD
+      const vh = window.innerHeight
+      const current = activeRef.current
+      const isLast = current === tiers.length - 1
+      const scrollingDown = accDelta.current > 0
+      const threshold = vh * (isLast && scrollingDown ? EXIT_THRESHOLD : THRESHOLD)
+
       if (accDelta.current > threshold) {
-        snapTo(activeRef.current + 1)  // handles exit if on last
-      } else if (accDelta.current < -threshold && activeRef.current > 0) {
-        snapTo(activeRef.current - 1)
+        snapTo(current + 1)
+      } else if (accDelta.current < -threshold && current > 0) {
+        snapTo(current - 1)
       } else {
         snapBack()
       }
@@ -203,12 +227,13 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
     el.addEventListener("touchend", handleTouchEnd, { passive: true })
 
     return () => {
+      clearWheelTimer()
       el.removeEventListener("wheel", handleWheel)
       el.removeEventListener("touchstart", handleTouchStart)
       el.removeEventListener("touchmove", handleTouchMove)
       el.removeEventListener("touchend", handleTouchEnd)
     }
-  }, [tiers.length, snapTo, snapBack, setSlidePositions])
+  }, [tiers.length, snapTo, snapBack, exitShowcase, scheduleWheelEnd, clearWheelTimer])
 
   if (dismissed) return null
 
@@ -222,9 +247,12 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
       {tiers.map((tier, i) => (
         <div
           key={tier.handle}
-          ref={(el) => { slideRefs.current[i] = el }}
           className="absolute inset-x-0 top-0 h-full"
-          style={{ willChange: "transform", transform: `translateY(${i * 100}%)` }}
+          style={{
+            willChange: "transform",
+            transform: `translateY(${(i - active) * 100 - dragPeek}%)`,
+            transition: dragPeek !== 0 ? "none" : `transform 0.82s ${SPRING_CSS}`,
+          }}
         >
           <TierSlide tier={tier} />
         </div>
@@ -272,10 +300,21 @@ export default function TierShowcaseClient({ tiers }: { tiers: TierItem[] }) {
         ))}
       </div>
 
-      {/* Scroll hint — visible on all tiers; last tier label changes to indicate page continuation */}
+      {/* Scroll hint — tap CONTINUE on last tier to dismiss */}
       <div
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1 pointer-events-none transition-opacity duration-300"
+        className={`absolute bottom-7 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1 transition-opacity duration-300 ${
+          active === tiers.length - 1 ? "cursor-pointer pointer-events-auto" : "pointer-events-none"
+        }`}
         style={{ opacity: 1 }}
+        onClick={active === tiers.length - 1 ? exitShowcase : undefined}
+        onKeyDown={
+          active === tiers.length - 1
+            ? (e) => { if (e.key === "Enter" || e.key === " ") exitShowcase() }
+            : undefined
+        }
+        role={active === tiers.length - 1 ? "button" : undefined}
+        tabIndex={active === tiers.length - 1 ? 0 : undefined}
+        aria-label={active === tiers.length - 1 ? "Continue to store" : undefined}
       >
         <span className="font-inter text-[9px] tracking-[0.22em] uppercase text-on-surface-disabled">
           {active < tiers.length - 1 ? "SCROLL" : "CONTINUE"}
@@ -340,22 +379,22 @@ function TierSlide({ tier }: { tier: TierItem }) {
           background: `radial-gradient(ellipse at bottom left, color-mix(in srgb, ${tier.accentColor} 13%, transparent) 0%, transparent 65%)`,
         }}
       />
-            <span
-              className="block rounded-full"
-              style={{
-                width: "2px",
-                height: i === active ? "28px" : "10px",
-                background:
-                  i === active
-                    ? tiers[active]?.accentColor
-                    : "rgba(255,255,255,0.18)",
-                transition: `all 0.5s ${SPRING_CSS}`,
-                boxShadow:
-                  i === active
-                    ? `0 0 8px color-mix(in srgb, ${tiers[active]?.accentColor} 56%, transparent)`
-                    : "none",
-              }}
-            />
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex items-center">
+        <div className="content-container">
+          <div className="flex flex-col max-w-[560px]" style={{ gap: "1.4rem" }}>
+
+            {/* Eyebrow — thin accent rule + tier number */}
+            <div className="flex items-center gap-3">
+              <div
+                className="h-px w-7 shrink-0"
+                style={{ background: tier.accentColor }}
+              />
+              <span
+                className="font-inter text-[9px] tracking-[0.38em] uppercase"
+                style={{ color: tier.accentColor }}
+              >
                 {tier.number}
               </span>
             </div>

@@ -33,15 +33,6 @@ type FilterProps = {
   notes: string[]
 }
 
-function resolveAccentClass(color: string | null | undefined): string {
-  if (!color) return "text-primary"
-  if (color.toLowerCase().includes("ffb") || color.toLowerCase().includes("ffd"))
-    return "text-tertiary"
-  if (color.toLowerCase().includes("ff6") || color.toLowerCase().includes("ff4"))
-    return "text-secondary"
-  return "text-primary"
-}
-
 function buildMeta(
   tier: CollectionTierMeta | undefined,
   fallback: ResolvedMeta
@@ -53,10 +44,8 @@ function buildMeta(
     number: tier.tier_number || fallback.number,
     tagline: tier.tagline || fallback.tagline,
     description: tier.description || fallback.description,
-    accentColor: tier.accent_color || fallback.accentColor,
-    accentClass: tier.accent_color
-      ? resolveAccentClass(tier.accent_color)
-      : fallback.accentClass,
+    accentColor: fallback.accentColor,
+    accentClass: fallback.accentClass,
     nextTier: hasNext
       ? {
           label: tier.next_tier_label!,
@@ -79,8 +68,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "Your entry point. Instantly loved.",
     description:
       "Universally adored, immediately wearable. These fragrances win rooms, open conversations, and leave lasting impressions — without demanding anything from your nose.",
-    accentColor: "var(--accent-popular)",
-    accentClass: "text-primary",
+    accentColor: "var(--tier-popular)",
+    accentClass: "text-tier-popular",
     nextTier: {
       label: "Ready for More?",
       href: "/collections/unique",
@@ -94,8 +83,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "For the curious nose.",
     description:
       "Beyond the mainstream. These scents reward attention and develop beautifully over time. Your nose has grown. These fragrances know it.",
-    accentColor: "var(--tertiary)",
-    accentClass: "text-tertiary",
+    accentColor: "var(--tier-unique)",
+    accentClass: "text-tier-unique",
     nextTier: {
       label: "Ready for the deepest end?",
       href: "/collections/idgf",
@@ -109,8 +98,8 @@ const FALLBACK_META: Record<string, ResolvedMeta> = {
     tagline: "Not for everyone. Definitely for you.",
     description:
       "Challenging, unforgettable, unapologetically complex. These fragrances are divisive by design. The ones who get it, get it completely.",
-    accentColor: "var(--secondary)",
-    accentClass: "text-secondary",
+    accentColor: "var(--tier-idgf)",
+    accentClass: "text-tier-idgf",
     energyLabel: "Divisive",
     fromPriceDisplay: "₹449+",
   },
@@ -241,22 +230,22 @@ function CrowdPleasersTemplate({
           className="absolute top-0 left-0 w-[500px] h-[500px] pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at top left, rgba(79,219,204,0.06) 0%, transparent 70%)",
+              "radial-gradient(ellipse at top left, color-mix(in srgb, var(--tier-popular) 6%, transparent) 0%, transparent 70%)",
           }}
         />
         <div className="content-container relative z-10 flex flex-col gap-6 max-w-[700px]">
-          <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-primary">
+          <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tier-popular">
             {meta.number}
           </span>
           <TierTabNav activeHandle="popular" basePath="/collections" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
             {collection.title}
           </h1>
-          <p className="font-inter text-lg text-primary">{meta.tagline}</p>
+          <p className="font-inter text-lg text-tier-popular">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">
             {meta.description}
           </p>
-          <div className="w-16 h-[2px] bg-primary" />
+          <div className="w-16 h-[2px] bg-tier-popular" />
           <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
             {([
               { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
@@ -285,7 +274,7 @@ function CrowdPleasersTemplate({
               "You're buying your first extrait and want to start somewhere safe.",
             ].map((line, i) => (
               <div key={i} className="flex gap-4 items-start">
-                <span className="font-inter text-[10px] tracking-[0.16em] text-primary mt-0.5 min-w-[24px]">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-tier-popular mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
@@ -353,22 +342,22 @@ function IntroToNicheTemplate({
           className="absolute top-0 right-0 w-[600px] h-[600px] pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at top right, rgba(255,181,71,0.07) 0%, transparent 70%)",
+              "radial-gradient(ellipse at top right, color-mix(in srgb, var(--tier-unique) 7%, transparent) 0%, transparent 70%)",
           }}
         />
         <div className="content-container relative z-10 flex flex-col gap-6 max-w-[700px]">
-          <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tertiary">
+          <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tier-unique">
             {meta.number}
           </span>
           <TierTabNav activeHandle="unique" basePath="/collections" />
           <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
             {collection.title}
           </h1>
-          <p className="font-inter text-lg italic text-tertiary">{meta.tagline}</p>
+          <p className="font-inter text-lg italic text-tier-unique">{meta.tagline}</p>
           <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">
             {meta.description}
           </p>
-          <div className="w-16 h-[2px] bg-tertiary" />
+          <div className="w-16 h-[2px] bg-tier-unique" />
           <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
             {([
               { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
@@ -397,7 +386,7 @@ function IntroToNicheTemplate({
               "You're ready to let a fragrance say something about who you are.",
             ].map((line, i) => (
               <div key={i} className="flex gap-4 items-start">
-                <span className="font-inter text-[10px] tracking-[0.16em] text-tertiary mt-0.5 min-w-[24px]">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-tier-unique mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>
@@ -475,7 +464,7 @@ function PolarizingArtTemplate({
           className="absolute bottom-0 right-0 w-[700px] h-[700px] pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at bottom right, rgba(255,107,90,0.08) 0%, transparent 65%)",
+              "radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--tier-idgf) 8%, transparent) 0%, transparent 65%)",
           }}
         />
         <div className="content-container relative z-10">
@@ -488,24 +477,24 @@ function PolarizingArtTemplate({
               HOME
             </LocalizedClientLink>
             <span className="text-on-surface-disabled text-[10px]">/</span>
-            <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-secondary">
+            <span className="font-inter text-[10px] tracking-[0.15em] uppercase text-tier-idgf">
               IDGF
             </span>
           </div>
 
           <div className="flex flex-col gap-6 max-w-[700px]">
-            <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-secondary">
+            <span className="font-inter text-[11px] tracking-[0.25em] uppercase text-tier-idgf">
               {meta.number}
             </span>
             <TierTabNav activeHandle="idgf" basePath="/collections" />
             <h1 className="font-grotesk font-bold text-5xl small:text-7xl text-on-surface tracking-[-0.03em] leading-[0.9]">
               {collection.title}
             </h1>
-            <p className="font-inter text-lg italic text-secondary">{meta.tagline}</p>
+            <p className="font-inter text-lg italic text-tier-idgf">{meta.tagline}</p>
             <p className="font-inter text-sm text-on-surface-variant leading-relaxed max-w-[500px]">
               {meta.description}
             </p>
-            <div className="w-16 h-[2px] bg-secondary" />
+            <div className="w-16 h-[2px] bg-tier-idgf" />
             <div className="grid grid-cols-3 mt-6 pt-3.5" style={{ borderTop: `1px solid ${meta.accentColor}26` }}>
               {([
                 { value: collection.products?.length != null ? String(collection.products.length).padStart(2, "0") : "—", label: "Fragrances" },
@@ -535,7 +524,7 @@ function PolarizingArtTemplate({
               "You think \"compliment bait\" is a personality flaw.",
             ].map((line, i) => (
               <div key={i} className="flex gap-4 items-start">
-                <span className="font-inter text-[10px] tracking-[0.16em] text-secondary mt-0.5 min-w-[24px]">
+                <span className="font-inter text-[10px] tracking-[0.16em] text-tier-idgf mt-0.5 min-w-[24px]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <p className="font-inter text-base text-on-surface leading-[1.45]">{line}</p>

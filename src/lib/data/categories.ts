@@ -1,6 +1,7 @@
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { getCacheOptions } from "./cookies"
+import { filterOnlineProducts } from "@lib/util/product-availability"
 
 export const listCategories = async (query?: Record<string, any>) => {
   const next = {
@@ -15,7 +16,7 @@ export const listCategories = async (query?: Record<string, any>) => {
       {
         query: {
           fields:
-            "*category_children, *products, *parent_category, *parent_category.parent_category",
+            "*category_children, *products, *parent_category, *parent_category.parent_category,+metadata",
           limit,
           ...query,
         },
@@ -23,7 +24,14 @@ export const listCategories = async (query?: Record<string, any>) => {
         cache: "force-cache",
       }
     )
-    .then(({ product_categories }) => product_categories)
+    .then(({ product_categories }) =>
+      product_categories.map((category) => ({
+        ...category,
+        products: category.products
+          ? filterOnlineProducts(category.products)
+          : category.products,
+      }))
+    )
 }
 
 export const getCategoryByHandle = async (categoryHandle: string[]) => {
@@ -38,12 +46,21 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
       `/store/product-categories`,
       {
         query: {
-          fields: "*category_children, *products",
+          fields: "*category_children, *products,+metadata",
           handle,
         },
         next,
         cache: "force-cache",
       }
     )
-    .then(({ product_categories }) => product_categories[0])
+    .then(({ product_categories }) => {
+      const category = product_categories[0]
+      if (!category) return category
+      return {
+        ...category,
+        products: category.products
+          ? filterOnlineProducts(category.products)
+          : category.products,
+      }
+    })
 }

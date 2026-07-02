@@ -3,6 +3,16 @@
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { getCacheOptions } from "./cookies"
+import { filterOnlineProducts } from "@lib/util/product-availability"
+
+function withOnlineProducts(collection: HttpTypes.StoreCollection): HttpTypes.StoreCollection {
+  return {
+    ...collection,
+    products: collection.products
+      ? filterOnlineProducts(collection.products)
+      : collection.products,
+  }
+}
 
 export const retrieveCollection = async (id: string) => {
   const next = {
@@ -17,7 +27,7 @@ export const retrieveCollection = async (id: string) => {
         cache: "force-cache",
       }
     )
-    .then(({ collection }) => collection)
+    .then(({ collection }) => withOnlineProducts(collection))
 }
 
 export const listCollections = async (
@@ -39,7 +49,10 @@ export const listCollections = async (
         cache: "force-cache",
       }
     )
-    .then(({ collections }) => ({ collections, count: collections.length }))
+    .then(({ collections }) => ({
+      collections: collections.map(withOnlineProducts),
+      count: collections.length,
+    }))
 }
 
 export type CollectionBackground = {
@@ -74,9 +87,9 @@ export const getCollectionByHandle = async (
 
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
-      query: { handle, fields: "*products" },
+      query: { handle, fields: "*products,+metadata" },
       next,
       cache: "force-cache",
     })
-    .then(({ collections }) => collections[0])
+    .then(({ collections }) => withOnlineProducts(collections[0]))
 }

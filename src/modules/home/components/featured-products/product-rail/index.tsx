@@ -5,9 +5,9 @@ import { getPerfumeDetails } from "@lib/data/perfume-details"
 import CollectionCarousel from "../collection-carousel"
 
 const TIER_ACCENTS: Record<string, string> = {
-  popular: "var(--accent-popular)",
-  unique:  "var(--tertiary)",
-  idgf:    "var(--secondary)",
+  popular: "var(--tier-popular)",
+  unique:  "var(--tier-unique)",
+  idgf:    "var(--tier-idgf)",
 }
 
 export default async function ProductRail({

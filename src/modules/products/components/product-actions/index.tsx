@@ -5,6 +5,8 @@ import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
+import VariantSelect from "@modules/products/components/product-actions/variant-select"
+import { productUsesVariantPicker } from "@lib/util/variant-label"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -35,27 +37,49 @@ export default function ProductActions({
   const searchParams = useSearchParams()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>()
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
 
-  // If there is only 1 variant, preselect the options
+  const usesVariantPicker = useMemo(
+    () => productUsesVariantPicker(product),
+    [product]
+  )
+
+  // Preselect from URL or when only one variant exists
   useEffect(() => {
-    if (product.variants?.length === 1) {
-      const variantOptions = optionsAsKeymap(product.variants[0].options)
+    const variants = product.variants ?? []
+    if (variants.length === 1) {
+      const variantOptions = optionsAsKeymap(variants[0].options)
       setOptions(variantOptions ?? {})
+      setSelectedVariantId(variants[0].id)
+      return
     }
-  }, [product.variants])
+
+    if (!usesVariantPicker) {
+      return
+    }
+
+    const fromUrl = searchParams.get("v_id")
+    if (fromUrl && variants.some((v) => v.id === fromUrl)) {
+      setSelectedVariantId(fromUrl)
+    }
+  }, [product.variants, usesVariantPicker, searchParams])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
       return
     }
 
+    if (usesVariantPicker) {
+      return product.variants.find((v) => v.id === selectedVariantId)
+    }
+
     return product.variants.find((v) => {
       const variantOptions = optionsAsKeymap(v.options)
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options])
+  }, [product.variants, options, selectedVariantId, usesVariantPicker])
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -67,11 +91,15 @@ export default function ProductActions({
 
   //check if the selected options produce a valid variant
   const isValidVariant = useMemo(() => {
+    if (usesVariantPicker) {
+      return !!selectedVariantId
+    }
+
     return product.variants?.some((v) => {
       const variantOptions = optionsAsKeymap(v.options)
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options])
+  }, [product.variants, options, selectedVariantId, usesVariantPicker])
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
@@ -158,8 +186,17 @@ export default function ProductActions({
         <div>
           {(product.variants?.length ?? 0) > 1 && (
             <div className="flex flex-col gap-y-4">
-              {(product.options || []).map((option) => {
-                return (
+              {usesVariantPicker ? (
+                <VariantSelect
+                  variants={product.variants ?? []}
+                  currentVariantId={selectedVariantId}
+                  onSelect={setSelectedVariantId}
+                  title="Variant"
+                  data-testid="product-options"
+                  disabled={!!disabled || isAdding}
+                />
+              ) : (
+                (product.options || []).map((option) => (
                   <div key={option.id}>
                     <OptionSelect
                       option={option}
@@ -170,8 +207,8 @@ export default function ProductActions({
                       disabled={!!disabled || isAdding}
                     />
                   </div>
-                )
-              })}
+                ))
+              )}
               <Divider />
             </div>
           )}
@@ -206,6 +243,9 @@ export default function ProductActions({
           product={product}
           variant={selectedVariant}
           options={options}
+          selectedVariantId={selectedVariantId}
+          usesVariantPicker={usesVariantPicker}
+          onSelectVariant={setSelectedVariantId}
           updateOptions={setOptionValue}
           inStock={inStock}
           handleAddToCart={handleAddToCart}

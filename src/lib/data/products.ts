@@ -2,6 +2,7 @@
 
 import { sdk } from "@lib/config"
 import { sortProducts } from "@lib/util/sort-products"
+import { filterOnlineProducts } from "@lib/util/product-availability"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
@@ -49,6 +50,13 @@ export const listProducts = async ({
     ...(await getAuthHeaders()),
   }
 
+  const defaultFields =
+    "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*options,*variants.options"
+  const requestedFields = queryParams?.fields ?? defaultFields
+  const fields = requestedFields.includes("metadata")
+    ? requestedFields
+    : `${requestedFields},+metadata`
+
   const next = {
     ...(await getCacheOptions("products")),
   }
@@ -62,9 +70,9 @@ export const listProducts = async ({
           limit,
           offset,
           region_id: region?.id,
-          fields:
-            "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*options,*variants.options",
+          fields,
           ...queryParams,
+          fields,
         },
         headers,
         next,
@@ -72,12 +80,15 @@ export const listProducts = async ({
       }
     )
     .then(({ products, count }) => {
-      const nextPage = count > offset + limit ? pageParam + 1 : null
+      const onlineProducts = filterOnlineProducts(products)
+      const removed = products.length - onlineProducts.length
+      const onlineCount = Math.max(0, count - removed)
+      const nextPage = onlineCount > offset + limit ? pageParam + 1 : null
 
       return {
         response: {
-          products,
-          count,
+          products: onlineProducts,
+          count: onlineCount,
         },
         nextPage: nextPage,
         queryParams,

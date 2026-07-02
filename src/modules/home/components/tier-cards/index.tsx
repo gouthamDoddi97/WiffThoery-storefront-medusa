@@ -11,7 +11,7 @@ const TIERS_FALLBACK = [
       "Universally adored, immediately wearable. These fragrances win rooms.",
     href: "/categories/popular",
     handle: "popular",
-    accentColor: "var(--accent-popular)",
+    accentColor: "var(--tier-popular)",
   },
   {
     number: "TIER 02 / 03",
@@ -21,7 +21,7 @@ const TIERS_FALLBACK = [
       "Beyond the mainstream. Scents that reward attention and develop over time.",
     href: "/categories/unique",
     handle: "unique",
-    accentColor: "var(--tertiary)",
+    accentColor: "var(--tier-unique)",
   },
   {
     number: "TIER 03 / 03",
@@ -31,7 +31,7 @@ const TIERS_FALLBACK = [
       "Challenging, unforgettable, unapologetically complex. Only the committed need apply.",
     href: "/categories/idgf",
     handle: "idgf",
-    accentColor: "var(--secondary)",
+    accentColor: "var(--tier-idgf)",
   },
 ]
 
@@ -43,7 +43,7 @@ function buildTierData(backend: CollectionTierMeta | undefined, fallback: typeof
     description: backend?.description || fallback.description,
     href: fallback.href,
     handle: fallback.handle,
-    accentColor: backend?.accent_color || fallback.accentColor,
+    accentColor: fallback.accentColor,
     imageUrl: backend?.image_url || null,
   }
 }
