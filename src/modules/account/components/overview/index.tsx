@@ -1,6 +1,7 @@
 import ChevronDown from "@modules/common/icons/chevron-down"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
 type OverviewProps = {
@@ -102,10 +103,12 @@ const Overview = ({ customer, orders }: OverviewProps) => {
                                 #{order.display_id}
                               </span>
                               <span data-testid="order-amount" className="text-primary font-semibold text-sm">
-                                {convertToLocale({
-                                  amount: order.total,
-                                  currency_code: order.currency_code,
-                                })}
+                                <PriceText>
+                                  {convertToLocale({
+                                    amount: order.total,
+                                    currency_code: order.currency_code,
+                                  })}
+                                </PriceText>
                               </span>
                             </div>
                             <button

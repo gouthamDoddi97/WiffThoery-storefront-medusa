@@ -21,7 +21,7 @@ export default function VariantSelect({
 }: VariantSelectProps) {
   return (
     <div className="flex flex-col gap-y-3">
-      <span className="font-grotesk font-semibold text-[11px] tracking-[0.2em] uppercase text-on-surface-variant">
+      <span className="font-grotesk font-semibold text-[11px] tracking-[0.2em] uppercase text-on-surface">
         Select {title}
       </span>
       <div className="flex flex-wrap gap-2" data-testid={dataTestId}>
@@ -40,8 +40,9 @@ export default function VariantSelect({
               className={clx(
                 "min-w-[5.5rem] flex-1 border font-inter text-sm min-h-10 rounded-sm px-3 py-2 transition-colors duration-150 text-left small:text-center",
                 {
-                  "border-primary bg-primary/10 text-primary font-medium": selected,
-                  "border-surface-variant/50 text-on-surface hover:border-primary/40":
+                  "border-2 border-primary-container bg-surface-lowest text-on-surface font-semibold shadow-sm":
+                    selected,
+                  "border-surface-variant bg-surface-lowest/60 text-on-surface-variant hover:border-primary-container/50 hover:text-on-surface":
                     !selected,
                 }
               )}

@@ -7,6 +7,7 @@ import {
   Transition,
 } from "@headlessui/react"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
@@ -112,9 +113,9 @@ const CartDropdown = ({
             style={{ backdropFilter: "blur(16px)" }}
           >
             <div className="px-5 py-4 border-b border-surface-variant/30 flex items-center justify-between">
-              <h3 className="font-grotesk font-semibold text-sm tracking-[0.1em] uppercase text-on-surface">Your Collection</h3>
+              <h3 className="font-grotesk font-semibold text-sm tracking-[0.1em] uppercase text-on-surface">Your Cart</h3>
               {totalItems > 0 && (
-                <span className="font-inter text-xs text-on-surface-variant">{totalItems} fragment{totalItems !== 1 ? "s" : ""}</span>
+                <span className="font-inter text-xs text-on-surface-variant">{totalItems} item{totalItems !== 1 ? "s" : ""}</span>
               )}
             </div>
             {cartState && cartState.items?.length ? (
@@ -196,10 +197,12 @@ const CartDropdown = ({
                       data-testid="cart-subtotal"
                       data-value={subtotal}
                     >
-                      {convertToLocale({
-                        amount: subtotal,
-                        currency_code: cartState.currency_code,
-                      })}
+                      <PriceText>
+                        {convertToLocale({
+                          amount: subtotal,
+                          currency_code: cartState.currency_code,
+                        })}
+                      </PriceText>
                     </span>
                   </div>
                   <LocalizedClientLink href="/cart" passHref>
@@ -207,7 +210,7 @@ const CartDropdown = ({
                       className="w-full bg-gradient-cta text-surface-lowest font-grotesk font-semibold text-xs tracking-[0.15em] uppercase py-3 transition-opacity hover:opacity-90"
                       data-testid="go-to-cart-button"
                     >
-                      VIEW COLLECTION
+                      VIEW CART
                     </button>
                   </LocalizedClientLink>
                 </div>
@@ -216,11 +219,11 @@ const CartDropdown = ({
               <div>
                 <div className="flex py-16 flex-col gap-4 items-center justify-center">
                   <p className="font-inter text-sm text-on-surface-variant text-center">
-                    Your collection is empty.
+                    Your cart is empty.
                   </p>
                   <LocalizedClientLink href="/store" onClick={close}>
                     <button className="btn-ghost text-xs py-2 px-6">
-                      EXPLORE COLLECTION
+                      BROWSE STORE
                     </button>
                   </LocalizedClientLink>
                 </div>

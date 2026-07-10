@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 
 // Same spring feel as TierShowcase
 const SPRING_CSS = "cubic-bezier(0.34, 1.22, 0.64, 1)"
@@ -151,119 +152,101 @@ export default function HeroShowcase() {
         className="absolute inset-0"
         style={{ willChange: "transform", transform: "translateY(0%)" }}
       >
-        {/* Background video */}
-        <video
-          src="/homeHero.webm"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {/* Ivory paper background */}
+        <div className="absolute inset-0 bg-surface-lowest" />
 
-        {/* Dark overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(105deg, rgba(10,13,20,0.86) 0%, rgba(10,13,20,0.65) 50%, rgba(10,13,20,0.20) 100%)",
-          }}
-        />
-
-        {/* Ambient primary glow — bottom-left */}
-        <div
-          className="absolute bottom-0 left-0 w-[600px] h-[600px] pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--primary) 9%, transparent) 0%, transparent 70%)",
-          }}
-        />
-        {/* Ambient secondary glow — top-right */}
-        <div
-          className="absolute top-0 right-0 w-[400px] h-[400px] pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at top right, color-mix(in srgb, var(--secondary) 5%, transparent) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Content */}
+        {/* Content — gallery split: text left, framed video plate right */}
         <div className="relative z-10 h-full flex items-center">
-          <div className="content-container">
-            <div className="flex flex-col gap-8 max-w-[680px]">
-              <span className="eyebrow">WHIFF THEORY — EXTRAIT DE PARFUM</span>
+          <div className="content-container w-full">
+            <div className="grid grid-cols-1 small:grid-cols-2 gap-10 small:gap-16 items-center">
+              {/* Left — headline */}
+              <div className="flex flex-col gap-7 max-w-[560px]">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <BrandLogo variant="sm" />
+                  <span className="font-mono text-[10px] tracking-[0.24em] uppercase text-on-surface-variant">
+                    · APPAREL PERFUME · VIZAG
+                  </span>
+                </div>
 
-              <h1
-                className="font-garamond font-bold text-on-surface leading-[0.9] tracking-[-0.02em]"
-                style={{ fontSize: "clamp(2.8rem, 6vw, 5.5rem)" }}
-              >
-                Every fragrance,{" "}
-                <span className="text-primary italic">a story.</span>
-              </h1>
+                <h1
+                  className="font-garamond serif-display font-medium text-on-surface leading-[1.02] tracking-[-0.01em]"
+                  style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)", fontStyle: "normal" }}
+                >
+                  Indian stories,
+                  <br />
+                  bottled.
+                </h1>
 
-              <p className="font-inter text-base text-on-surface-variant leading-relaxed max-w-[380px]">
-                Three tiers. One journey. Extrait-concentration fragrances crafted
-                and bottled in Vizag.
-              </p>
+                <p className="font-inter text-base text-on-surface-variant leading-relaxed max-w-[400px]">
+                  Perfumes named after places and moments of India — composed,
+                  macerated, and batch-numbered in Vizag.
+                </p>
 
-              <div className="flex flex-col xsmall:flex-row items-start gap-5">
-                <LocalizedClientLink href="/categories/crowd-pleaser">
-                  <button className="group flex items-center gap-3 font-inter text-[11px] tracking-[0.22em] uppercase text-primary transition-all duration-300">
-                    <span
-                      className="block h-px bg-primary transition-all duration-500 group-hover:w-12"
-                      style={{ width: "20px" }}
-                    />
-                    <span className="transition-all duration-300 group-hover:tracking-[0.28em]">
-                      Begin the Story
-                    </span>
-                    <svg
-                      className="transition-transform duration-300 group-hover:translate-x-1"
-                      width="11" height="11" viewBox="0 0 24 24"
-                      fill="none" stroke="currentColor" strokeWidth="1.5"
-                    >
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </LocalizedClientLink>
+                <div className="flex flex-col xsmall:flex-row items-start gap-5">
+                  <LocalizedClientLink href="/store">
+                    <button className="btn-ink">
+                      Explore the collection
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </button>
+                  </LocalizedClientLink>
 
-                <LocalizedClientLink href="/store">
-                  <button className="font-inter text-[11px] tracking-[0.22em] uppercase text-on-surface-variant hover:text-on-surface transition-colors duration-300 flex items-center gap-2">
-                    Explore All
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </LocalizedClientLink>
+                  <LocalizedClientLink href="/journey">
+                    <button className="font-mono text-[11px] tracking-[0.22em] uppercase text-on-surface-variant hover:text-on-surface transition-colors duration-300 flex items-center gap-2 py-4">
+                      Take the scent quiz
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
+                  </LocalizedClientLink>
+                </div>
+
+                {/* Stats — mono ledger row */}
+                <div className="flex items-center gap-8 pt-4 rule-ink">
+                  {[
+                    { value: "3", label: "TIERS" },
+                    { value: "25%", label: "CONCENTRATION" },
+                    { value: "VIZAG", label: "CRAFTED IN" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="flex flex-col gap-1 pt-4">
+                      <span className="font-garamond text-2xl text-on-surface leading-none">
+                        {stat.value}
+                      </span>
+                      <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-on-surface-muted">
+                        {stat.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Stats */}
-              <div className="flex items-center gap-8 pt-2">
-                {[
-                  { value: "3", label: "TIERS" },
-                  { value: "EXTRAIT", label: "CONCENTRATION" },
-                  { value: "VIZAG", label: "CRAFTED IN" },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex flex-col gap-0.5">
-                    <span className="font-garamond italic text-2xl text-primary leading-none">
-                      {stat.value}
-                    </span>
-                    <span className="font-inter text-[9px] tracking-[0.22em] uppercase text-on-surface-disabled">
-                      {stat.label}
-                    </span>
+              {/* Right — video in a gallery plate */}
+              <div className="hidden small:block">
+                <div className="plate">
+                  <video
+                    src="/homeHero.webm"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full aspect-[4/5] object-cover"
+                  />
+                  <div className="flex flex-wrap items-center gap-x-2 pt-2.5 px-0.5 placard">
+                    <BrandLogo variant="xs" />
+                    <span>— THE COLLECTION · CRAFTED IN VIZAG</span>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom separator line */}
+        {/* Bottom hairline */}
         <div
           className="absolute bottom-0 left-0 right-0 h-px"
-          style={{
-            background:
-              "linear-gradient(to right, transparent, color-mix(in srgb, var(--primary) 30%, transparent), transparent)",
-          }}
+          style={{ background: "color-mix(in srgb, var(--on-surface) 14%, transparent)" }}
         />
       </div>
 
@@ -271,7 +254,7 @@ export default function HeroShowcase() {
       <div className="absolute top-5 right-16 small:top-7 small:right-24 z-50">
         <button
           onClick={exitShowcase}
-          className="font-inter text-[10px] tracking-[0.18em] uppercase font-semibold flex items-center gap-2 px-4 py-2 border border-white/25 text-white/70 hover:border-white/60 hover:text-white transition-all duration-200 backdrop-blur-sm bg-white/5"
+          className="font-mono text-[10px] tracking-[0.18em] uppercase flex items-center gap-2 px-4 py-2 border border-on-surface/25 text-on-surface-variant hover:border-on-surface/60 hover:text-on-surface transition-all duration-200 bg-surface-lowest/60"
         >
           <span>SKIP TO STORE</span>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

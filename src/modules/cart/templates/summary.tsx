@@ -4,6 +4,7 @@ import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
 import DiscountCode from "@modules/checkout/components/discount-code"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
 type SummaryProps = {
@@ -28,7 +29,7 @@ const Summary = ({ cart }: SummaryProps) => {
   return (
     <div className="flex flex-col gap-5">
       <h2 className="font-grotesk font-bold text-xs tracking-[0.2em] text-on-surface-variant">
-        CURATION SUMMARY
+        CART SUMMARY
       </h2>
 
       <DiscountCode cart={cart} />
@@ -46,7 +47,7 @@ const Summary = ({ cart }: SummaryProps) => {
       </LocalizedClientLink>
 
       <p className="font-inter text-[10px] text-on-surface-disabled text-center leading-relaxed">
-        FREE SHIPPING ON ORDERS OVER ₹2,500
+        <PriceText>FREE SHIPPING ON ORDERS OVER ₹2,500</PriceText>
       </p>
     </div>
   )

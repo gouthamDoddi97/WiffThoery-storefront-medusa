@@ -52,6 +52,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "pub-e954515d20cd47a0b767bba302e9d2c4.r2.dev",
       },
+      {
+        protocol: "https",
+        hostname: "perenual.com",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.us-central-1.wasabisys.com",
+      },
       ...(backendHostname
         ? [{ protocol: "https", hostname: backendHostname }]
         : []),

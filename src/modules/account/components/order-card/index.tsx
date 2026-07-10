@@ -7,6 +7,7 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import OrderReviewForm from "@modules/account/components/order-review-form"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
 type OrderCardProps = {
@@ -44,10 +45,12 @@ const OrderCard = ({ order }: OrderCardProps) => {
           {new Date(order.created_at).toDateString()}
         </span>
         <span className="px-2" data-testid="order-amount">
-          {convertToLocale({
-            amount: order.total,
-            currency_code: order.currency_code,
-          })}
+          <PriceText>
+            {convertToLocale({
+              amount: order.total,
+              currency_code: order.currency_code,
+            })}
+          </PriceText>
         </span>
         <span className="pl-2">{`${numberOfLines} ${
           numberOfLines > 1 ? "items" : "item"

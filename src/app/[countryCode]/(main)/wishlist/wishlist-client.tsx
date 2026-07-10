@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import Image from "next/image"
 
 type WishlistItem = {
@@ -144,7 +145,9 @@ export default function WishlistClient() {
                         {item.title}
                       </span>
                     </LocalizedClientLink>
-                    <span className="font-inter text-xs text-primary">{item.price}</span>
+                    <span className="font-inter text-xs text-primary">
+                      <PriceText>{item.price}</PriceText>
+                    </span>
                   </div>
                 </div>
               ))}

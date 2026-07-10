@@ -1,6 +1,8 @@
 import { getActiveOffers, FragranceSet } from "@lib/data/offers"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
+import PriceText from "@modules/common/components/price-text"
+
 function formatPrice(amount: number, currencyCode: string): string {
   try {
     return new Intl.NumberFormat("en-IN", {
@@ -77,7 +79,7 @@ function SetCard({ set }: { set: FragranceSet }) {
         {/* price + cta */}
         <div className="flex items-center justify-between mt-2 pt-3 border-t border-surface-variant/40">
           <span className="font-grotesk font-semibold text-base text-primary">
-            {formatPrice(set.price_amount, set.currency_code)}
+            <PriceText>{formatPrice(set.price_amount, set.currency_code)}</PriceText>
           </span>
           <span className="font-inter text-[9px] tracking-[0.25em] uppercase text-on-surface border border-on-surface/30 px-3 py-1.5">
             View Set

@@ -31,6 +31,13 @@ body.editorial h4 {
   letter-spacing: -0.02em;
 }
 
+/* Upright serif display — Ivory Gallery headlines (beats the italic h1-h4 rule above) */
+body.editorial .serif-display {
+  font-family: var(--font-garamond, Georgia, serif);
+  font-style: normal;
+  letter-spacing: -0.01em;
+}
+
 /* Kicker / mono labels */
 body.editorial .kicker {
   font-family: var(--font-dm-mono, monospace);
@@ -58,7 +65,7 @@ body.editorial .photo-frame {
 
 /* Subtle hairline rule */
 body.editorial .hairline {
-  border-top: 1px solid rgba(26,31,26,0.08);
+  border-top: var(--hairline-width) solid rgba(26,31,26,0.08);
 }
 
 /* Letterpress / embossed feel for rare cover or hero headings */

@@ -1,4 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 import { clx } from "@medusajs/ui"
 
@@ -21,38 +22,45 @@ const LineItemUnitPrice = ({
   )
 
   return (
-    <div className="flex flex-col text-ui-fg-muted justify-center h-full">
+    <div className="flex flex-col text-on-surface-variant justify-center h-full">
       {hasReducedPrice && (
         <>
           <p>
             {style === "default" && (
-              <span className="text-ui-fg-muted">Original: </span>
+              <span className="text-on-surface-muted">Original: </span>
             )}
             <span
-              className="line-through"
+              className="line-through text-on-surface-muted"
               data-testid="product-unit-original-price"
             >
-              {convertToLocale({
-                amount: original_total / item.quantity,
-                currency_code: currencyCode,
-              })}
+              <PriceText>
+                {convertToLocale({
+                  amount: original_total / item.quantity,
+                  currency_code: currencyCode,
+                })}
+              </PriceText>
             </span>
           </p>
           {style === "default" && (
-            <span className="text-ui-fg-interactive">-{percentage_diff}%</span>
+            <span className="text-primary-container font-medium">
+              -{percentage_diff}%
+            </span>
           )}
         </>
       )}
       <span
-        className={clx("text-base-regular", {
-          "text-ui-fg-interactive": hasReducedPrice,
+        className={clx("font-inter text-sm", {
+          "text-primary-container font-semibold": hasReducedPrice,
+          "text-on-surface": !hasReducedPrice,
         })}
         data-testid="product-unit-price"
       >
-        {convertToLocale({
-          amount: total / item.quantity,
-          currency_code: currencyCode,
-        })}
+        <PriceText>
+          {convertToLocale({
+            amount: total / item.quantity,
+            currency_code: currencyCode,
+          })}
+        </PriceText>
       </span>
     </div>
   )

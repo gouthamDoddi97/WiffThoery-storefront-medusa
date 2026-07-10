@@ -8,7 +8,7 @@ import OptionSelect from "@modules/products/components/product-actions/option-se
 import VariantSelect from "@modules/products/components/product-actions/variant-select"
 import { productUsesVariantPicker } from "@lib/util/variant-label"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
@@ -40,6 +40,7 @@ export default function ProductActions({
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>()
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
+  const router = useRouter()
 
   const usesVariantPicker = useMemo(
     () => productUsesVariantPicker(product),
@@ -155,13 +156,16 @@ export default function ProductActions({
 
     setIsAdding(true)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
-
-    setIsAdding(false)
+    try {
+      await addToCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        countryCode,
+      })
+      router.refresh()
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   // Primary action: if no variant is selected, focus/scroll to options
@@ -223,7 +227,7 @@ export default function ProductActions({
             isAdding ||
             (selectedVariant ? (!inStock || !isValidVariant) : false)
           }
-          className="w-full bg-gradient-cta text-surface-lowest font-grotesk font-semibold text-xs tracking-[0.15em] uppercase py-4 transition-opacity duration-300 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
+          className="w-full bg-primary-container text-[#FFFBF5] font-grotesk font-semibold text-xs tracking-[0.15em] uppercase py-4 transition-all duration-300 hover:bg-primary hover:shadow-card disabled:opacity-40 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
           data-testid="add-product-button"
         >
           {isAdding ? (

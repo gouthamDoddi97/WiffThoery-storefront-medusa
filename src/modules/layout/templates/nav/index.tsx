@@ -4,20 +4,19 @@ import { listLocales } from "@lib/data/locales"
 import { getLocale } from "@lib/data/locale-actions"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import { getCollectionTiers } from "@lib/data/collection-tier"
 
 const LEFT_LINKS = [
-  { label: "POPULAR", href: "/categories/popular", accent: "var(--taupe)", num: "01" },
-  { label: "UNIQUE",  href: "/categories/unique",  accent: "var(--rose-deep)", num: "02" },
-  { label: "IDGF",     href: "/categories/idgf",    accent: "var(--forest)", num: "03" },
+  { label: "SHOP", href: "/store" },
+  { label: "COLLECTIONS", href: "/categories/popular" },
+  { label: "THE LAB", href: "/about" },
+  { label: "JOURNAL", href: "/journey" },
 ]
 
-const RIGHT_LINKS = [
-  { label: "CATALOG", href: "/store" },
-  { label: "SCENT PERSONALITY", href: "/journey" },
-]
+const RIGHT_LINKS: { label: string; href: string }[] = []
 
 export default async function Nav() {
   const [regions, locales, currentLocale, tierMap] = await Promise.all([
@@ -38,10 +37,10 @@ export default async function Nav() {
       <header
         className="relative h-16 mx-auto"
         style={{
-          background: "rgba(250,247,242,0.9)",
+          background: "rgba(251,247,240,0.92)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(26,31,26,0.06)",
+          borderBottom: "var(--hairline-width) solid rgba(10,8,5,0.14)",
         }}
       >
         <nav className="content-container flex items-center justify-between w-full h-full">
@@ -56,41 +55,28 @@ export default async function Nav() {
                 tierImages={tierImages}
               />
             </div>
-            {/* Desktop collection tier links */}
+            {/* Desktop nav links — plain ink, museum-catalog mono */}
             <div className="hidden small:flex items-center gap-x-8 h-full">
               {LEFT_LINKS.map((link) => (
                 <LocalizedClientLink
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
-                  className="group flex flex-col gap-0.5 transition-opacity duration-200 hover:opacity-70"
+                  className="font-mono text-[11px] tracking-[0.2em] leading-none uppercase text-on-surface hover:text-primary transition-colors duration-200"
                 >
-                  {/* Tier number — sits above */}
-                  <span
-                    className="font-inter text-[7.5px] tracking-[0.2em] leading-none opacity-60"
-                    style={{ color: link.accent }}
-                  >
-                    {link.num}
-                  </span>
-                  {/* Label — bigger, full Garamond italic */}
-                  <span
-                    className="font-garamond italic text-[22px] leading-none"
-                    style={{ color: link.accent }}
-                  >
-                    {link.label}
-                  </span>
+                  {link.label}
                 </LocalizedClientLink>
               ))}
             </div>
           </div>
 
-          {/* Center — wordmark */}
+          {/* Center — logo */}
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="font-grotesk font-bold text-sm tracking-[0.2em] text-on-surface hover:text-primary transition-colors duration-200 uppercase"
+              className="flex items-center text-on-surface hover:opacity-80 transition-opacity duration-200"
               data-testid="nav-store-link"
             >
-              WHIFF THEORY
+              <BrandLogo variant="nav" priority />
             </LocalizedClientLink>
           </div>
 
@@ -102,7 +88,7 @@ export default async function Nav() {
                 <LocalizedClientLink
                   key={link.href}
                   href={link.href}
-                  className="font-inter font-medium text-[11px] tracking-[0.18em] text-on-surface-variant hover:text-primary transition-colors duration-200"
+                  className="font-mono text-[11px] tracking-[0.2em] uppercase text-on-surface-variant hover:text-primary transition-colors duration-200"
                 >
                   {link.label}
                 </LocalizedClientLink>

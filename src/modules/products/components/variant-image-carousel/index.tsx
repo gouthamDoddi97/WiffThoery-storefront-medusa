@@ -15,9 +15,13 @@ type Props = {
   variants: VariantWithImages[]
   /** Scene image URLs used in the parallax — must be excluded from carousel */
   sceneUrls?: string[]
+  /** Museum placard caption shown under the artwork */
+  placard?: string
+  /** Tier accent for selected thumbnail border */
+  accent?: string
 }
 
-export default function VariantImageCarousel({ allImages, variants, sceneUrls = [] }: Props) {
+export default function VariantImageCarousel({ allImages, variants, sceneUrls = [], placard, accent }: Props) {
   const [variantId, setVariantId] = useState<string | null>(null)
 
   const excludeSet = useMemo(() => new Set(sceneUrls), [sceneUrls])
@@ -68,5 +72,12 @@ export default function VariantImageCarousel({ allImages, variants, sceneUrls = 
     return allImages
   })()
 
-  return <ImageCarousel key={variantId ?? "default"} images={displayImages} />
+  return (
+    <ImageCarousel
+      key={variantId ?? "default"}
+      images={displayImages}
+      placard={placard}
+      accent={accent}
+    />
+  )
 }

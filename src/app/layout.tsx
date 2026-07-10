@@ -1,6 +1,12 @@
 import { getBaseURL, getMediaURL, getSiteURL } from "@lib/util/env"
+import {
+  BRAND_LOGO_HEIGHT,
+  BRAND_LOGO_SRC,
+  BRAND_LOGO_WIDTH,
+  BRAND_NAME,
+} from "@lib/constants/brand"
 import { Metadata } from "next"
-import { Space_Grotesk, Inter, Cormorant_Garamond, Fraunces, Nunito_Sans, DM_Mono } from "next/font/google"
+import { Space_Grotesk, Inter, Cormorant_Garamond, Fraunces, Nunito_Sans, DM_Mono, JetBrains_Mono } from "next/font/google"
 import "styles/globals.css"
 import "styles/editorial.css"
 
@@ -31,6 +37,13 @@ const dmMono = DM_Mono({
   subsets: ["latin"],
   variable: "--font-dm-mono",
   weight: ["400", "500"],
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetmono",
+  weight: ["400", "500", "600"],
   display: "swap",
 })
 
@@ -105,13 +118,13 @@ const sitewideSchema = {
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "Whiff Theory",
+      name: BRAND_NAME,
       url: siteUrl,
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/Wlogo.png`,
-        width: 512,
-        height: 512,
+        url: `${siteUrl}${BRAND_LOGO_SRC}`,
+        width: BRAND_LOGO_WIDTH,
+        height: BRAND_LOGO_HEIGHT,
       },
       description:
         "Whiff Theory is India's most transparent artisan fragrance brand, handcrafting luxury perfumes in Visakhapatnam, Andhra Pradesh.",
@@ -150,7 +163,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${dmMono.variable} ${nunitoSans.variable} ${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable} dark`}
+      className={`${fraunces.variable} ${dmMono.variable} ${jetbrainsMono.variable} ${nunitoSans.variable} ${cormorantGaramond.variable} ${spaceGrotesk.variable} ${inter.variable}`}
     >
       <body className="bg-surface-lowest text-on-surface editorial">
 <script

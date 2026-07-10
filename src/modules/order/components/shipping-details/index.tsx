@@ -1,4 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 
@@ -57,10 +58,12 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
           <Text className="txt-medium-plus text-white mb-1">Method</Text>
           <Text className="txt-medium text-white/60">
             {order.shipping_methods?.[0]?.name} (
-            {convertToLocale({
-              amount: order.shipping_methods?.[0]?.total ?? 0,
-              currency_code: order.currency_code,
-            })}
+            <PriceText>
+              {convertToLocale({
+                amount: order.shipping_methods?.[0]?.total ?? 0,
+                currency_code: order.currency_code,
+              })}
+            </PriceText>
             )
           </Text>
         </div>

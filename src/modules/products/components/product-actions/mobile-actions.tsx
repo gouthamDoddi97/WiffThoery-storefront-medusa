@@ -7,6 +7,7 @@ import ChevronDown from "@modules/common/icons/chevron-down"
 import X from "@modules/common/icons/x"
 
 import { getProductPrice } from "@lib/util/get-product-price"
+import PriceText from "@modules/common/components/price-text"
 import OptionSelect from "./option-select"
 import VariantSelect from "./variant-select"
 import { formatVariantOptionLabel } from "@lib/util/variant-label"
@@ -85,21 +86,21 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               <span data-testid="mobile-title">{product.title}</span>
               <span>—</span>
               {selectedPrice ? (
-                <div className="flex items-end gap-x-2 text-ui-fg-base">
+                <div className="flex items-end gap-x-2 text-on-surface font-grotesk font-semibold">
                   {selectedPrice.price_type === "sale" && (
                     <p>
-                      <span className="line-through text-small-regular">
-                        {selectedPrice.original_price}
+                      <span className="line-through text-small-regular text-on-surface-muted">
+                        <PriceText>{selectedPrice.original_price}</PriceText>
                       </span>
                     </p>
                   )}
                   <span
                     className={clx({
-                      "text-ui-fg-interactive":
+                      "text-primary-container":
                         selectedPrice.price_type === "sale",
                     })}
                   >
-                    {selectedPrice.calculated_price}
+                    <PriceText>{selectedPrice.calculated_price}</PriceText>
                   </span>
                 </div>
               ) : (

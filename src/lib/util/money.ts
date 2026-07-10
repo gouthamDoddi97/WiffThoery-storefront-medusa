@@ -15,12 +15,25 @@ export const convertToLocale = ({
   maximumFractionDigits,
   locale = "en-US",
 }: ConvertToLocaleParams) => {
-  return currency_code && !isEmpty(currency_code)
-    ? new Intl.NumberFormat(locale, {
-        style: "currency",
-        currency: currency_code,
-        minimumFractionDigits,
-        maximumFractionDigits,
-      }).format(amount)
-    : amount.toString()
+  if (!currency_code || isEmpty(currency_code)) {
+    return amount.toString()
+  }
+
+  const code = currency_code.toLowerCase()
+
+  if (code === "inr") {
+    const formatted = new Intl.NumberFormat("en-IN", {
+      minimumFractionDigits: minimumFractionDigits ?? 0,
+      maximumFractionDigits: maximumFractionDigits ?? 0,
+    }).format(amount)
+
+    return `₹${formatted}`
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency_code,
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(amount)
 }

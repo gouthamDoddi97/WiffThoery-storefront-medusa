@@ -5,6 +5,7 @@ import React from "react"
 
 import { applyPromotions } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 import Trash from "@modules/common/icons/trash"
 import ErrorMessage from "../error-message"
@@ -63,7 +64,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+              className="font-inter text-sm text-primary hover:text-primary-container transition-colors"
               data-testid="add-discount-button"
             >
               Add Promotion Code(s)
@@ -131,12 +132,16 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                               {promotion.application_method.type ===
                               "percentage"
                                 ? `${promotion.application_method.value}%`
-                                : convertToLocale({
-                                    amount: +promotion.application_method.value,
-                                    currency_code:
-                                      promotion.application_method
-                                        .currency_code,
-                                  })}
+                                : (
+                                  <PriceText>
+                                    {convertToLocale({
+                                      amount: +promotion.application_method.value,
+                                      currency_code:
+                                        promotion.application_method
+                                          .currency_code,
+                                    })}
+                                  </PriceText>
+                                )}
                             </>
                           )}
                         )

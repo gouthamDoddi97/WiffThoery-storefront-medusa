@@ -4,6 +4,8 @@ import { useState } from "react"
 
 import Register from "@modules/account/components/register"
 import Login from "@modules/account/components/login"
+import BrandLogo from "@modules/common/components/brand-logo"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export enum LOGIN_VIEW {
   SIGN_IN = "sign-in",
@@ -37,6 +39,9 @@ const LoginTemplate = () => {
           }}
         />
         <div className="relative z-10 flex flex-col gap-4 max-w-[360px] px-8">
+          <LocalizedClientLink href="/">
+            <BrandLogo variant="lg" />
+          </LocalizedClientLink>
           <div className="w-1 h-16 bg-primary" />
           <h2 className="font-grotesk font-bold text-4xl text-on-surface tracking-[-0.02em] leading-tight">
             Your scent story starts here.
@@ -64,6 +69,9 @@ const LoginTemplate = () => {
 
       {/* Right panel — form */}
       <div className="w-full small:w-[480px] flex flex-col items-center justify-center px-8 py-16">
+        <LocalizedClientLink href="/" className="mb-8 hover:opacity-80 transition-opacity">
+          <BrandLogo variant="md" />
+        </LocalizedClientLink>
         {currentView === "sign-in" ? (
           <Login setCurrentView={setCurrentView} />
         ) : (

@@ -2,77 +2,77 @@ import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import FilteredPaginatedProducts from "./filtered-paginated-products"
-import CollectionSidebar from "@modules/collections/components/collection-sidebar"
-import { getActiveOffers } from "@lib/data/offers"
-import { enrichSetThumbnails } from "@lib/data/enrich-set-thumbnails"
-import OffersPanel from "@modules/home/components/home-tabs/offers-panel"
+import FilteredPaginatedProducts, {
+  getStoreCatalogData,
+} from "./filtered-paginated-products"
 
 const StoreTemplate = async ({
   sortBy,
   page,
   countryCode,
-  longevity = [],
-  sillage = [],
-  notes = [],
-  showOffers = true,
+  tier = [],
+  family = [],
+  mood = [],
+  price = [],
 }: {
   sortBy?: SortOptions
   page?: string
   countryCode: string
-  longevity?: string[]
-  sillage?: string[]
-  notes?: string[]
-  showOffers?: boolean
+  tier?: string[]
+  family?: string[]
+  mood?: string[]
+  price?: string[]
 }) => {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
-  const rawSets = await getActiveOffers()
-  const sets = rawSets.length > 0 ? await enrichSetThumbnails(rawSets, countryCode) : rawSets
+  const { data } = await getStoreCatalogData(countryCode, sort, {
+    tier,
+    family,
+    mood,
+    price,
+  })
+
+  const scentCount = String(data.filteredCount).padStart(2, "0")
 
   return (
     <div className="bg-surface-lowest">
-      <div className="bg-surface-low py-16">
-        <div className="content-container">
+      <div className="border-b rule-ink">
+        <div className="content-container py-4">
+          <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-muted block mb-2">
+            HOME / SHOP
+          </span>
           <h1
-            className="display-m font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]"
+            className="font-garamond serif-display font-medium text-4xl small:text-5xl text-on-surface"
+            style={{ fontStyle: "normal" }}
             data-testid="store-page-title"
           >
-            All Fragrances
+            All fragrances
           </h1>
-          <p className="font-garamond text-base text-on-surface-variant mt-3">
-            Every scent, every tier — the full wardrobe.
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant mt-2">
+            {scentCount} SCENTS
           </p>
         </div>
       </div>
 
-      {showOffers && sets.length > 0 && <OffersPanel sets={sets} />}
-
-      <div className="content-container py-16">
-        <div className="flex flex-col small:flex-row small:items-start gap-0 small:gap-12">
-          <CollectionSidebar
+      <div className="content-container py-10 small:py-12">
+        <Suspense
+          key={`${sort}-${tier.join()}-${family.join()}-${mood.join()}-${price.join()}-${pageNumber}`}
+          fallback={<SkeletonProductGrid />}
+        >
+          <FilteredPaginatedProducts
             sortBy={sort}
-            longevity={longevity}
-            sillage={sillage}
-            notes={notes}
+            page={pageNumber}
+            countryCode={countryCode}
+            tier={tier}
+            family={family}
+            mood={mood}
+            price={price}
+            paginateWithUrl
+            productsPerPage={6}
+            shopLayout
           />
-          <div className="flex-1 min-w-0">
-            <Suspense
-              key={`${sort}-${longevity.join()}-${sillage.join()}-${notes.join()}`}
-              fallback={<SkeletonProductGrid />}
-            >
-              <FilteredPaginatedProducts
-                sortBy={sort}
-                page={pageNumber}
-                countryCode={countryCode}
-                longevity={longevity}
-                sillage={sillage}
-                notes={notes}
-              />
-            </Suspense>
-          </div>
-        </div>
+        </Suspense>
       </div>
     </div>
   )

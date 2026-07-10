@@ -3,6 +3,7 @@ import { Container, Heading, Text } from "@medusajs/ui"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
 import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
 type PaymentDetailsProps = {
@@ -42,12 +43,18 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                 <Text data-testid="payment-amount">
                   {isStripeLike(payment.provider_id) && payment.data?.card_last4
                     ? `**** **** **** ${payment.data.card_last4}`
-                    : `${convertToLocale({
-                        amount: payment.amount,
-                        currency_code: order.currency_code,
-                      })} paid at ${new Date(
-                        payment.created_at ?? ""
-                      ).toLocaleString()}`}
+                    : (
+                      <>
+                        <PriceText>
+                          {convertToLocale({
+                            amount: payment.amount,
+                            currency_code: order.currency_code,
+                          })}
+                        </PriceText>{" "}
+                        paid at{" "}
+                        {new Date(payment.created_at ?? "").toLocaleString()}
+                      </>
+                    )}
                 </Text>
               </div>
             </div>

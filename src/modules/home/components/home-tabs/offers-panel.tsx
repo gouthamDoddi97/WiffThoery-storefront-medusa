@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import { addToCart } from "@lib/data/cart"
 import { FragranceSet } from "@lib/data/offers"
 
@@ -95,7 +96,7 @@ function SetSlide({
           style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
         >
           <span className="font-inter font-bold text-xl" style={{ color: BACKGROUND }}>
-            {formatPrice(set.price_amount, set.currency_code)}
+            <PriceText>{formatPrice(set.price_amount, set.currency_code)}</PriceText>
           </span>
         </div>
 

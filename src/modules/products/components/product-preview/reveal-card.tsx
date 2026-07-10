@@ -2,6 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import CardActions from "./card-actions"
 import { VariantPrice } from "types/global"
 
@@ -10,7 +11,7 @@ function InlinePrice({ price }: { price: VariantPrice }) {
     <div className="flex items-center gap-2">
       {price.price_type === "sale" && (
         <span className="font-inter text-xs text-on-surface-disabled line-through">
-          {price.original_price}
+          <PriceText>{price.original_price}</PriceText>
         </span>
       )}
       <span
@@ -21,7 +22,7 @@ function InlinePrice({ price }: { price: VariantPrice }) {
         }
       >
         <span className="font-inter font-normal text-[10px] tracking-[0.1em] uppercase text-on-surface-disabled mr-1">From</span>
-        {price.calculated_price}
+        <PriceText>{price.calculated_price}</PriceText>
       </span>
     </div>
   )

@@ -1,21 +1,11 @@
 import { Metadata } from "next"
 
-import FeaturedProducts from "@modules/home/components/featured-products"
-// import TierShowcase from "@modules/home/components/tier-showcase"
-import HeroShowcase from "@modules/home/components/hero-showcase"
-import Hero from "@modules/home/components/hero"
-import TierCards from "@modules/home/components/tier-cards"
-import BrandValues from "@modules/home/components/brand-values"
-import FeaturedReviews from "@modules/home/components/featured-reviews"
+import GalleryHero from "@modules/home/components/gallery-hero"
+import CollectionPlates from "@modules/home/components/collection-plates"
+import TrustStrip from "@modules/home/components/trust-strip"
 import OrderAlertBanner from "@modules/common/components/order-alert-banner"
-import HomeOffersSection from "@modules/home/components/home-offers-section"
-import HomeOffersNewArrivalsSection from "@modules/home/components/home-offers-new-arrivals-section"
-import StoreTemplate from "@modules/store/templates"
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import { getSiteURL } from "@lib/util/env"
-import HomeNewArrivalsSection from "../../../modules/home/components/home-new-arrivals-section";
 
 
 export const metadata: Metadata = {
@@ -43,30 +33,13 @@ export const metadata: Metadata = {
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
-  searchParams: Promise<{
-    sortBy?: SortOptions
-    page?: string
-    longevity?: string
-    sillage?: string
-    notes?: string
-  }>
 }) {
   const params = await props.params
-  const searchParams = await props.searchParams
-  const { sortBy, page, longevity: longevityStr, sillage: sillageStr, notes: notesStr } = searchParams
-  const longevity = longevityStr ? longevityStr.split(",").filter(Boolean) : []
-  const sillage = sillageStr ? sillageStr.split(",").filter(Boolean) : []
-  const notes = notesStr ? notesStr.split(",").filter(Boolean) : []
   const { countryCode } = params
 
-  const [regionResult, { collections }] = await Promise.all([
-    getRegion(countryCode),
-    listCollections({ fields: "id, handle, title" }),
-  ])
+  const region = await getRegion(countryCode)
 
-  const region = regionResult
-
-  if (!collections || !region) {
+  if (!region) {
     return null
   }
 
@@ -125,38 +98,28 @@ export default async function Home(props: {
         }}
       />
 
-      {/* Fixed overlay hero — sits above the page, dismisses to reveal content below */}
-      <HeroShowcase />
+      {/* <OrderAlertBanner /> */}
 
-      <OrderAlertBanner />
+      {/* Ivory Gallery hero — "Indian stories, bottled." */}
+      <GalleryHero />
 
-
-
-      {/* Tier cards */}
-      {/* <TierCards /> */}
-
-      {/* New Arrivals carousel — shown after the three tiers */}
-      <HomeNewArrivalsSection region={region} countryCode={countryCode} />
-
-      {/* Store catalog (same layout as /store) — filters, sort, pagination */}
-      <StoreTemplate
-        sortBy={sortBy}
-        page={page}
-        countryCode={countryCode}
-        longevity={longevity}
-        sillage={sillage}
-        notes={notes}
-        showOffers={false}
-      />
-
-      {/* Offers carousel — shown first, before tier cards */}
-      <HomeOffersSection countryCode={countryCode} />
-
-      {/* Brand values trio */}
-      <BrandValues />
-
-      {/* Featured Reviews */}
-      <FeaturedReviews />
+      {/* Collection + trust — single subtle gallery frame */}
+      <section className="content-container py-5 small:py-6">
+        <div
+          className="p-2 small:p-3 bg-surface-lowest"
+          style={{
+            border: "var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 28%, transparent)",
+            borderWidth: "var(--hairline-width)",
+          }}
+        >
+          <CollectionPlates
+            region={region}
+            countryCode={countryCode}
+            embedded
+          />
+          <TrustStrip embedded />
+        </div>
+      </section>
     </>
   )
 }

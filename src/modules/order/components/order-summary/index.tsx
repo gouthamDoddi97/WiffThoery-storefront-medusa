@@ -1,4 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
 type OrderSummaryProps = {
@@ -23,34 +24,34 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
       <div className="text-small-regular text-white/70 my-2">
         <div className="flex items-center justify-between text-base-regular text-white/80 mb-2">
           <span>Subtotal</span>
-          <span>{getAmount(order.subtotal)}</span>
+          <span><PriceText>{getAmount(order.subtotal) ?? ""}</PriceText></span>
         </div>
         <div className="flex flex-col gap-y-1">
           {order.discount_total > 0 && (
             <div className="flex items-center justify-between">
               <span>Discount</span>
-              <span>- {getAmount(order.discount_total)}</span>
+              <span>- <PriceText>{getAmount(order.discount_total) ?? ""}</PriceText></span>
             </div>
           )}
           {order.gift_card_total > 0 && (
             <div className="flex items-center justify-between">
               <span>Discount</span>
-              <span>- {getAmount(order.gift_card_total)}</span>
+              <span>- <PriceText>{getAmount(order.gift_card_total) ?? ""}</PriceText></span>
             </div>
           )}
           <div className="flex items-center justify-between">
             <span>Shipping</span>
-            <span>{getAmount(order.shipping_total)}</span>
+            <span><PriceText>{getAmount(order.shipping_total) ?? ""}</PriceText></span>
           </div>
           <div className="flex items-center justify-between">
             <span>Taxes</span>
-            <span>{getAmount(order.tax_total)}</span>
+            <span><PriceText>{getAmount(order.tax_total) ?? ""}</PriceText></span>
           </div>
         </div>
         <div className="h-px w-full border-b border-white/15 border-dashed my-4" />
         <div className="flex items-center justify-between text-base-regular text-white font-semibold mb-2">
           <span>Total</span>
-          <span>{getAmount(order.total)}</span>
+          <span><PriceText>{getAmount(order.total) ?? ""}</PriceText></span>
         </div>
       </div>
     </div>

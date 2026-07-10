@@ -93,6 +93,7 @@ module.exports = {
         garamond: ["var(--font-garamond)", "Cormorant Garamond", "Georgia", "serif"],
         grotesk: ["var(--font-grotesk)", "Space Grotesk", "sans-serif"],
         inter: ["var(--font-inter)", "Inter", "sans-serif"],
+        mono: ["var(--font-jetmono)", "JetBrains Mono", "ui-monospace", "monospace"],
         sans: [
           "var(--font-inter)",
           "Inter",

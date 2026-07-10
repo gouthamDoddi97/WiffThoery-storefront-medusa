@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import BrandLogo from "@modules/common/components/brand-logo"
 
 type SceneImages = [string?, string?, string?]
 
@@ -467,9 +468,9 @@ export default function ScentStory({
                     {tierBadge}
                   </span>
                 ) : (
-                  <span className="kicker text-[7px] small:text-[8px] tracking-[0.35em] small:tracking-[0.4em] uppercase text-on-surface-variant">
-                    WHIFF THEORY · EXTRAIT DE PARFUM
-                  </span>
+                  <div className="flex justify-center">
+                    <BrandLogo variant="xs" className="mx-auto" />
+                  </div>
                 )}
                 <h1 className="display-lg font-fraunces italic font-normal text-[clamp(1.8rem,8vw,4.5rem)] small:text-[clamp(2.2rem,6vw,7rem)] text-on-surface tracking-[-0.02em] leading-[0.92]">
                   {productTitle}

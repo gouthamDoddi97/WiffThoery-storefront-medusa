@@ -1,16 +1,18 @@
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
-import ProductActions from "@modules/products/components/product-actions"
+import GalleryProductActions from "@modules/products/components/gallery-product-actions"
 
 /**
- * Fetches real time pricing for a product and renders the product actions component.
+ * Fetches real time pricing for a product and renders gallery buy controls.
  */
 export default async function ProductActionsWrapper({
   id,
   region,
+  accent,
 }: {
   id: string
   region: HttpTypes.StoreRegion
+  accent?: string
 }) {
   const product = await listProducts({
     queryParams: { id: [id] },
@@ -21,5 +23,7 @@ export default async function ProductActionsWrapper({
     return null
   }
 
-  return <ProductActions product={product} region={region} />
+  return (
+    <GalleryProductActions product={product} region={region} accent={accent} />
+  )
 }

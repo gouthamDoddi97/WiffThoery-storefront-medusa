@@ -1,4 +1,5 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 import ChevronDown from "@modules/common/icons/chevron-down"
 
 export default function CheckoutLayout({
@@ -17,15 +18,15 @@ export default function CheckoutLayout({
             data-testid="back-to-cart-link"
           >
             <ChevronDown className="rotate-90" size={14} />
-            <span className="hidden small:block">BACK TO COLLECTION</span>
+            <span className="hidden small:block">BACK TO CART</span>
             <span className="block small:hidden">BACK</span>
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="font-grotesk font-bold text-sm tracking-[0.2em] text-on-surface hover:text-primary transition-colors"
+            className="hover:opacity-80 transition-opacity duration-200"
             data-testid="store-link"
           >
-            WHIFF THEORY
+            <BrandLogo variant="checkout" />
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
         </nav>

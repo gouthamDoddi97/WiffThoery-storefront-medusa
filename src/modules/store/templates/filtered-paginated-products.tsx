@@ -3,12 +3,21 @@ import { getRegion } from "@lib/data/regions"
 import { getPerfumeDetails } from "@lib/data/perfume-details"
 import { PerfumeDetails } from "types/perfume"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import {
+  computeFilterCounts,
+  filterStoreProducts,
+  FilterCounts,
+  StoreFilters,
+} from "@modules/store/lib/store-filters"
 import ProductPreview from "@modules/products/components/product-preview"
 import ProductPreviewHorizontal from "@modules/products/components/product-preview/horizontal"
 import ProductPreviewLarge from "@modules/products/components/product-preview/large"
 import ProductSlider from "./product-slider"
+import { Pagination } from "@modules/store/components/pagination"
+import StoreSidebar from "@modules/store/components/store-sidebar"
 
-// ─── Note family keyword map ──────────────────────────────────────────────────
+const STORE_PRODUCT_FIELDS =
+  "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*options,*variants.options,*categories,*collection"
 
 const NOTE_KEYWORDS: Record<string, string[]> = {
   Citrus: ["citrus", "lemon", "bergamot", "orange", "grapefruit", "lime", "mandarin", "neroli"],
@@ -39,8 +48,6 @@ function matchesNoteFamilies(
   })
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 type Layout = "default" | "wave" | "s-curve" | "scattered"
 
 type Props = {
@@ -50,9 +57,88 @@ type Props = {
   categoryId?: string
   countryCode: string
   layout?: Layout
+  /** Legacy filters — category/collection pages */
   longevity?: string[]
   sillage?: string[]
   notes?: string[]
+  /** Shop page filters */
+  tier?: string[]
+  family?: string[]
+  mood?: string[]
+  price?: string[]
+  /** URL-driven grid pagination (store catalog). Default: client slide pager. */
+  paginateWithUrl?: boolean
+  productsPerPage?: number
+  /** Render shop sidebar + bordered grid (store page only) */
+  shopLayout?: boolean
+}
+
+export type StoreCatalogData = {
+  totalCount: number
+  filteredCount: number
+  filterCounts: FilterCounts
+}
+
+export async function getStoreCatalogData(
+  countryCode: string,
+  sortBy?: SortOptions,
+  filters?: StoreFilters
+): Promise<{
+  region: Awaited<ReturnType<typeof getRegion>>
+  products: Awaited<ReturnType<typeof filterStoreProducts>>
+  data: StoreCatalogData
+}> {
+  const region = await getRegion(countryCode)
+  if (!region) {
+    return {
+      region: null,
+      products: [],
+      data: {
+        totalCount: 0,
+        filteredCount: 0,
+        filterCounts: {
+          tier: {},
+          family: {},
+          mood: {},
+          price: {},
+        },
+      },
+    }
+  }
+
+  const queryParams: { limit: number; order?: string; fields?: string } = {
+    limit: 100,
+    fields: STORE_PRODUCT_FIELDS,
+  }
+  if (sortBy === "created_at") queryParams.order = "created_at"
+
+  const {
+    response: { products: allProducts },
+  } = await listProductsWithSort({
+    page: 1,
+    queryParams,
+    sortBy,
+    countryCode,
+  })
+
+  const filterCounts = await computeFilterCounts(allProducts)
+  const storeFilters: StoreFilters = filters ?? {
+    tier: [],
+    family: [],
+    mood: [],
+    price: [],
+  }
+  const products = await filterStoreProducts(allProducts, storeFilters)
+
+  return {
+    region,
+    products,
+    data: {
+      totalCount: allProducts.length,
+      filteredCount: products.length,
+      filterCounts,
+    },
+  }
 }
 
 export default async function FilteredPaginatedProducts({
@@ -65,6 +151,13 @@ export default async function FilteredPaginatedProducts({
   longevity = [],
   sillage = [],
   notes = [],
+  tier = [],
+  family = [],
+  mood = [],
+  price = [],
+  paginateWithUrl = false,
+  productsPerPage = 10,
+  shopLayout = false,
 }: Props) {
   const region = await getRegion(countryCode)
   if (!region) return null
@@ -74,7 +167,11 @@ export default async function FilteredPaginatedProducts({
     collection_id?: string[]
     category_id?: string[]
     order?: string
-  } = { limit: 100 }
+    fields?: string
+  } = {
+    limit: 100,
+    fields: shopLayout ? STORE_PRODUCT_FIELDS : undefined,
+  }
 
   if (collectionId) queryParams.collection_id = [collectionId]
   if (categoryId) queryParams.category_id = [categoryId]
@@ -83,35 +180,36 @@ export default async function FilteredPaginatedProducts({
   const {
     response: { products: allProducts },
   } = await listProductsWithSort({
-    page,
+    page: 1,
     queryParams,
     sortBy,
     countryCode,
   })
 
-  // ── Apply filters ────────────────────────────────────────────────────────────
-
-  const hasFilters = longevity.length > 0 || sillage.length > 0 || notes.length > 0
-
   let products = allProducts
 
-  if (hasFilters) {
-    const detailsArr = await Promise.all(
-      allProducts.map((p) => getPerfumeDetails(p.id))
-    )
+  if (shopLayout) {
+    products = await filterStoreProducts(allProducts, { tier, family, mood, price })
+  } else {
+    const hasLegacyFilters =
+      longevity.length > 0 || sillage.length > 0 || notes.length > 0
 
-    products = allProducts.filter((_, i) => {
-      const d = detailsArr[i]
-      if (longevity.length > 0 && (!d?.longevity || !longevity.includes(d.longevity)))
-        return false
-      if (sillage.length > 0 && (!d?.sillage || !sillage.includes(d.sillage)))
-        return false
-      if (!matchesNoteFamilies(d, notes)) return false
-      return true
-    })
+    if (hasLegacyFilters) {
+      const detailsArr = await Promise.all(
+        allProducts.map((p) => getPerfumeDetails(p.id))
+      )
+
+      products = allProducts.filter((_, i) => {
+        const d = detailsArr[i]
+        if (longevity.length > 0 && (!d?.longevity || !longevity.includes(d.longevity)))
+          return false
+        if (sillage.length > 0 && (!d?.sillage || !sillage.includes(d.sillage)))
+          return false
+        if (!matchesNoteFamilies(d, notes)) return false
+        return true
+      })
+    }
   }
-
-  // ── Empty state ──────────────────────────────────────────────────────────────
 
   if (products.length === 0) {
     return (
@@ -126,9 +224,7 @@ export default async function FilteredPaginatedProducts({
     )
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
-
-  const productNodes = products.map((p, index) => {
+  const renderProduct = (p: (typeof products)[number], index: number) => {
     if (layout === "s-curve") {
       return (
         <ProductPreviewHorizontal
@@ -167,7 +263,70 @@ export default async function FilteredPaginatedProducts({
     return (
       <ProductPreview key={`${p.id}-${index}`} product={p} region={region} />
     )
-  })
+  }
+
+  if (paginateWithUrl) {
+    const start = (page - 1) * productsPerPage
+    const pageProducts = products.slice(start, start + productsPerPage)
+    const totalPages = Math.max(1, Math.ceil(products.length / productsPerPage))
+
+    const gridClass = shopLayout
+      ? "grid grid-cols-1 xsmall:grid-cols-2 medium:grid-cols-3 gap-6 small:gap-8 items-stretch"
+      : "grid grid-cols-1 w-full xsmall:grid-cols-2 medium:grid-cols-3 gap-x-6 gap-y-8 items-stretch"
+
+    const grid = (
+      <ul className={gridClass} data-testid="products-list">
+        {pageProducts.map((p, index) => (
+          <li key={p.id} className={shopLayout ? "min-w-0 h-full" : undefined}>
+            {renderProduct(p, start + index)}
+          </li>
+        ))}
+      </ul>
+    )
+
+    if (!shopLayout) {
+      return (
+        <div>
+          {grid}
+          {totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              data-testid="product-pagination"
+            />
+          )}
+        </div>
+      )
+    }
+
+    const filterCounts = await computeFilterCounts(allProducts)
+
+    return (
+      <div className="flex flex-col small:flex-row small:items-start">
+        <StoreSidebar
+          counts={filterCounts}
+          tier={tier}
+          family={family}
+          mood={mood}
+          price={price}
+        />
+        <div className="flex-1 min-w-0 small:pl-8">
+          {grid}
+          {totalPages > 1 && (
+            <div className="mt-10">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                data-testid="product-pagination"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const productNodes = products.map((p, index) => renderProduct(p, index))
 
   return <ProductSlider items={productNodes} layout={layout} />
 }

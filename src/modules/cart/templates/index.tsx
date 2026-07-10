@@ -19,17 +19,17 @@ const CartTemplate = ({
         <div className="flex flex-col gap-2 mb-12">
           <span className="eyebrow">FRAGRANCE</span>
           <h1 className="font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]">
-            YOUR COLLECTION
+            YOUR CART
           </h1>
           {cart?.items?.length ? (
             <p className="font-inter text-sm text-on-surface-variant">
-              {cart.items.length} {cart.items.length === 1 ? "FRAGMENT" : "FRAGMENTS"} IN YOUR CURATION
+              {cart.items.length} {cart.items.length === 1 ? "item" : "items"}
             </p>
           ) : null}
         </div>
 
         <div className="mb-8" data-testid="order-alert-banner" >
-          <OrderAlertBanner />
+          {/* <OrderAlertBanner /> */}
         </div>
 
         {cart?.items?.length ? (

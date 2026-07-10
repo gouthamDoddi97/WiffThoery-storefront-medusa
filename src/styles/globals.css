@@ -10,8 +10,8 @@
   --surface-container: #F0E9DE;
   --surface-high: #E9E1D3;
   --surface-variant: #E0D6C6;
-  --primary: #A07E44; /* Richer gold for better contrast on light surfaces */
-  --primary-container: #7a6448; /* darker container / hover state */
+  --primary: #8F6F3E; /* Rich gold — readable on ivory */
+  --primary-container: #5C4528; /* Dark gold / bronze for CTAs & selected states */
   --secondary: #5A89A8; /* Muted sky — general UI accents (not tier) */
   --tertiary: #5C7354; /* Muted sage — charts, stars (not tier) */
   /* Tier accents — darker, distinct on ivory */
@@ -26,6 +26,16 @@
   --on-surface-variant: #0A0805; /* Body / secondary — same ink for readable Inter text */
   --on-surface-disabled: #0A0805; /* Labels, captions, filter text */
   --on-surface-muted: #6E6860; /* Placeholders & truly de-emphasized hints only */
+
+  --hairline-width: 1.25px;
+
+  /* Medusa UI preset (light theme) — ensure readable fg on ivory surfaces */
+  --fg-base: var(--on-surface);
+  --fg-subtle: var(--on-surface-variant);
+  --fg-muted: var(--on-surface-muted);
+  --fg-disabled: var(--on-surface-muted);
+  --fg-interactive: var(--primary);
+  --fg-interactive-hover: var(--primary-container);
 }
 
 html {
@@ -120,6 +130,14 @@ textarea::placeholder {
 }
 
 @layer components {
+  .rupee-sign {
+    font-size: 0.68em;
+    line-height: 1;
+    vertical-align: 0.14em;
+    display: inline-block;
+    font-weight: inherit;
+  }
+
   .content-container {
     @apply max-w-[1440px] w-full mx-auto px-6;
   }
@@ -156,9 +174,39 @@ textarea::placeholder {
     color: var(--on-surface-muted);
   }
 
+  /* Medusa UI preset — remap low-contrast fg tokens on light surfaces */
+  .text-ui-fg-base,
+  .text-ui-fg-medium-plus {
+    color: var(--on-surface);
+  }
+
+  .text-ui-fg-subtle {
+    color: var(--on-surface-variant);
+  }
+
+  .text-ui-fg-muted {
+    color: var(--on-surface-muted);
+  }
+
+  .text-ui-fg-interactive {
+    color: var(--primary);
+  }
+
+  .hover\:text-ui-fg-interactive-hover:hover {
+    color: var(--primary-container);
+  }
+
+  .text-ui-fg-on-inverted {
+    color: #fffbf5;
+  }
+
+  .text-ui-fg-disabled {
+    color: var(--on-surface-muted);
+  }
+
   /* ─── Coastal Gallery Utilities ────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-gradient-cta text-surface-lowest font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:opacity-90 inline-block;
+    @apply bg-primary-container text-[#FFFBF5] font-grotesk font-semibold tracking-[0.1em] uppercase px-8 py-4 transition-all duration-300 hover:bg-primary inline-block;
   }
 
   .btn-ghost {
@@ -185,7 +233,83 @@ textarea::placeholder {
   }
 
   .eyebrow {
-    @apply font-inter text-sm tracking-[0.2em] uppercase text-primary;
+    @apply font-mono text-xs tracking-[0.22em] uppercase text-primary;
+  }
+
+  /* ─── Ivory Gallery system (fableRedesign) ──────────────────────────── */
+
+  /* Mono data label — the "geeky" voice: batch numbers, specs, nav */
+  .mono-label {
+    @apply font-mono text-[10px] tracking-[0.2em] uppercase text-on-surface;
+  }
+
+  .mono-label-muted {
+    @apply font-mono text-[10px] tracking-[0.2em] uppercase text-on-surface-muted;
+  }
+
+  /* Gallery plate — the constant frame every artwork hangs in */
+  .plate {
+    border: var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 22%, transparent);
+    background: var(--surface-low);
+    padding: 10px;
+  }
+
+  /* Museum placard — mono caption under artwork */
+  .placard {
+    @apply font-mono text-[9px] tracking-[0.18em] uppercase text-on-surface-variant;
+  }
+
+  /* Lab spec table — hairline ledger rows */
+  .spec-table {
+    @apply w-full;
+  }
+
+  .spec-table .spec-row {
+    @apply flex items-baseline justify-between gap-4 py-1.5 font-mono text-[11px] tracking-[0.12em] uppercase;
+    border-bottom: var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 12%, transparent);
+  }
+
+  .spec-table .spec-row dt {
+    @apply text-on-surface-muted whitespace-nowrap;
+  }
+
+  .spec-table .spec-row dd {
+    @apply text-on-surface text-right m-0;
+  }
+
+  /* Solid ink CTA — the single strong action on a page */
+  .btn-ink {
+    @apply font-mono text-[11px] tracking-[0.22em] uppercase px-8 py-4 inline-flex items-center justify-center gap-2 transition-colors duration-200;
+    background: var(--on-surface);
+    color: var(--surface-lowest);
+  }
+
+  .btn-ink:hover {
+    background: color-mix(in srgb, var(--on-surface) 82%, var(--surface-lowest));
+  }
+
+  /* Hairline rule in ink */
+  /* Hairline rule in ink */
+  .rule-ink {
+    border-top: var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 14%, transparent);
+  }
+
+  .border-t.rule-ink {
+    border-top-width: var(--hairline-width);
+    border-top-color: color-mix(in srgb, var(--on-surface) 14%, transparent);
+    border-top-style: solid;
+  }
+
+  .border-b.rule-ink {
+    border-bottom-width: var(--hairline-width);
+    border-bottom-color: color-mix(in srgb, var(--on-surface) 14%, transparent);
+    border-bottom-style: solid;
+  }
+
+  .border.rule-ink {
+    border-width: var(--hairline-width);
+    border-color: color-mix(in srgb, var(--on-surface) 14%, transparent);
+    border-style: solid;
   }
 
   .text-xsmall-regular {

@@ -4,10 +4,12 @@ import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Button, clx, Heading, Text } from "@medusajs/ui"
+import { clx, Heading, Text } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import CheckoutCtaButton from "@modules/checkout/components/checkout-cta-button"
 import Divider from "@modules/common/components/divider"
 import MedusaRadio from "@modules/common/components/radio"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -98,7 +100,11 @@ const Shipping: React.FC<ShippingProps> = ({
           setCalculatedPricesMap(pricesMap)
           setIsLoadingPrices(false)
         })
+      } else {
+        setIsLoadingPrices(false)
       }
+    } else {
+      setIsLoadingPrices(false)
     }
 
     if (_pickupMethods?.find((m) => m.id === shippingMethodId)) {
@@ -185,15 +191,31 @@ const Shipping: React.FC<ShippingProps> = ({
         <>
           <div className="grid">
             <div className="flex flex-col">
-              <span className="font-medium txt-medium text-ui-fg-base">
+              <span className="font-grotesk font-semibold text-sm text-on-surface">
                 Shipping method
               </span>
-              <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like you order delivered
+              <span className="mb-4 text-on-surface-muted font-inter text-sm">
+                How would you like your order delivered
               </span>
             </div>
             <div data-testid="delivery-options-container">
               <div className="pb-8 md:pt-0 pt-2">
+                {!_shippingMethods?.length && !hasPickupOptions && (
+                  <div className="rounded-rounded border border-ui-border-base bg-surface-container-low p-6 mb-4">
+                    <Text className="text-on-surface font-medium mb-2">
+                      No shipping methods available
+                    </Text>
+                    <Text className="text-on-surface-muted text-sm">
+                      Your cart region (India) needs delivery options in Medusa
+                      Admin. Run{" "}
+                      <code className="text-xs bg-surface-container-high px-1 py-0.5 rounded">
+                        npx medusa exec ./src/scripts/setup-india-shipping.ts
+                      </code>{" "}
+                      in the backend, or add a shipping option under Settings →
+                      Locations → Fulfillment for country IN.
+                    </Text>
+                  </div>
+                )}
                 {hasPickupOptions && (
                   <RadioGroup
                     value={showPickupOptions}
@@ -272,15 +294,19 @@ const Shipping: React.FC<ShippingProps> = ({
                         </div>
                         <span className="justify-self-end text-ui-fg-base">
                           {option.price_type === "flat" ? (
-                            convertToLocale({
-                              amount: option.amount!,
-                              currency_code: cart?.currency_code,
-                            })
+                            <PriceText>
+                              {convertToLocale({
+                                amount: option.amount!,
+                                currency_code: cart?.currency_code,
+                              })}
+                            </PriceText>
                           ) : calculatedPricesMap[option.id] ? (
-                            convertToLocale({
-                              amount: calculatedPricesMap[option.id],
-                              currency_code: cart?.currency_code,
-                            })
+                            <PriceText>
+                              {convertToLocale({
+                                amount: calculatedPricesMap[option.id],
+                                currency_code: cart?.currency_code,
+                              })}
+                            </PriceText>
                           ) : isLoadingPrices ? (
                             <Loader />
                           ) : (
@@ -349,10 +375,12 @@ const Shipping: React.FC<ShippingProps> = ({
                             </div>
                           </div>
                           <span className="justify-self-end text-ui-fg-base">
-                            {convertToLocale({
-                              amount: option.amount!,
-                              currency_code: cart?.currency_code,
-                            })}
+                            <PriceText>
+                              {convertToLocale({
+                                amount: option.amount!,
+                                currency_code: cart?.currency_code,
+                              })}
+                            </PriceText>
                           </span>
                         </Radio>
                       )
@@ -368,16 +396,14 @@ const Shipping: React.FC<ShippingProps> = ({
               error={error}
               data-testid="delivery-option-error-message"
             />
-            <Button
-              size="large"
-              className="mt"
+            <CheckoutCtaButton
               onClick={handleSubmit}
               isLoading={isLoading}
               disabled={!cart.shipping_methods?.[0]}
               data-testid="submit-delivery-option-button"
             >
               Continue to payment
-            </Button>
+            </CheckoutCtaButton>
           </div>
         </>
       ) : (
@@ -385,15 +411,17 @@ const Shipping: React.FC<ShippingProps> = ({
           <div className="text-small-regular">
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
               <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                <Text className="txt-medium-plus text-on-surface mb-1">
                   Method
                 </Text>
-                <Text className="txt-medium text-ui-fg-subtle">
+                <Text className="txt-medium text-on-surface-variant">
                   {cart.shipping_methods!.at(-1)!.name}{" "}
-                  {convertToLocale({
-                    amount: cart.shipping_methods!.at(-1)!.amount!,
-                    currency_code: cart?.currency_code,
-                  })}
+                  <PriceText>
+                    {convertToLocale({
+                      amount: cart.shipping_methods!.at(-1)!.amount!,
+                      currency_code: cart?.currency_code,
+                    })}
+                  </PriceText>
                 </Text>
               </div>
             )}

@@ -32,12 +32,15 @@ export default function CardActions({
   colorVariant = "default",
   vertical = false,
   overlay = false,
+  storeFooter = false,
 }: {
   product: HttpTypes.StoreProduct
   price?: string | null
   colorVariant?: CardColorVariant
   vertical?: boolean
   overlay?: boolean
+  /** Compact ADD → for shop grid footer */
+  storeFooter?: boolean
 }) {
   const { countryCode } = useParams() as { countryCode: string }
   const router = useRouter()
@@ -66,6 +69,7 @@ export default function CardActions({
         countryCode,
       })
       setAdded(true)
+      router.refresh()
       setTimeout(() => setAdded(false), 1800)
     } catch {
       // silently fail — product page handles full error state
@@ -88,14 +92,16 @@ export default function CardActions({
   }
 
   return (
-    <div className={overlay
+    <div className={storeFooter
+      ? "flex items-center justify-center"
+      : overlay
       ? "flex flex-col items-center gap-2"
       : vertical
       ? "flex flex-col items-center gap-8 flex-shrink-0"
       : "flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto"
     }>
       {/* Wishlist heart */}
-      {mounted && (
+      {mounted && !storeFooter && (
         <button
           type="button"
           onClick={handleWishlist}
@@ -130,12 +136,16 @@ export default function CardActions({
         disabled={isAdding}
         aria-label="Add to cart"
         className={`inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${
-          overlay || vertical
+          storeFooter
+            ? "font-mono text-[10px] tracking-[0.18em] text-on-surface hover:opacity-70 px-3 py-2"
+            : overlay || vertical
             ? `p-1.5 rounded-sm ${ added ? "text-primary" : colors.wish }`
             : `small:border px-2.5 py-2.5 small:px-4 small:py-2.5 ${ added ? "bg-primary small:border-primary text-surface-lowest" : colors.btn }`
         }`}
       >
-        {overlay || vertical ? (
+        {storeFooter ? (
+          <span>{isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD →"}</span>
+        ) : overlay || vertical ? (
           // Vertical mode: always icon-only regardless of screen size
           isAdding ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">

@@ -1,114 +1,107 @@
 "use client"
 
-import { clx } from "@medusajs/ui"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 export function Pagination({
   page,
   totalPages,
-  'data-testid': dataTestid
+  "data-testid": dataTestid,
 }: {
   page: number
   totalPages: number
-  'data-testid'?: string
+  "data-testid"?: string
 }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Helper function to generate an array of numbers within a range
-  const arrayRange = (start: number, stop: number) =>
-    Array.from({ length: stop - start + 1 }, (_, index) => start + index)
-
-  // Function to handle page changes
-  const handlePageChange = (newPage: number) => {
+  const goToPage = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === page) return
     const params = new URLSearchParams(searchParams)
-    params.set("page", newPage.toString())
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
-  // Function to render a page button
-  const renderPageButton = (
-    p: number,
-    label: string | number,
-    isCurrent: boolean
-  ) => (
-    <button
-      key={p}
-      className={clx("txt-xlarge-plus text-ui-fg-muted", {
-        "text-ui-fg-base hover:text-ui-fg-subtle": isCurrent,
-      })}
-      disabled={isCurrent}
-      onClick={() => handlePageChange(p)}
-    >
-      {label}
-    </button>
-  )
-
-  // Function to render ellipsis
-  const renderEllipsis = (key: string) => (
-    <span
-      key={key}
-      className="txt-xlarge-plus text-ui-fg-muted items-center cursor-default"
-    >
-      ...
-    </span>
-  )
-
-  // Function to render page buttons based on the current page and total pages
-  const renderPageButtons = () => {
-    const buttons = []
-
-    if (totalPages <= 7) {
-      // Show all pages
-      buttons.push(
-        ...arrayRange(1, totalPages).map((p) =>
-          renderPageButton(p, p, p === page)
-        )
-      )
+    if (newPage === 1) {
+      params.delete("page")
     } else {
-      // Handle different cases for displaying pages and ellipses
-      if (page <= 4) {
-        // Show 1, 2, 3, 4, 5, ..., lastpage
-        buttons.push(
-          ...arrayRange(1, 5).map((p) => renderPageButton(p, p, p === page))
-        )
-        buttons.push(renderEllipsis("ellipsis1"))
-        buttons.push(
-          renderPageButton(totalPages, totalPages, totalPages === page)
-        )
-      } else if (page >= totalPages - 3) {
-        // Show 1, ..., lastpage - 4, lastpage - 3, lastpage - 2, lastpage - 1, lastpage
-        buttons.push(renderPageButton(1, 1, 1 === page))
-        buttons.push(renderEllipsis("ellipsis2"))
-        buttons.push(
-          ...arrayRange(totalPages - 4, totalPages).map((p) =>
-            renderPageButton(p, p, p === page)
-          )
-        )
-      } else {
-        // Show 1, ..., page - 1, page, page + 1, ..., lastpage
-        buttons.push(renderPageButton(1, 1, 1 === page))
-        buttons.push(renderEllipsis("ellipsis3"))
-        buttons.push(
-          ...arrayRange(page - 1, page + 1).map((p) =>
-            renderPageButton(p, p, p === page)
-          )
-        )
-        buttons.push(renderEllipsis("ellipsis4"))
-        buttons.push(
-          renderPageButton(totalPages, totalPages, totalPages === page)
-        )
-      }
+      params.set("page", newPage.toString())
     }
-
-    return buttons
+    const qs = params.toString()
+    router.push(qs ? `${pathname}?${qs}` : pathname)
   }
 
-  // Render the component
   return (
-    <div className="flex justify-center w-full mt-12">
-      <div className="flex gap-3 items-end" data-testid={dataTestid}>{renderPageButtons()}</div>
+    <div
+      className="flex items-center justify-between mt-12"
+      data-testid={dataTestid}
+    >
+      <button
+        type="button"
+        onClick={() => goToPage(page - 1)}
+        disabled={page <= 1}
+        aria-label="Previous page"
+        className="group flex items-center gap-3 font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant disabled:opacity-20 hover:text-on-surface transition-colors duration-200"
+      >
+        <span className="flex items-center justify-center w-10 h-10 border border-surface-variant group-hover:border-on-surface-variant group-disabled:border-surface-variant transition-colors duration-200">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="square"
+          >
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 5 5 12 12 19" />
+          </svg>
+        </span>
+        PREV
+      </button>
+
+      <div className="flex items-center gap-2">
+        {Array.from({ length: totalPages }).map((_, i) => {
+          const p = i + 1
+          const isCurrent = p === page
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => goToPage(p)}
+              aria-label={`Page ${p}`}
+              aria-current={isCurrent ? "page" : undefined}
+              className={`min-w-[2rem] h-8 px-2 font-inter text-[10px] tracking-[0.14em] transition-colors duration-200 ${
+                isCurrent
+                  ? "text-primary font-semibold border-b-2 border-primary"
+                  : "text-on-surface-disabled hover:text-on-surface-variant"
+              }`}
+            >
+              {p}
+            </button>
+          )
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => goToPage(page + 1)}
+        disabled={page >= totalPages}
+        aria-label="Next page"
+        className="group flex items-center gap-3 font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant disabled:opacity-20 hover:text-on-surface transition-colors duration-200"
+      >
+        NEXT
+        <span className="flex items-center justify-center w-10 h-10 border border-surface-variant group-hover:border-on-surface-variant transition-colors duration-200">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="square"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </span>
+      </button>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { listCollections } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 import FadeIn from "@modules/common/components/fade-in"
 
 export default async function Footer() {
@@ -16,18 +17,18 @@ export default async function Footer() {
             <div className="flex flex-col gap-6 small:col-span-1">
               <LocalizedClientLink
                 href="/"
-                className="font-grotesk font-bold text-sm tracking-[0.2em] text-on-surface hover:text-primary transition-colors uppercase"
+                className="inline-flex hover:opacity-80 transition-opacity duration-200"
               >
-                WHIFF THEORY
+                <BrandLogo variant="footer" />
               </LocalizedClientLink>
-              <p className="font-inter text-[11px] tracking-[0.2em] text-on-surface-variant uppercase">
+              <p className="font-mono text-[10px] tracking-[0.22em] text-on-surface-variant uppercase">
                 CRAFTED IN VIZAG. FOR THE WORLD.
               </p>
               <p className="font-garamond italic text-base text-on-surface-variant leading-relaxed max-w-[260px]">
                 Each perfume carries a character, a mood, and a reason to exist.
               </p>
               <div className="flex flex-col gap-2 mt-2">
-                <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant">
                   JOIN THE JOURNEY
                 </span>
                 <div className="flex items-center border-b border-surface-variant focus-within:border-primary transition-colors duration-200">
@@ -54,7 +55,7 @@ export default async function Footer() {
           {/* Row 2 (mobile) / Col 2 (desktop) — The Ladder: breadcrumb row */}
           <FadeIn delay={120}>
             <div className="flex flex-col gap-4">
-              <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+              <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant">
                 THE LADDER
               </span>
               {/* Tier breadcrumb — horizontal on all sizes */}
@@ -72,7 +73,7 @@ export default async function Footer() {
                     )}
                     <LocalizedClientLink
                       href={tier.href}
-                      className="font-inter text-[10px] tracking-[0.18em] uppercase font-semibold transition-opacity duration-200 hover:opacity-70"
+                      className="font-mono text-[10px] tracking-[0.18em] uppercase transition-opacity duration-200 hover:opacity-70"
                       style={{ color: tier.color }}
                     >
                       {tier.label}
@@ -89,7 +90,7 @@ export default async function Footer() {
             {/* Company */}
             <FadeIn delay={240}>
               <div className="flex flex-col gap-4">
-                <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant">
                   COMPANY
                 </span>
                 <ul className="flex flex-col gap-3">
@@ -103,7 +104,7 @@ export default async function Footer() {
             {/* Transparency */}
             <FadeIn delay={360}>
               <div className="flex flex-col gap-4">
-                <span className="font-grotesk font-semibold text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
+                <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant">
                   TRANSPARENCY
                 </span>
                 <ul className="flex flex-col gap-3">

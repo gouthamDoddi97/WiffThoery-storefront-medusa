@@ -5,6 +5,7 @@ import { HttpTypes } from "@medusajs/types"
 import ImageCarousel from "@modules/products/components/image-carousel"
 import PerformanceChart from "@modules/products/components/performance-chart"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import { FragranceSet, SetItem } from "@lib/data/offers"
 import { PerfumeDetails } from "types/perfume"
 import AddSetToCartButton from "@modules/sets/components/add-set-to-cart-button"
@@ -193,7 +194,7 @@ export default function SetInteractiveSection({
               Set Price
             </p>
             <span className="font-grotesk font-semibold text-3xl text-primary">
-              {formatPrice(set.price_amount, set.currency_code)}
+              <PriceText>{formatPrice(set.price_amount, set.currency_code)}</PriceText>
             </span>
           </div>
 
@@ -347,7 +348,7 @@ export default function SetInteractiveSection({
               Set Price — All {enrichedItems.length} Included
             </span>
             <span className="font-grotesk font-semibold text-3xl text-primary">
-              {formatPrice(set.price_amount, set.currency_code)}
+              <PriceText>{formatPrice(set.price_amount, set.currency_code)}</PriceText>
             </span>
           </div>
 

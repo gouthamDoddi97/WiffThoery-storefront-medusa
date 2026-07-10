@@ -6,6 +6,7 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import FilteredPaginatedProducts from "@modules/store/templates/filtered-paginated-products"
 import CollectionSidebar from "@modules/collections/components/collection-sidebar"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import PriceText from "@modules/common/components/price-text"
 import FadeIn from "@modules/common/components/fade-in"
 import { HttpTypes } from "@medusajs/types"
 import { getCollectionTiers, CollectionTierMeta } from "@lib/data/collection-tier"
@@ -271,7 +272,9 @@ function CrowdPleaserTemplate({ category, sort, page, countryCode, meta, heroIma
               { value: meta.energyLabel, label: "Energy" },
             ]).map((s, i) => (
               <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                <div className="font-garamond text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-garamond text-lg text-on-surface leading-none">
+                  <PriceText>{s.value}</PriceText>
+                </div>
                 <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
               </div>
             ))}
@@ -372,7 +375,9 @@ function IntroToNicheTemplate({ category, sort, page, countryCode, meta, heroIma
               { value: meta.energyLabel, label: "Energy" },
             ]).map((s, i) => (
               <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                <div className="font-garamond italic text-lg text-on-surface leading-none">
+                  <PriceText>{s.value}</PriceText>
+                </div>
                 <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
               </div>
             ))}
@@ -481,7 +486,9 @@ function PolarizingArtTemplate({ category, sort, page, countryCode, meta, heroIm
                 { value: meta.energyLabel, label: "Energy" },
               ]).map((s, i) => (
                 <div key={i} className={i > 0 ? "pl-3" : ""} style={i > 0 ? { borderLeft: `1px solid ${meta.accentColor}1f` } : {}}>
-                  <div className="font-garamond italic text-lg text-on-surface leading-none">{s.value}</div>
+                  <div className="font-garamond italic text-lg text-on-surface leading-none">
+                  <PriceText>{s.value}</PriceText>
+                </div>
                   <div className="font-inter text-[9px] tracking-[0.14em] uppercase text-on-surface-disabled mt-1.5">{s.label}</div>
                 </div>
               ))}

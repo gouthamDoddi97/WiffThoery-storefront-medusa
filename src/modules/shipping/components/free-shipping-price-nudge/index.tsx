@@ -1,6 +1,7 @@
 "use client"
 
 import { convertToLocale } from "@lib/util/money"
+import PriceText from "@modules/common/components/price-text"
 import { CheckCircleSolid, XMark } from "@medusajs/icons"
 import {
   HttpTypes,
@@ -163,10 +164,12 @@ function FreeShippingInline({
           >
             Only{" "}
             <span className="text-neutral-950">
-              {convertToLocale({
-                amount: price.target_remaining,
-                currency_code: cart.currency_code,
-              })}
+              <PriceText>
+                {convertToLocale({
+                  amount: price.target_remaining,
+                  currency_code: cart.currency_code,
+                })}
+              </PriceText>
             </span>{" "}
             away
           </div>
@@ -239,10 +242,12 @@ function FreeShippingPopup({
               >
                 Only{" "}
                 <span className="text-on-surface">
-                  {convertToLocale({
-                    amount: price.target_remaining,
-                    currency_code: cart.currency_code,
-                  })}
+                  <PriceText>
+                    {convertToLocale({
+                      amount: price.target_remaining,
+                      currency_code: cart.currency_code,
+                    })}
+                  </PriceText>
                 </span>{" "}
                 away
               </div>

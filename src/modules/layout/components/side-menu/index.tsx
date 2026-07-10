@@ -6,6 +6,7 @@ import { Text, clx, useToggleState } from "@medusajs/ui"
 import { Fragment } from "react"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 import CountrySelect from "../country-select"
 import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
@@ -110,9 +111,9 @@ const SideMenu = ({ regions, locales, currentLocale, tierImages }: SideMenuProps
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-5 border-b border-surface-variant/20">
-                      <span className="font-grotesk font-bold text-xs tracking-[0.22em] text-on-surface-disabled uppercase">
-                        Whiff Theory
-                      </span>
+                      <LocalizedClientLink href="/" onClick={close}>
+                        <BrandLogo variant="menu" />
+                      </LocalizedClientLink>
                       <button
                         data-testid="close-menu-button"
                         onClick={close}

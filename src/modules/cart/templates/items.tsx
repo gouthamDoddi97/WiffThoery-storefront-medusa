@@ -14,7 +14,7 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
     <div className="flex flex-col">
       {/* Header row */}
       <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 pb-4 border-b border-surface-variant/30">
-        <span className="font-grotesk text-[10px] tracking-[0.2em] text-on-surface-variant">FRAGMENT</span>
+        <span className="font-grotesk text-[10px] tracking-[0.2em] text-on-surface-variant">ITEM</span>
         <span className="font-grotesk text-[10px] tracking-[0.2em] text-on-surface-variant w-28 text-center">QTY</span>
         <span className="font-grotesk text-[10px] tracking-[0.2em] text-on-surface-variant hidden small:block w-20 text-right">UNIT</span>
         <span className="font-grotesk text-[10px] tracking-[0.2em] text-on-surface-variant w-20 text-right">TOTAL</span>

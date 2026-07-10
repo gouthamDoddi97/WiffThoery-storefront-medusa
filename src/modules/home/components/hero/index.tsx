@@ -1,4 +1,5 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BrandLogo from "@modules/common/components/brand-logo"
 import FadeIn from "@modules/common/components/fade-in"
 
 const Hero = () => {
@@ -47,7 +48,12 @@ const Hero = () => {
         <div className="flex flex-col gap-8 max-w-[680px]">
 
           <FadeIn delay={0}>
-            <span className="eyebrow">WHIFF THEORY — EXTRAIT DE PARFUM</span>
+            <div className="inline-flex items-center gap-2.5 bg-surface-lowest/90 px-3 py-2">
+              <BrandLogo variant="sm" />
+              <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-on-surface-variant">
+                — EXTRAIT DE PARFUM
+              </span>
+            </div>
           </FadeIn>
 
           <FadeIn delay={100}>
