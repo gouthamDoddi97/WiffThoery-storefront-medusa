@@ -1,5 +1,7 @@
 import type { ReactNode } from "react"
 
+export { primaryNoteFromLayer } from "@lib/util/note-tokens"
+
 /**
  * Curated etching-style botanical glyphs for the scent pyramid.
  *
@@ -152,9 +154,4 @@ export function BotanicalGlyph({
   const key = resolveBotanicalGlyph(note)
   const Icon = GLYPHS[key]
   return <Icon className={className} />
-}
-
-export function primaryNoteFromLayer(notes?: string | null): string {
-  if (!notes) return ""
-  return notes.split(/[,·]/)[0]?.trim() ?? ""
 }

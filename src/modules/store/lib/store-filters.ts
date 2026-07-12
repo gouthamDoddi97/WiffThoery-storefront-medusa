@@ -1,4 +1,4 @@
-import { getPerfumeDetails } from "@lib/data/perfume-details"
+import { getPerfumeDetailsMap } from "@lib/data/perfume-details"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import { PerfumeDetails } from "types/perfume"
@@ -12,6 +12,7 @@ export const TIER_OPTIONS = [
 ] as const
 
 export const FAMILY_OPTIONS = [
+  "Citrus",
   "Fresh",
   "Floral",
   "Woody",
@@ -22,6 +23,19 @@ export const FAMILY_OPTIONS = [
   "Amber",
   "Leather",
 ] as const
+
+export const NOTE_KEYWORDS: Record<string, string[]> = {
+  Citrus: ["citrus", "lemon", "bergamot", "orange", "grapefruit", "lime", "mandarin", "neroli", "yuzu"],
+  Floral: ["floral", "rose", "jasmine", "lily", "violet", "iris", "peony", "magnolia", "ylang", "flower", "tuberose", "geranium"],
+  Woody: ["wood", "cedar", "sandalwood", "vetiver", "oud", "patchouli", "birch", "teak", "pine", "oak"],
+  Musky: ["musk", "musky", "ambergris", "ambrette"],
+  Spicy: ["spicy", "pepper", "cardamom", "ginger", "cinnamon", "clove", "nutmeg", "saffron", "chilli", "chili"],
+  Fresh: ["fresh", "aquatic", "water", "sea", "marine", "cucumber", "green", "mint", "clean", "ozonic"],
+  Sweet: ["sweet", "vanilla", "caramel", "honey", "chocolate", "praline", "sugar", "gourmand"],
+  Fruity: ["fruity", "fruit", "peach", "apple", "pear", "berry", "plum", "cherry", "fig", "mango", "passionfruit", "passion fruit", "guava", "lychee"],
+  Amber: ["amber", "ambre", "benzoin", "labdanum", "tonka", "resin", "balsam", "incense"],
+  Leather: ["leather", "tobacco", "smoke", "moss", "suede", "birch tar"],
+}
 
 export const MOOD_OPTIONS = [
   { value: "comfort", label: "COMFORT" },
@@ -34,19 +48,6 @@ export const PRICE_OPTIONS = [
   { value: "mid", label: "₹400 – ₹700" },
   { value: "over_700", label: "₹700+" },
 ] as const
-
-const NOTE_KEYWORDS: Record<string, string[]> = {
-  Citrus: ["citrus", "lemon", "bergamot", "orange", "grapefruit", "lime", "mandarin", "neroli"],
-  Floral: ["floral", "rose", "jasmine", "lily", "violet", "iris", "peony", "magnolia", "ylang", "flower"],
-  Woody: ["wood", "cedar", "sandalwood", "vetiver", "oud", "patchouli", "birch", "teak"],
-  Musky: ["musk", "musky", "ambergris", "ambrette"],
-  Spicy: ["spicy", "pepper", "cardamom", "ginger", "cinnamon", "clove", "nutmeg", "saffron"],
-  Fresh: ["fresh", "aquatic", "water", "sea", "marine", "cucumber", "green", "mint", "clean"],
-  Sweet: ["sweet", "vanilla", "caramel", "honey", "chocolate", "praline", "sugar"],
-  Fruity: ["fruity", "fruit", "peach", "apple", "pear", "berry", "plum", "cherry", "fig", "mango"],
-  Amber: ["amber", "ambre", "benzoin", "labdanum", "tonka", "resin", "balsam"],
-  Leather: ["leather", "tobacco", "smoke", "incense", "moss", "suede"],
-}
 
 const MOOD_KEYWORDS: Record<string, string[]> = {
   comfort: ["comfort", "cozy", "warm", "soft", "calm"],
@@ -95,16 +96,45 @@ export function getCheapestAmount(product: HttpTypes.StoreProduct): number | nul
   return cheapestPrice?.calculated_price_number ?? null
 }
 
-function matchesFamilies(details: PerfumeDetails | null, families: string[]): boolean {
-  if (families.length === 0) return true
-  if (!details) return false
-  const allNotes = [details.top_notes, details.middle_notes, details.base_notes]
-    .filter(Boolean)
+function getFamilyHaystack(
+  details: PerfumeDetails | null,
+  product: HttpTypes.StoreProduct
+): string {
+  const parts: string[] = []
+
+  if (details) {
+    parts.push(
+      details.top_notes ?? "",
+      details.middle_notes ?? "",
+      details.base_notes ?? "",
+      details.caption ?? ""
+    )
+  }
+
+  const metaFamily = String(
+    product.metadata?.family ??
+      product.metadata?.families ??
+      product.metadata?.note_family ??
+      ""
+  )
+  const tags = (product.tags ?? [])
+    .map((t) => t.value ?? "")
     .join(" ")
-    .toLowerCase()
+
+  return [...parts, metaFamily, tags].filter(Boolean).join(" ").toLowerCase()
+}
+
+function matchesFamilies(
+  details: PerfumeDetails | null,
+  product: HttpTypes.StoreProduct,
+  families: string[]
+): boolean {
+  if (families.length === 0) return true
+  const haystack = getFamilyHaystack(details, product)
+  if (!haystack.trim()) return false
   return families.some((family) => {
     const kws = NOTE_KEYWORDS[family] ?? [family.toLowerCase()]
-    return kws.some((kw) => allNotes.includes(kw))
+    return kws.some((kw) => haystack.includes(kw))
   })
 }
 
@@ -143,16 +173,14 @@ export async function filterStoreProducts(
   products: HttpTypes.StoreProduct[],
   filters: StoreFilters
 ): Promise<HttpTypes.StoreProduct[]> {
-  const hasFamily = filters.family.length > 0
-  const detailsArr = hasFamily
-    ? await Promise.all(products.map((p) => getPerfumeDetails(p.id)))
-    : []
+  const detailsMap = await getPerfumeDetailsMap(products.map((p) => p.id))
 
-  return products.filter((product, i) => {
+  return products.filter((product) => {
+    const details = detailsMap.get(product.id) ?? null
     if (!matchesTier(product, filters.tier)) return false
     if (!matchesMood(product, filters.mood)) return false
     if (!matchesPrice(getCheapestAmount(product), filters.price)) return false
-    if (hasFamily && !matchesFamilies(detailsArr[i], filters.family)) return false
+    if (!matchesFamilies(details, product, filters.family)) return false
     return true
   })
 }
@@ -167,7 +195,7 @@ export type FilterCounts = {
 export async function computeFilterCounts(
   products: HttpTypes.StoreProduct[]
 ): Promise<FilterCounts> {
-  const detailsArr = await Promise.all(products.map((p) => getPerfumeDetails(p.id)))
+  const detailsMap = await getPerfumeDetailsMap(products.map((p) => p.id))
 
   const tier: Record<string, number> = {}
   const family: Record<string, number> = {}
@@ -179,12 +207,13 @@ export async function computeFilterCounts(
   for (const opt of MOOD_OPTIONS) mood[opt.value] = 0
   for (const opt of PRICE_OPTIONS) price[opt.value] = 0
 
-  products.forEach((product, i) => {
+  products.forEach((product) => {
+    const details = detailsMap.get(product.id) ?? null
     const t = getProductTier(product)
     if (t && t in tier) tier[t]++
 
     for (const fam of FAMILY_OPTIONS) {
-      if (matchesFamilies(detailsArr[i], [fam])) family[fam]++
+      if (matchesFamilies(details, product, [fam])) family[fam]++
     }
 
     for (const opt of MOOD_OPTIONS) {

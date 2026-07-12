@@ -3,7 +3,11 @@ import {
   BotanicalGlyph,
   primaryNoteFromLayer,
 } from "@lib/util/botanical-glyphs"
-import type { PyramidPlantImages } from "@lib/data/plant-images"
+import { parseNoteTokens } from "@lib/util/note-tokens"
+import type {
+  PyramidPlantImage,
+  PyramidPlantImages,
+} from "@lib/data/plant-images"
 
 type NotePyramidProps = {
   top?: string | null
@@ -17,26 +21,47 @@ const INK = "var(--on-surface)"
 const INK_LINE = "color-mix(in srgb, var(--on-surface) 38%, transparent)"
 const INK_HAIRLINE = "color-mix(in srgb, var(--on-surface) 12%, transparent)"
 
-function splitNotes(notes?: string | null): string[] {
-  if (!notes) return []
-  return notes
-    .split(/[,·]/)
-    .map((n) => n.trim())
-    .filter(Boolean)
-}
-
 function formatLayer(notes?: string | null) {
-  return splitNotes(notes).join(" · ")
+  return parseNoteTokens(notes).join(" · ")
 }
 
-const TIER_ICON_POSITIONS = [
-  { key: "top" as const, top: "14%" },
-  { key: "heart" as const, top: "44%" },
-  { key: "base" as const, top: "72%" },
+const TIER_LAYOUT = [
+  {
+    key: "top" as const,
+    top: "14%",
+    slotClass: "w-10 h-11 small:w-11 small:h-12",
+  },
+  {
+    key: "heart" as const,
+    top: "44%",
+    slotClass: "w-[4.5rem] h-11 small:w-[5.25rem] small:h-12",
+  },
+  {
+    key: "base" as const,
+    top: "72%",
+    slotClass: "w-[5.75rem] h-11 small:w-[6.75rem] small:h-12",
+  },
 ]
 
 /** Dome push-pin — photo pinned to the pyramid diagram. */
-function PushPin() {
+function PushPin({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <svg
+        width="10"
+        height="13"
+        viewBox="0 0 14 18"
+        className="drop-shadow-sm"
+        aria-hidden
+      >
+        <ellipse cx="7" cy="5.5" rx="5.5" ry="4.5" fill="#8b1a1a" />
+        <ellipse cx="7" cy="4.5" rx="3.8" ry="2.6" fill="#c43b3b" opacity="0.55" />
+        <path d="M7 9.5v6.5" stroke="#6e6860" strokeWidth="1.1" strokeLinecap="round" />
+        <circle cx="7" cy="16.5" r="0.9" fill="#6e6860" />
+      </svg>
+    )
+  }
+
   return (
     <svg
       width="14"
@@ -53,16 +78,32 @@ function PushPin() {
   )
 }
 
-function PinnedPlantPhoto({ src, alt }: { src: string; alt: string }) {
+function PinnedPlantPhoto({
+  src,
+  alt,
+  compact = false,
+  tilt = 0,
+}: {
+  src: string
+  alt: string
+  compact?: boolean
+  tilt?: number
+}) {
   return (
-    <div className="relative w-full h-full pt-2">
-      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10">
-        <PushPin />
+    <div
+      className={`group relative w-full h-full ${compact ? "pt-1.5" : "pt-2"}`}
+      style={{ transform: `rotate(${tilt}deg)` }}
+    >
+      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+        <PushPin compact={compact} />
       </div>
       <div
-        className="relative w-full h-full overflow-hidden bg-[#fffdf8] shadow-[0_2px_8px_rgba(10,8,5,0.12)] -rotate-[2deg]"
+        className={`relative w-full h-full overflow-hidden bg-[#fffdf8] shadow-[0_2px_8px_rgba(10,8,5,0.12)] ${
+          compact ? "" : "-rotate-[2deg]"
+        }`}
         style={{
-          border: "var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 18%, transparent)",
+          border:
+            "var(--hairline-width) solid color-mix(in srgb, var(--on-surface) 18%, transparent)",
         }}
       >
         <Image
@@ -70,25 +111,69 @@ function PinnedPlantPhoto({ src, alt }: { src: string; alt: string }) {
           alt={alt}
           width={48}
           height={48}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-0"
         />
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-[#fffdf8] p-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          aria-hidden
+        >
+          <span
+            className={`font-mono uppercase text-on-surface text-center leading-tight ${
+              compact
+                ? "text-[6px] small:text-[7px] tracking-[0.06em]"
+                : "text-[8px] small:text-[9px] tracking-[0.1em]"
+            }`}
+          >
+            {alt}
+          </span>
+        </div>
       </div>
     </div>
   )
 }
 
-function TierGlyph({
+function tierTilts(count: number): number[] {
+  if (count === 1) return [0]
+  if (count === 2) return [-5, 5]
+  return [-6, 0, 6]
+}
+
+function TierGlyphs({
   note,
-  plantImage,
+  plantImages,
 }: {
   note: string
-  plantImage: string | null
+  plantImages: PyramidPlantImage[]
 }) {
-  if (plantImage) {
-    return <PinnedPlantPhoto src={plantImage} alt={note} />
+  if (plantImages.length === 0) {
+    return <BotanicalGlyph note={note} className="w-full h-full" />
   }
 
-  return <BotanicalGlyph note={note} className="w-full h-full" />
+  if (plantImages.length === 1) {
+    return (
+      <PinnedPlantPhoto
+        src={plantImages[0].src}
+        alt={plantImages[0].alt}
+      />
+    )
+  }
+
+  const tilts = tierTilts(plantImages.length)
+
+  return (
+    <div className="flex items-end justify-center gap-0.5 w-full h-full px-0.5">
+      {plantImages.map((img, i) => (
+        <div key={`${img.src}-${i}`} className="relative flex-1 min-w-0 h-full">
+          <PinnedPlantPhoto
+            src={img.src}
+            alt={img.alt}
+            compact
+            tilt={tilts[i] ?? 0}
+          />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 /** Ink diagram — triangle tiers with Perenual botanical refs or etching glyphs. */
@@ -103,25 +188,25 @@ export default function NotePyramid({
       value: formatLayer(top),
       note: primaryNoteFromLayer(top),
       label: "TOP",
-      plantImage: plantImages?.top ?? null,
+      plantImages: plantImages?.top ?? [],
     },
     heart: {
       value: formatLayer(heart),
       note: primaryNoteFromLayer(heart),
       label: "HEART",
-      plantImage: plantImages?.heart ?? null,
+      plantImages: plantImages?.heart ?? [],
     },
     base: {
       value: formatLayer(base),
       note: primaryNoteFromLayer(base),
       label: "BASE",
-      plantImage: plantImages?.base ?? null,
+      plantImages: plantImages?.base ?? [],
     },
   }
 
-  const layers = TIER_ICON_POSITIONS.map((pos) => ({
-    ...pos,
-    ...layerData[pos.key],
+  const layers = TIER_LAYOUT.map((layout) => ({
+    ...layout,
+    ...layerData[layout.key],
   })).filter((l) => l.value)
 
   if (!layers.length) return null
@@ -167,7 +252,7 @@ export default function NotePyramid({
             return (
               <div
                 key={layer.key}
-                className="absolute w-10 h-11 small:w-11 small:h-12 flex items-end justify-center text-on-surface"
+                className={`absolute flex items-end justify-center text-on-surface ${layer.slotClass}`}
                 style={{
                   top: layer.top,
                   left: "50%",
@@ -175,7 +260,7 @@ export default function NotePyramid({
                   transform: `translateX(-50%) rotate(${tilt}deg)`,
                 }}
               >
-                <TierGlyph note={layer.note} plantImage={layer.plantImage} />
+                <TierGlyphs note={layer.note} plantImages={layer.plantImages} />
               </div>
             )
           })}

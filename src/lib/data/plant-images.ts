@@ -1,40 +1,51 @@
-import { primaryNoteFromLayer } from "@lib/util/botanical-glyphs"
+import { sdk } from "@lib/config"
+import { normalizeNoteName, parseNoteTokens } from "@lib/util/note-tokens"
 
-export type PyramidPlantImages = {
-  top: string | null
-  heart: string | null
-  base: string | null
+export type PyramidPlantImage = {
+  src: string
+  alt: string
 }
 
-const MEDUSA_BACKEND_URL =
-  process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+export type PyramidPlantImages = {
+  top: PyramidPlantImage[]
+  heart: PyramidPlantImage[]
+  base: PyramidPlantImage[]
+}
 
-function normalizeNoteName(input: string): string {
-  return input.trim().toLowerCase().replace(/\s+/g, " ")
+const LAYER_IMAGE_LIMITS = {
+  top: 1,
+  heart: 2,
+  base: 3,
+} as const
+
+type FragranceNotesResponse = {
+  fragrance_notes: Array<{
+    name: string
+    display_name: string
+    image_url?: string | null
+  }>
 }
 
 async function lookupNoteImages(
   names: string[]
 ): Promise<Map<string, string | null>> {
-  const unique = Array.from(new Set(names.map(normalizeNoteName).filter(Boolean)))
+  const unique = Array.from(
+    new Set(names.map(normalizeNoteName).filter(Boolean))
+  )
   if (!unique.length) return new Map()
 
   try {
-    const res = await fetch(
-      `${MEDUSA_BACKEND_URL}/store/fragrance-notes?names=${encodeURIComponent(unique.join(","))}`,
+    const { fragrance_notes } = await sdk.client.fetch<FragranceNotesResponse>(
+      `/store/fragrance-notes`,
       {
-        next: { revalidate: 3600 },
-        headers: {
-          "x-publishable-api-key":
-            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
-        },
+        method: "GET",
+        query: { names: unique.join(",") },
+        cache: "no-store",
       }
     )
-    if (!res.ok) return new Map()
 
-    const json = await res.json()
     const map = new Map<string, string | null>()
-    for (const note of json.fragrance_notes ?? []) {
+    for (const note of fragrance_notes ?? []) {
       map.set(note.name, note.image_url ?? null)
     }
     return map
@@ -43,47 +54,46 @@ async function lookupNoteImages(
   }
 }
 
-function imageForLayer(
+function imagesForLayer(
   notes: string | null | undefined,
-  imageMap: Map<string, string | null>
-): string | null {
-  if (!notes) return null
-  const parts = notes
-    .split(/[,·]/)
-    .map((n) => n.trim())
-    .filter(Boolean)
+  imageMap: Map<string, string | null>,
+  max: number
+): PyramidPlantImage[] {
+  const results: PyramidPlantImage[] = []
+  const seen = new Set<string>()
 
-  for (const part of parts) {
+  for (const part of parseNoteTokens(notes)) {
     const key = normalizeNoteName(part)
+    if (seen.has(key)) continue
+
     const url = imageMap.get(key)
-    if (url) return url
+    if (!url) continue
+
+    seen.add(key)
+    results.push({ src: url, alt: part })
+    if (results.length >= max) break
   }
 
-  const primary = primaryNoteFromLayer(notes)
-  if (primary) {
-    return imageMap.get(normalizeNoteName(primary)) ?? null
-  }
-
-  return null
+  return results
 }
 
-/** Resolve cached note images from the admin fragrance-notes library. */
+/** Resolve note images from the admin fragrance-notes library. */
 export async function getPlantImagesForPyramid(
   top?: string | null,
   heart?: string | null,
   base?: string | null
 ): Promise<PyramidPlantImages> {
   const names = [
-    primaryNoteFromLayer(top),
-    primaryNoteFromLayer(heart),
-    primaryNoteFromLayer(base),
-  ].filter(Boolean)
+    ...parseNoteTokens(top),
+    ...parseNoteTokens(heart),
+    ...parseNoteTokens(base),
+  ]
 
   const imageMap = await lookupNoteImages(names)
 
   return {
-    top: imageForLayer(top, imageMap),
-    heart: imageForLayer(heart, imageMap),
-    base: imageForLayer(base, imageMap),
+    top: imagesForLayer(top, imageMap, LAYER_IMAGE_LIMITS.top),
+    heart: imagesForLayer(heart, imageMap, LAYER_IMAGE_LIMITS.heart),
+    base: imagesForLayer(base, imageMap, LAYER_IMAGE_LIMITS.base),
   }
 }
