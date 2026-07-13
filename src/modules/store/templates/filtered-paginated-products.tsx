@@ -261,7 +261,12 @@ export default async function FilteredPaginatedProducts({
       )
     }
     return (
-      <ProductPreview key={`${p.id}-${index}`} product={p} region={region} />
+      <ProductPreview
+        key={`${p.id}-${index}`}
+        product={p}
+        region={region}
+        showCollectionTier={shopLayout}
+      />
     )
   }
 
@@ -271,8 +276,8 @@ export default async function FilteredPaginatedProducts({
     const totalPages = Math.max(1, Math.ceil(products.length / productsPerPage))
 
     const gridClass = shopLayout
-      ? "grid grid-cols-1 xsmall:grid-cols-2 medium:grid-cols-3 gap-6 small:gap-8 items-stretch"
-      : "grid grid-cols-1 w-full xsmall:grid-cols-2 medium:grid-cols-3 gap-x-6 gap-y-8 items-stretch"
+      ? "grid grid-cols-1 xsmall:grid-cols-2 small:grid-cols-3 gap-6 small:gap-8 items-stretch"
+      : "grid grid-cols-1 w-full xsmall:grid-cols-2 small:grid-cols-3 gap-x-6 gap-y-8 items-stretch"
 
     const grid = (
       <ul className={gridClass} data-testid="products-list">

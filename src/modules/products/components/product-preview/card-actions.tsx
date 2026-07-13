@@ -33,14 +33,16 @@ export default function CardActions({
   vertical = false,
   overlay = false,
   storeFooter = false,
+  onWishlistChange,
 }: {
   product: HttpTypes.StoreProduct
   price?: string | null
   colorVariant?: CardColorVariant
   vertical?: boolean
   overlay?: boolean
-  /** Compact ADD → for shop grid footer */
+  /** Compact wishlist heart for product grid cards */
   storeFooter?: boolean
+  onWishlistChange?: (productId: string, wishlisted: boolean) => void
 }) {
   const { countryCode } = useParams() as { countryCode: string }
   const router = useRouter()
@@ -81,6 +83,7 @@ export default function CardActions({
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    const wasWishlisted = isWishlisted
     toggle({
       id: product.id!,
       handle: product.handle!,
@@ -89,7 +92,27 @@ export default function CardActions({
       price: price ?? "",
       collectionTitle: product.collection?.title,
     })
+    onWishlistChange?.(product.id!, !wasWishlisted)
   }
+
+  const heartIcon = (filled: boolean, size = 17) =>
+    filled ? (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      </svg>
+    ) : (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        aria-hidden
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
 
   return (
     <div className={storeFooter
@@ -100,8 +123,23 @@ export default function CardActions({
       ? "flex flex-col items-center gap-8 flex-shrink-0"
       : "flex items-center justify-between small:justify-start small:gap-3 w-full small:w-auto"
     }>
+      {storeFooter ? (
+        mounted && (
+          <button
+            type="button"
+            onClick={handleWishlist}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            className={`p-2 transition-colors duration-200 flex-shrink-0 ${
+              isWishlisted ? colors.wishActive : colors.wish
+            }`}
+          >
+            {heartIcon(isWishlisted)}
+          </button>
+        )
+      ) : (
+        <>
       {/* Wishlist heart */}
-      {mounted && !storeFooter && (
+      {mounted && (
         <button
           type="button"
           onClick={handleWishlist}
@@ -110,22 +148,7 @@ export default function CardActions({
             isWishlisted ? colors.wishActive : colors.wish
           }`}
         >
-          {isWishlisted ? (
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          )}
+          {heartIcon(isWishlisted)}
         </button>
       )}
 
@@ -136,16 +159,12 @@ export default function CardActions({
         disabled={isAdding}
         aria-label="Add to cart"
         className={`inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${
-          storeFooter
-            ? "font-mono text-[10px] tracking-[0.18em] text-on-surface hover:opacity-70 px-3 py-2"
-            : overlay || vertical
+          overlay || vertical
             ? `p-1.5 rounded-sm ${ added ? "text-primary" : colors.wish }`
             : `small:border px-2.5 py-2.5 small:px-4 small:py-2.5 ${ added ? "bg-primary small:border-primary text-surface-lowest" : colors.btn }`
         }`}
       >
-        {storeFooter ? (
-          <span>{isAdding ? "ADDING..." : added ? "ADDED ✓" : "ADD →"}</span>
-        ) : overlay || vertical ? (
+        {overlay || vertical ? (
           // Vertical mode: always icon-only regardless of screen size
           isAdding ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
@@ -195,6 +214,8 @@ export default function CardActions({
           </>
         )}
       </button>
+        </>
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 
-const WISHLIST_KEY = "whiff_theory_wishlist"
+export const WISHLIST_KEY = "whiff_theory_wishlist"
 
 export type WishlistItem = {
   id: string

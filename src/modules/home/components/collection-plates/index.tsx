@@ -45,15 +45,10 @@ export default async function CollectionPlates({
   const sortedProducts = sortHomeCollectionProducts(products)
 
   const grid = (
-    <ul className="flex flex-col gap-4 small:grid small:grid-cols-3 small:gap-x-6 small:gap-y-6 mb-2">
+    <ul className="flex flex-col gap-4 xsmall:grid xsmall:grid-cols-2 small:grid-cols-3 xsmall:gap-x-6 xsmall:gap-y-6 mb-2">
       {sortedProducts.map((product) => (
         <li key={product.id} className="min-w-0">
-          <ProductPreview
-            product={product}
-            region={region}
-            layout="home"
-            embeddedInPlate
-          />
+          <ProductPreview product={product} region={region} />
         </li>
       ))}
     </ul>

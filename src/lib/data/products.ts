@@ -145,3 +145,34 @@ export const listProductsWithSort = async ({
     queryParams,
   }
 }
+
+export async function getProductsByIds({
+  productIds,
+  countryCode,
+}: {
+  productIds: string[]
+  countryCode: string
+}): Promise<HttpTypes.StoreProduct[]> {
+  const uniqueIds = [...new Set(productIds.filter(Boolean))]
+  if (!uniqueIds.length) {
+    return []
+  }
+
+  const { response } = await listProducts({
+    countryCode,
+    queryParams: {
+      id: uniqueIds,
+      limit: uniqueIds.length,
+    },
+  })
+
+  const byId = new Map(
+    response.products
+      .filter((product): product is HttpTypes.StoreProduct & { id: string } => !!product.id)
+      .map((product) => [product.id, product])
+  )
+
+  return uniqueIds
+    .map((id) => byId.get(id))
+    .filter((product): product is HttpTypes.StoreProduct => !!product)
+}

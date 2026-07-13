@@ -15,6 +15,11 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
+import { listProducts } from "./products"
+import {
+  getCartVariantId,
+  productNeedsVariantSelection,
+} from "@lib/util/get-cart-variant"
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -54,6 +59,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
 
 async function revalidateCartCache() {
   const cartCacheTag = await getCacheTag("carts")
+  revalidateTag("carts")
   if (cartCacheTag) {
     revalidateTag(cartCacheTag)
   }
@@ -165,6 +171,91 @@ export async function addToCart({
   }
 
   await revalidateCartCache()
+}
+
+export type BulkAddSkipReason = "multi_variant" | "unavailable"
+
+export type BulkAddResult = {
+  added: string[]
+  usedDefaultVariant: string[]
+  skipped: { productId: string; title: string; reason: BulkAddSkipReason }[]
+}
+
+export async function addProductsToCart({
+  productIds,
+  countryCode,
+}: {
+  productIds: string[]
+  countryCode: string
+}): Promise<BulkAddResult> {
+  const uniqueIds = [...new Set(productIds.filter(Boolean))]
+  if (!uniqueIds.length) {
+    return { added: [], usedDefaultVariant: [], skipped: [] }
+  }
+
+  const region = await getRegion(countryCode)
+  if (!region) {
+    throw new Error(`Region not found for country code: ${countryCode}`)
+  }
+
+  await getOrSetCart(countryCode)
+
+  const { response } = await listProducts({
+    queryParams: {
+      id: uniqueIds,
+      limit: uniqueIds.length,
+      fields:
+        "id,title,*variants,+variants.inventory_quantity,*variants.calculated_price",
+    },
+    regionId: region.id,
+  })
+
+  const added: string[] = []
+  const usedDefaultVariant: string[] = []
+  const skipped: BulkAddResult["skipped"] = []
+  const foundIds = new Set<string>()
+
+  for (const product of response.products) {
+    if (!product.id) continue
+    foundIds.add(product.id)
+
+    const variantId = getCartVariantId(product)
+
+    if (!variantId) {
+      skipped.push({
+        productId: product.id,
+        title: product.title ?? "Product",
+        reason: "unavailable",
+      })
+      continue
+    }
+
+    try {
+      await addToCart({ variantId, quantity: 1, countryCode })
+      added.push(product.id)
+      if (productNeedsVariantSelection(product)) {
+        usedDefaultVariant.push(product.id)
+      }
+    } catch {
+      skipped.push({
+        productId: product.id,
+        title: product.title ?? "Product",
+        reason: "unavailable",
+      })
+    }
+  }
+
+  for (const productId of uniqueIds) {
+    if (!foundIds.has(productId)) {
+      skipped.push({
+        productId,
+        title: "Product",
+        reason: "unavailable",
+      })
+    }
+  }
+
+  return { added, usedDefaultVariant, skipped }
 }
 
 export async function updateLineItem({
