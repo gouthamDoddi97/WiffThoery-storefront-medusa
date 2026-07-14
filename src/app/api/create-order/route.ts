@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { logCartPayment } from "@lib/debug/cart-payment"
 import {
   createRazorpayOrder,
   RazorpayAuthError,
@@ -22,8 +23,15 @@ export async function POST(request: Request) {
   }
 
   if (body.amount === undefined || body.amount === null) {
+    logCartPayment("api/create-order", "rejected — missing amount", { body })
     return NextResponse.json({ error: "amount is required" }, { status: 400 })
   }
+
+  logCartPayment("api/create-order", "request", {
+    amount: body.amount,
+    currency: body.currency ?? "INR",
+    receipt: body.receipt ?? null,
+  })
 
   try {
     const order = await createRazorpayOrder({
@@ -32,8 +40,20 @@ export async function POST(request: Request) {
       receipt: body.receipt,
     })
 
+    logCartPayment("api/create-order", "success", {
+      order_id: order.order_id,
+      amount: order.amount,
+      currency: order.currency,
+      receipt: body.receipt ?? null,
+    })
+
     return NextResponse.json(order)
   } catch (err) {
+    logCartPayment("api/create-order", "failed", {
+      amount: body.amount,
+      receipt: body.receipt ?? null,
+      error: err instanceof Error ? err.message : String(err),
+    })
     if (err instanceof RazorpayValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 })
     }

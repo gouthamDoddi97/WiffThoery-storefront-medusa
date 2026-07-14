@@ -20,16 +20,22 @@ import {
   getCartVariantId,
   productNeedsVariantSelection,
 } from "@lib/util/get-cart-variant"
+import { logCartPayment } from "@lib/debug/cart-payment"
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to retrieve.
  * @returns The cart object if found, or null if not found.
  */
-export async function retrieveCart(cartId?: string, fields?: string) {
+export async function retrieveCart(
+  cartId?: string,
+  fields?: string,
+  options?: { noCache?: boolean }
+) {
   const id = cartId || (await getCartId())
+  // `email` is a scalar — do not use `*email` (relation expand), or it is omitted.
   fields ??=
-    "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
+    "*items, *region, *shipping_address, *billing_address, email, *items.product, *items.product.metadata, *items.variant, *items.variant.product, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions"
 
   if (!id) {
     return null
@@ -39,9 +45,11 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     ...(await getAuthHeaders()),
   }
 
-  const next = {
-    ...(await getCacheOptions("carts")),
-  }
+  const next = options?.noCache
+    ? undefined
+    : {
+        ...(await getCacheOptions("carts")),
+      }
 
   return await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
@@ -51,7 +59,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
       },
       headers,
       next,
-      cache: "force-cache",
+      cache: options?.noCache ? "no-store" : "force-cache",
     })
     .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
     .catch(() => null)
@@ -341,11 +349,107 @@ export async function initiatePaymentSession(
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async (resp) => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
+      await revalidateCartCache()
       return resp
     })
     .catch(medusaError)
+}
+
+export async function prepareCartRazorpayPayment(
+  cartId: string
+): Promise<string | null> {
+  logCartPayment("server", "prepareCartRazorpayPayment:start", { cartId })
+
+  try {
+    const cart = await retrieveCart(
+      cartId,
+      "id,email,metadata,*shipping_address,*shipping_methods,*payment_collection,*payment_collection.payment_sessions",
+      { noCache: true }
+    )
+
+    if (!cart) {
+      throw new Error("Cart not found")
+    }
+
+    const hasPendingSession = cart.payment_collection?.payment_sessions?.some(
+      (session) => session.status === "pending"
+    )
+    const alreadyPrepared =
+      Boolean(cart.email) &&
+      Boolean(cart.shipping_address?.address_1) &&
+      Boolean(cart.shipping_methods?.length) &&
+      cart.metadata?.wt_payment === "razorpay" &&
+      Boolean(hasPendingSession)
+
+    logCartPayment("server", "prepareCartRazorpayPayment:cart loaded", {
+      cartId: cart.id,
+      email: cart.email ?? null,
+      hasAddress: Boolean(cart.shipping_address?.address_1),
+      shippingMethodCount: cart.shipping_methods?.length ?? 0,
+      paymentCollectionId: cart.payment_collection?.id ?? null,
+      sessionCount: cart.payment_collection?.payment_sessions?.length ?? 0,
+      wtPayment: cart.metadata?.wt_payment ?? null,
+      alreadyPrepared,
+    })
+
+    if (!cart.email) {
+      throw new Error("Add your email before paying")
+    }
+
+    if (!cart.shipping_address?.address_1) {
+      throw new Error("Add a delivery address before paying")
+    }
+
+    if (!cart.shipping_methods?.length) {
+      throw new Error("Select a delivery method before paying")
+    }
+
+    if (alreadyPrepared) {
+      logCartPayment("server", "prepareCartRazorpayPayment:already ready — skip")
+      await revalidateCartCache()
+      return null
+    }
+
+    if (cart.metadata?.wt_payment !== "razorpay") {
+      await updateCart({
+        metadata: {
+          ...(cart.metadata ?? {}),
+          wt_payment: "razorpay",
+        },
+      })
+      logCartPayment("server", "prepareCartRazorpayPayment:metadata updated")
+    }
+
+    const freshCart = await retrieveCart(
+      cartId,
+      "id,metadata,*payment_collection,*payment_collection.payment_sessions",
+      { noCache: true }
+    )
+
+    if (!freshCart) {
+      throw new Error("Cart not found")
+    }
+
+    const session = await initiatePaymentSession(freshCart, {
+      provider_id: "pp_system_default",
+    })
+
+    logCartPayment("server", "prepareCartRazorpayPayment:success", {
+      cartId,
+      paymentCollectionId: freshCart.payment_collection?.id ?? null,
+      sessionProviderId: session?.payment_collection?.payment_sessions?.at(-1)
+        ?.provider_id,
+    })
+
+    return null
+  } catch (e: any) {
+    const message = e?.message ?? "Could not prepare Razorpay checkout"
+    logCartPayment("server", "prepareCartRazorpayPayment:failed", {
+      cartId,
+      error: message,
+    })
+    return message
+  }
 }
 
 export async function applyPromotions(codes: string[]) {
@@ -427,51 +531,145 @@ export async function submitPromotionForm(
 }
 
 // TODO: Pass a POJO instead of a form entity here
-export async function setAddresses(currentState: unknown, formData: FormData) {
+function buildAddressPayload(formData: FormData) {
+  const data = {
+    shipping_address: {
+      first_name: formData.get("shipping_address.first_name"),
+      last_name: formData.get("shipping_address.last_name"),
+      address_1: formData.get("shipping_address.address_1"),
+      address_2: "",
+      company: formData.get("shipping_address.company"),
+      postal_code: formData.get("shipping_address.postal_code"),
+      city: formData.get("shipping_address.city"),
+      country_code: formData.get("shipping_address.country_code"),
+      province: formData.get("shipping_address.province"),
+      phone: formData.get("shipping_address.phone"),
+    },
+    email: formData.get("email"),
+  } as HttpTypes.StoreUpdateCart
+
+  const sameAsBilling = formData.get("same_as_billing")
+  if (sameAsBilling === "on" || sameAsBilling === "true") {
+    data.billing_address = data.shipping_address
+  } else {
+    data.billing_address = {
+      first_name: formData.get("billing_address.first_name"),
+      last_name: formData.get("billing_address.last_name"),
+      address_1: formData.get("billing_address.address_1"),
+      address_2: "",
+      company: formData.get("billing_address.company"),
+      postal_code: formData.get("billing_address.postal_code"),
+      city: formData.get("billing_address.city"),
+      country_code: formData.get("billing_address.country_code"),
+      province: formData.get("billing_address.province"),
+      phone: formData.get("billing_address.phone"),
+    }
+  }
+
+  return data
+}
+
+export async function applyCartAddress({
+  shippingAddress,
+  email,
+}: {
+  shippingAddress: NonNullable<HttpTypes.StoreUpdateCart["shipping_address"]>
+  email: string
+}): Promise<string | null> {
+  const trimmedEmail = email.trim()
+  if (!trimmedEmail) {
+    return "Add your email before continuing"
+  }
+
+  try {
+    await updateCart({
+      shipping_address: shippingAddress,
+      billing_address: shippingAddress,
+      email: trimmedEmail,
+    })
+    return null
+  } catch (e: any) {
+    return e.message
+  }
+}
+
+export async function saveCartEmail(email: string): Promise<string | null> {
+  const trimmedEmail = email.trim()
+  if (!trimmedEmail) {
+    return "Email is required"
+  }
+
+  try {
+    await updateCart({ email: trimmedEmail })
+    return null
+  } catch (e: any) {
+    return e.message
+  }
+}
+
+export async function saveCartAddresses(
+  _currentState: unknown,
+  formData: FormData
+): Promise<string | null> {
   try {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
     }
-    const cartId = getCartId()
+
+    const cartId = await getCartId()
     if (!cartId) {
       throw new Error("No existing cart found when setting addresses")
     }
 
-    const data = {
-      shipping_address: {
-        first_name: formData.get("shipping_address.first_name"),
-        last_name: formData.get("shipping_address.last_name"),
-        address_1: formData.get("shipping_address.address_1"),
-        address_2: "",
-        company: formData.get("shipping_address.company"),
-        postal_code: formData.get("shipping_address.postal_code"),
-        city: formData.get("shipping_address.city"),
-        country_code: formData.get("shipping_address.country_code"),
-        province: formData.get("shipping_address.province"),
-        phone: formData.get("shipping_address.phone"),
-      },
-      email: formData.get("email"),
-    } as any
+    const data = buildAddressPayload(formData)
+    const email = String(data.email ?? "").trim()
+    if (!email) {
+      throw new Error("Add your email before continuing")
+    }
+    data.email = email
 
-    const sameAsBilling = formData.get("same_as_billing")
-    if (sameAsBilling === "on") data.billing_address = data.shipping_address
-
-    if (sameAsBilling !== "on")
-      data.billing_address = {
-        first_name: formData.get("billing_address.first_name"),
-        last_name: formData.get("billing_address.last_name"),
-        address_1: formData.get("billing_address.address_1"),
-        address_2: "",
-        company: formData.get("billing_address.company"),
-        postal_code: formData.get("billing_address.postal_code"),
-        city: formData.get("billing_address.city"),
-        country_code: formData.get("billing_address.country_code"),
-        province: formData.get("billing_address.province"),
-        phone: formData.get("billing_address.phone"),
-      }
     await updateCart(data)
+
+    const saveAddress =
+      formData.get("save_address") === "on" ||
+      formData.get("save_address") === "true"
+    const headers = await getAuthHeaders()
+
+    if (saveAddress && "authorization" in headers && data.shipping_address) {
+      await sdk.store.customer.createAddress(
+        {
+          first_name: data.shipping_address.first_name as string,
+          last_name: data.shipping_address.last_name as string,
+          company: (data.shipping_address.company as string) || undefined,
+          address_1: data.shipping_address.address_1 as string,
+          address_2: (data.shipping_address.address_2 as string) || undefined,
+          city: data.shipping_address.city as string,
+          postal_code: data.shipping_address.postal_code as string,
+          province: (data.shipping_address.province as string) || undefined,
+          country_code: data.shipping_address.country_code as string,
+          phone: (data.shipping_address.phone as string) || undefined,
+          is_default_shipping: true,
+        },
+        {},
+        headers
+      )
+
+      const customerCacheTag = await getCacheTag("customers")
+      if (customerCacheTag) {
+        revalidateTag(customerCacheTag)
+      }
+    }
+
+    return null
   } catch (e: any) {
     return e.message
+  }
+}
+
+export async function setAddresses(currentState: unknown, formData: FormData) {
+  const message = await saveCartAddresses(currentState, formData)
+  if (message) {
+    return message
   }
 
   redirect(

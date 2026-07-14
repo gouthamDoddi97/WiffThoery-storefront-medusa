@@ -19,6 +19,12 @@ try {
  */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_RAZORPAY_KEY_ID:
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+      process.env.NEXT_PUB_RAZORPAY_KEY_ID,
+    NEXT_PUB_RAZORPAY_KEY_ID: process.env.NEXT_PUB_RAZORPAY_KEY_ID,
+  },
   logging: {
     fetches: {
       fullUrl: true,

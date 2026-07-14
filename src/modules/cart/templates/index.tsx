@@ -1,73 +1,77 @@
 import ItemsTemplate from "./items"
-import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
+import CartCheckoutPanel from "@modules/cart/components/cart-checkout-panel"
+import {
+  formatCartItemCount,
+  formatManifestNumber,
+} from "@modules/cart/lib/cart-display"
 import { HttpTypes } from "@medusajs/types"
-import OrderAlertBanner from "@modules/common/components/order-alert-banner"
 
 const CartTemplate = ({
   cart,
   customer,
+  shippingMethods,
+  paymentMethods,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+  shippingMethods: HttpTypes.StoreCartShippingOption[]
+  paymentMethods: { id: string }[]
 }) => {
+  const itemCount = cart?.items?.length ?? 0
+
   return (
-    <div className="bg-surface-lowest min-h-screen py-16">
+    <div className="bg-surface-lowest min-h-screen py-12 small:py-16">
       <div className="content-container" data-testid="cart-container">
-        {/* Page Header */}
-        <div className="flex flex-col gap-2 mb-12">
-          <span className="eyebrow">FRAGRANCE</span>
-          <h1 className="font-grotesk font-bold text-4xl small:text-5xl text-on-surface tracking-[-0.02em]">
-            YOUR CART
-          </h1>
-          {cart?.items?.length ? (
-            <p className="font-inter text-sm text-on-surface-variant">
-              {cart.items.length} {cart.items.length === 1 ? "item" : "items"}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="mb-8" data-testid="order-alert-banner" >
-          {/* <OrderAlertBanner /> */}
-        </div>
-
         {cart?.items?.length ? (
-          <div className="grid grid-cols-1 small:grid-cols-[1fr_380px] gap-12">
-            {/* Left: Items */}
-            <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_540px] gap-10 lg:gap-14 items-start">
+            <div className="flex flex-col min-w-0">
+              <div className="mb-8 small:mb-10">
+                <h1
+                  className="font-garamond serif-display font-medium text-on-surface leading-none"
+                  style={{ fontSize: "clamp(2.25rem, 5vw, 3.25rem)", fontStyle: "normal" }}
+                >
+                  Your cart
+                </h1>
+                <p className="mt-3 font-mono text-[10px] tracking-[0.18em] uppercase text-on-surface-muted">
+                  {formatCartItemCount(itemCount)} {itemCount === 1 ? "ITEM" : "ITEMS"} ·{" "}
+                  {formatManifestNumber(cart.id)}
+                </p>
+              </div>
+
               {!customer && (
-                <div className="bg-surface-high p-5 border-l-2 border-primary">
+                <div className="mb-6 p-4 border-l-2 border-primary bg-surface-high/60">
                   <SignInPrompt />
                 </div>
               )}
+
               <ItemsTemplate cart={cart} />
             </div>
 
-            {/* Right: Summary */}
-            <div className="relative">
-              <div className="flex flex-col gap-6 sticky top-24">
-                {/* Trust badges */}
-                <div className="grid grid-cols-3 gap-px bg-surface-variant/20">
-                  {["GENUINE EXTRAIT", "GRAPHIC-ART PACKAGING", "TRANSPARENT PRICING"].map((badge) => (
-                    <div key={badge} className="bg-surface-low py-4 px-3 flex items-center justify-center">
-                      <span className="font-grotesk text-[9px] tracking-[0.15em] text-on-surface-variant text-center">
-                        {badge}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {cart && cart.region && (
-                  <div className="bg-surface-low p-6">
-                    <Summary cart={cart as any} />
-                  </div>
-                )}
-              </div>
+            <div className="relative lg:sticky lg:top-24">
+              {cart.region && (
+                <CartCheckoutPanel
+                  cart={cart as HttpTypes.StoreCart & { promotions: HttpTypes.StorePromotion[] }}
+                  customer={customer}
+                  shippingMethods={shippingMethods}
+                  paymentMethods={paymentMethods}
+                />
+              )}
             </div>
           </div>
         ) : (
-          <EmptyCartMessage />
+          <>
+            <div className="flex flex-col gap-2 mb-12">
+              <h1
+                className="font-garamond serif-display font-medium text-on-surface leading-none"
+                style={{ fontSize: "clamp(2.25rem, 5vw, 3.25rem)", fontStyle: "normal" }}
+              >
+                Your cart
+              </h1>
+            </div>
+            <EmptyCartMessage />
+          </>
         )}
       </div>
     </div>

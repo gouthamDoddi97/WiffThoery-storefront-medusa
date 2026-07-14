@@ -1,6 +1,7 @@
 import React from "react"
 import { CreditCard } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
+import { isRazorpayConfigured } from "@lib/razorpay/config"
 
 import Ideal from "@modules/common/icons/ideal"
 import Bancontact from "@modules/common/icons/bancontact"
@@ -70,7 +71,7 @@ export const isRazorpay = (providerId?: string) => {
 }
 
 export const isRazorpayStandardCheckoutEnabled = () => {
-  return Boolean(process.env.NEXT_PUB_RAZORPAY_KEY_ID)
+  return isRazorpayConfigured()
 }
 
 /** Medusa checkout uses manual session + metadata when paying via Standard Checkout. */

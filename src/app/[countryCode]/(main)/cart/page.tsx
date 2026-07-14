@@ -1,4 +1,6 @@
 import { retrieveCart } from "@lib/data/cart"
+import { listCartShippingMethods } from "@lib/data/fulfillment"
+import { listCartPaymentMethods } from "@lib/data/payment"
 import { retrieveCustomer } from "@lib/data/customer"
 import CartTemplate from "@modules/cart/templates"
 import { Metadata } from "next"
@@ -18,5 +20,17 @@ export default async function Cart() {
 
   const customer = await retrieveCustomer()
 
-  return <CartTemplate cart={cart} customer={customer} />
+  const shippingMethods = cart ? (await listCartShippingMethods(cart.id)) ?? [] : []
+  const paymentMethods = cart?.region?.id
+    ? (await listCartPaymentMethods(cart.region.id)) ?? []
+    : []
+
+  return (
+    <CartTemplate
+      cart={cart}
+      customer={customer}
+      shippingMethods={shippingMethods}
+      paymentMethods={paymentMethods}
+    />
+  )
 }

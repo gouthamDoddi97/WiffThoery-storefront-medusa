@@ -6,7 +6,7 @@ import { clx } from "@medusajs/ui"
 
 type LineItemPriceProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
-  style?: "default" | "tight"
+  style?: "default" | "tight" | "cart"
   currencyCode: string
 }
 
@@ -21,7 +21,9 @@ const LineItemPrice = ({
   const hasReducedPrice = currentPrice < originalPrice
 
   return (
-    <div className="flex flex-col gap-x-2 text-on-surface-variant items-end">
+    <div className={clx("flex flex-col gap-x-2 text-on-surface-variant", {
+      "items-end text-right": style === "cart",
+    })}>
       <div className="text-left">
         {hasReducedPrice && (
           <>
@@ -49,10 +51,19 @@ const LineItemPrice = ({
           </>
         )}
         <span
-          className={clx("font-inter text-sm", {
-            "text-primary-container font-semibold": hasReducedPrice,
-            "text-on-surface font-medium": !hasReducedPrice,
+          className={clx({
+            "font-garamond serif-display font-medium text-on-surface leading-none":
+              style === "cart",
+            "font-inter text-sm text-primary-container font-semibold":
+              style !== "cart" && hasReducedPrice,
+            "font-inter text-sm text-on-surface font-medium":
+              style !== "cart" && !hasReducedPrice,
           })}
+          style={
+            style === "cart"
+              ? { fontSize: "clamp(1.1rem, 2.5vw, 1.35rem)", fontStyle: "normal" }
+              : undefined
+          }
           data-testid="product-price"
         >
           <PriceText>

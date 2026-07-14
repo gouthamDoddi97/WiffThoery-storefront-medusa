@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { logCartPayment } from "@lib/debug/cart-payment"
 import {
   verifyRazorpayPaymentSignature,
   RazorpayAuthError,
@@ -22,6 +23,11 @@ export async function POST(request: Request) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    logCartPayment("api/verify-payment", "rejected — missing fields", {
+      hasOrderId: Boolean(razorpay_order_id),
+      hasPaymentId: Boolean(razorpay_payment_id),
+      hasSignature: Boolean(razorpay_signature),
+    })
     return NextResponse.json(
       {
         error:
@@ -31,6 +37,11 @@ export async function POST(request: Request) {
     )
   }
 
+  logCartPayment("api/verify-payment", "request", {
+    razorpay_order_id,
+    razorpay_payment_id,
+  })
+
   try {
     const valid = verifyRazorpayPaymentSignature({
       razorpay_order_id,
@@ -39,11 +50,20 @@ export async function POST(request: Request) {
     })
 
     if (!valid) {
+      logCartPayment("api/verify-payment", "invalid signature", {
+        razorpay_order_id,
+        razorpay_payment_id,
+      })
       return NextResponse.json(
         { success: false, error: "Invalid payment signature" },
         { status: 400 }
       )
     }
+
+    logCartPayment("api/verify-payment", "success", {
+      razorpay_order_id,
+      razorpay_payment_id,
+    })
 
     return NextResponse.json({
       success: true,
@@ -51,6 +71,11 @@ export async function POST(request: Request) {
       razorpay_payment_id,
     })
   } catch (err) {
+    logCartPayment("api/verify-payment", "failed", {
+      razorpay_order_id,
+      razorpay_payment_id,
+      error: err instanceof Error ? err.message : String(err),
+    })
     if (err instanceof RazorpayAuthError) {
       return NextResponse.json({ error: err.message }, { status: 401 })
     }

@@ -5,6 +5,7 @@ import { clx } from "@medusajs/ui"
 
 import Radio from "@modules/common/components/radio"
 import RazorpayMethodIcons from "@modules/common/components/razorpay-method-icons"
+import { getRazorpayPublicKey } from "@lib/razorpay/config"
 
 type RazorpayPaymentContainerProps = {
   paymentProviderId: string
@@ -18,9 +19,7 @@ const RazorpayPaymentContainer = ({
   disabled = false,
 }: RazorpayPaymentContainerProps) => {
   const isSelected = selectedPaymentOptionId === paymentProviderId
-  const isTestMode = process.env.NEXT_PUB_RAZORPAY_KEY_ID?.startsWith(
-    "rzp_test_"
-  )
+  const isTestMode = getRazorpayPublicKey()?.startsWith("rzp_test_")
 
   return (
     <RadioGroupOption
