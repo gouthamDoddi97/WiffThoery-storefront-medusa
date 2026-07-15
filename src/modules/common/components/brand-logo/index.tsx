@@ -10,7 +10,7 @@ import Image from "next/image"
 const HEIGHT = {
   xs: "h-4",
   sm: "h-5",
-  nav: "h-7 small:h-9",
+  nav: "h-6 small:h-9",
   checkout: "h-7 small:h-8",
   menu: "h-5",
   md: "h-7",

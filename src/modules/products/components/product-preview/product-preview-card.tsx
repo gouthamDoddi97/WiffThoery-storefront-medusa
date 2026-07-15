@@ -17,6 +17,24 @@ function formatTags(product: HttpTypes.StoreProduct): string {
     .toUpperCase()
 }
 
+const tagTextClass =
+  "font-mono text-[8px] small:text-[9px] tracking-[0.12em] uppercase text-on-surface-muted text-left leading-[1.35]"
+
+const tagRuleStyle = (hairline: string) => ({
+  borderColor: hairline,
+  borderWidth: "var(--hairline-width)",
+})
+
+function MobileMetaRule({ hairline }: { hairline: string }) {
+  return (
+    <div
+      className="w-full border-t shrink-0"
+      style={tagRuleStyle(hairline)}
+      aria-hidden
+    />
+  )
+}
+
 export default function ProductPreviewCard({
   product,
   showCollectionTier = false,
@@ -36,6 +54,7 @@ export default function ProductPreviewCard({
   const collectionTierLine = [collectionName, tierLabel]
     .filter(Boolean)
     .join(" · ")
+  const mobileCollectionLine = collectionName.toUpperCase()
 
   return (
     <div className="group h-full" data-testid="product-wrapper">
@@ -45,7 +64,7 @@ export default function ProductPreviewCard({
         style={{ border: `var(--hairline-width) solid ${hairline}` }}
       >
         <div
-          className="relative flex-shrink-0 overflow-hidden bg-surface-container aspect-[5/3] w-[42%] border-0 xsmall:w-[95%] xsmall:mx-auto xsmall:mt-[2.5%] xsmall:mb-[2.5%] xsmall:border xsmall:[border-width:var(--hairline-width)] small:w-full small:mx-0 small:mt-0 small:mb-0 small:border-0"
+          className="relative flex-shrink-0 overflow-hidden bg-surface-container aspect-[5/3] w-[52%] border-0 xsmall:w-[95%] xsmall:mx-auto xsmall:mt-[2.5%] xsmall:mb-[2.5%] xsmall:border xsmall:[border-width:var(--hairline-width)] small:w-full small:mx-0 small:mt-0 small:mb-0 small:border-0"
           style={{ borderColor: hairline, borderStyle: "solid" }}
         >
           {product.thumbnail ? (
@@ -54,7 +73,7 @@ export default function ProductPreviewCard({
               alt={product.title}
               fill
               className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
-              sizes="(max-width: 512px) 42vw, 48vw"
+              sizes="(max-width: 512px) 52vw, 48vw"
               quality={75}
               draggable={false}
             />
@@ -66,10 +85,10 @@ export default function ProductPreviewCard({
         </div>
 
         <div
-          className="flex flex-row flex-1 min-w-0 border-l xsmall:border-l-0 xsmall:border-t"
+          className="flex flex-row flex-1 min-w-0 items-start border-l xsmall:items-stretch xsmall:border-l-0 xsmall:border-t"
           style={{ borderColor: hairline }}
         >
-          <div className="w-[70%] flex flex-col justify-start gap-2 py-3 pl-3 pr-2 xsmall:px-3 xsmall:py-2.5 small:px-4 small:py-3.5 min-w-0 text-left">
+          <div className="flex-1 flex flex-col justify-start gap-1 py-2 pl-2.5 pr-1.5 pb-1.5 xsmall:gap-2 xsmall:px-3 xsmall:py-2.5 small:px-4 small:py-3.5 min-w-0 text-left">
             <h3
               className="font-garamond serif-display font-medium uppercase text-on-surface tracking-[0.14em] leading-tight text-left line-clamp-2 xsmall:line-clamp-2 small:line-clamp-1"
               style={{ fontSize: "clamp(0.85rem, 3.2vw, 1.25rem)", fontStyle: "normal" }}
@@ -78,29 +97,54 @@ export default function ProductPreviewCard({
               {product.title}
             </h3>
 
+            {/* Mobile — name rule, collection row, tag row, price */}
+            <div className="xsmall:hidden flex flex-col gap-1 w-full">
+              <MobileMetaRule hairline={hairline} />
+
+              {mobileCollectionLine && (
+                <p className={`${tagTextClass} line-clamp-1`}>
+                  {mobileCollectionLine}
+                </p>
+              )}
+
+              {mobileCollectionLine && tagLine && <MobileMetaRule hairline={hairline} />}
+
+              {tagLine && (
+                <p className={`${tagTextClass} line-clamp-2`}>{tagLine}</p>
+              )}
+            </div>
+
             {showCollectionTier && collectionTierLine && (
-              <p className="font-mono text-[8px] small:text-[9px] tracking-[0.12em] uppercase text-on-surface-muted line-clamp-2">
+              <p className="hidden xsmall:block font-mono text-[8px] small:text-[9px] tracking-[0.12em] uppercase text-on-surface-muted line-clamp-2">
                 {collectionTierLine}
               </p>
             )}
 
             {tagLine && (
-              <div className="min-w-0">
+              <div className="hidden xsmall:flex flex-col xsmall:flex-none">
                 <div
                   className="w-[30%] border-t mb-2"
-                  style={{ borderColor: hairline, borderWidth: "var(--hairline-width)" }}
+                  style={tagRuleStyle(hairline)}
+                  aria-hidden
                 />
-                <p className="font-mono text-[8px] small:text-[9px] tracking-[0.12em] uppercase text-on-surface-muted line-clamp-2 text-left">
-                  {tagLine}
-                </p>
+                <p className={`${tagTextClass} line-clamp-2`}>{tagLine}</p>
               </div>
+            )}
+
+            {cheapestPrice && (
+              <p
+                className="xsmall:hidden font-mono font-medium text-sm text-on-surface text-left leading-none mt-1"
+                data-testid="price"
+              >
+                <PriceText>{cheapestPrice.calculated_price}</PriceText>
+              </p>
             )}
           </div>
 
-          <div className="w-[30%] flex flex-col items-end justify-between py-3 pr-2 pl-2 xsmall:py-2.5 xsmall:pr-3 xsmall:pl-2 small:px-3 gap-2">
+          <div className="flex flex-col items-end justify-end py-2 pr-2 pl-1 pb-1.5 xsmall:justify-between xsmall:py-2.5 xsmall:pb-2.5 xsmall:pr-3 xsmall:pl-2 small:px-3 gap-2">
             {cheapestPrice && (
               <p
-                className="font-mono font-medium text-sm small:text-base text-on-surface text-right leading-none whitespace-nowrap"
+                className="hidden xsmall:block font-mono font-medium text-sm small:text-base text-on-surface text-right leading-none whitespace-nowrap"
                 data-testid="price"
               >
                 <PriceText>{cheapestPrice.calculated_price}</PriceText>

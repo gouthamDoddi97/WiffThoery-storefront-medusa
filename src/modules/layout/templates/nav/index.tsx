@@ -35,7 +35,7 @@ export default async function Nav() {
   return (
     <div className="sticky top-0 inset-x-0 z-50">
       <header
-        className="relative h-16 mx-auto"
+        className="relative h-12 small:h-16 mx-auto"
         style={{
           background: "rgba(251,247,240,0.92)",
           backdropFilter: "blur(12px)",

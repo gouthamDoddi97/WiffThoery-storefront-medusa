@@ -193,8 +193,8 @@ const ProductTemplate = async ({
 
       {/* ─── GALLERY PDP — matches fableRedesign 10 / 16 ─── */}
       <section className="border-b rule-ink">
-        <div className="content-container py-8 small:py-12 pb-28 small:pb-12">
-          <div className="grid grid-cols-1 small:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-8 small:gap-x-14 small:gap-y-12 items-start">
+        <div className="content-container pt-4 pb-28 small:py-12 small:pb-12">
+          <div className="grid grid-cols-1 small:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-6 small:gap-x-14 small:gap-y-12 items-start">
             {/* Left — artwork gallery */}
             <div className="relative small:sticky small:top-24">
               <div

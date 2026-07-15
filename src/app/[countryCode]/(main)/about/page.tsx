@@ -183,6 +183,41 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* ── 4b. Maceration ──────────────────────────────────────────────── */}
+      <section className="py-24 bg-surface-lowest" id="maceration">
+        <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-center">
+          <FadeIn className="flex flex-col gap-6">
+            <span className="eyebrow">THE CRAFT</span>
+            <h2 className="section-heading text-3xl">
+              Maceration before the bottle.
+            </h2>
+            <div className="flex flex-col gap-4 font-inter text-sm text-on-surface-variant leading-relaxed">
+              <p>
+                After blending, every Whiff Theory composition rests in a controlled maceration
+                environment — stable temperature, minimal light, and consistent airflow — so the
+                oils, alcohol, and aroma molecules can integrate fully. It is the quiet step most
+                brands rush past; we treat it as part of the formula.
+              </p>
+              <p>
+                We monitor concentration, pH, and maturation over time, adjusting rest periods
+                based on how each accord opens on skin. The result is a perfume that reads
+                cohesive from the first spray: sharper top notes, a settled heart, and a base
+                that lasts without shouting.
+              </p>
+            </div>
+          </FadeIn>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <FadeIn delay={150}>
+            <img
+              src="/maceration.webp"
+              alt="Whiff Theory perfume maceration in a controlled laboratory environment"
+              className="aspect-[16/10] w-full object-cover"
+            />
+          </FadeIn>
+        </div>
+      </section>
+
       {/* ── 4. Vizag Section ────────────────────────────────────────────── */}
       <section className="py-24 bg-surface-container" id="sourcing">
         <div className="content-container grid grid-cols-1 small:grid-cols-2 gap-16 items-center">
