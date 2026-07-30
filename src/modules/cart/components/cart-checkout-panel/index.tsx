@@ -8,6 +8,7 @@ import {
   setShippingMethod,
 } from "@lib/data/cart"
 import { isRazorpayConfigured } from "@lib/razorpay/config"
+import { checkPincodeServiceability, type PincodeCheck } from "@lib/data/shipping"
 import { logCartPayment } from "@lib/debug/cart-payment"
 import { convertToLocale } from "@lib/util/money"
 import { normalizeInrShippingAmount } from "@lib/util/medusa-amount"
@@ -93,6 +94,8 @@ export default function CartCheckoutPanel({
   )
   const [razorpaySelected, setRazorpaySelected] = useState(true)
   const [saveAddress, setSaveAddress] = useState(true)
+  const [pincodeCheck, setPincodeCheck] = useState<PincodeCheck | null>(null)
+  const [pincodeChecking, setPincodeChecking] = useState(false)
   const addressSubmitStarted = useRef(false)
   const paymentAutoPrepared = useRef(false)
 
@@ -150,6 +153,45 @@ export default function CartCheckoutPanel({
   }, [cart.email, customer?.email])
 
   const effectiveEmail = cart.email || confirmedEmail || null
+
+  const selectedSavedAddress = savedAddresses.find(
+    (address) => address.id === selectedAddressId
+  )
+  const usingSavedAddress = addressMode === "saved" && savedAddresses.length > 0
+  const activePincode = usingSavedAddress
+    ? selectedSavedAddress?.postal_code ?? ""
+    : formData["shipping_address.postal_code"]
+  const activeCountry = usingSavedAddress
+    ? selectedSavedAddress?.country_code ?? ""
+    : formData["shipping_address.country_code"]
+
+  useEffect(() => {
+    const pin = (activePincode ?? "").trim()
+    if (activeCountry !== "in" || !/^\d{6}$/.test(pin)) {
+      setPincodeCheck(null)
+      setPincodeChecking(false)
+      return
+    }
+
+    let cancelled = false
+    setPincodeChecking(true)
+    setPincodeCheck(null)
+
+    const timer = setTimeout(() => {
+      void checkPincodeServiceability(pin)
+        .then((result) => {
+          if (!cancelled) setPincodeCheck(result)
+        })
+        .finally(() => {
+          if (!cancelled) setPincodeChecking(false)
+        })
+    }, 500)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [activePincode, activeCountry])
 
   useEffect(() => {
     if (savedAddresses.length) {
@@ -434,6 +476,27 @@ export default function CartCheckoutPanel({
     paymentPreparing,
   ])
 
+  const pincodeStatus = pincodeChecking ? (
+    <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface-muted">
+      Checking delivery availability…
+    </p>
+  ) : pincodeCheck?.serviceable === true ? (
+    <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface">
+      ✓{" "}
+      {pincodeCheck.min_days
+        ? `Delivers to ${activePincode} in ${
+            pincodeCheck.min_days === pincodeCheck.max_days
+              ? pincodeCheck.min_days
+              : `${pincodeCheck.min_days}–${pincodeCheck.max_days}`
+          } days`
+        : `Delivery available to ${activePincode}`}
+    </p>
+  ) : pincodeCheck?.serviceable === false ? (
+    <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-red-500">
+      Delivery is currently unavailable to {activePincode}
+    </p>
+  ) : null
+
   return (
     <div
       className="flex flex-col gap-6 p-6 small:p-8 bg-surface-low"
@@ -522,6 +585,8 @@ export default function CartCheckoutPanel({
                       )
                     })}
 
+                    {pincodeStatus}
+
                     <Input
                       label="Email"
                       name="saved_checkout_email"
@@ -587,6 +652,7 @@ export default function CartCheckoutPanel({
                       required
                     />
                   </div>
+                  {pincodeStatus}
                   <CountrySelect
                     name="shipping_address.country_code"
                     region={cart.region}
