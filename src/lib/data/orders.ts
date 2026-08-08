@@ -19,7 +19,7 @@ export const retrieveOrder = async (id: string) => {
       method: "GET",
       query: {
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product",
+          "currency_code,*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*shipping_address,*shipping_methods,*billing_address,metadata,+total,+item_total,+item_subtotal,+shipping_total,+shipping_subtotal,+tax_total,+discount_total",
       },
       headers,
       next,
@@ -51,7 +51,7 @@ export const listOrders = async (
         offset,
         order: "-created_at",
         fields:
-          "*items,+items.product_id,+items.variant_id,+items.product_title,+items.product_handle,+items.thumbnail,+items.metadata,*items.variant,*items.product",
+          "*items,+items.product_id,+items.variant_id,+items.product_title,+items.product_handle,+items.thumbnail,+items.metadata,*items.variant,*items.product,metadata,*shipping_address",
         ...filters,
       },
       headers,
@@ -60,6 +60,26 @@ export const listOrders = async (
     })
     .then(({ orders }) => orders)
     .catch((err) => medusaError(err))
+}
+
+export async function findOrderByRazorpayPaymentId(
+  paymentId: string
+): Promise<HttpTypes.StoreOrder | null> {
+  if (!paymentId) {
+    return null
+  }
+
+  const orders = await listOrders(50, 0, undefined, true).catch(() => null)
+  if (!orders?.length) {
+    return null
+  }
+
+  return (
+    orders.find((order) => {
+      const meta = order.metadata as Record<string, unknown> | null | undefined
+      return meta?.razorpay_payment_id === paymentId
+    }) ?? null
+  )
 }
 
 export const createTransferRequest = async (

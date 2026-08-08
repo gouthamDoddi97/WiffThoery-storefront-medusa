@@ -40,7 +40,8 @@ async function lookupNoteImages(
       {
         method: "GET",
         query: { names: unique.join(",") },
-        cache: "no-store",
+        cache: "force-cache",
+        next: { revalidate: 3600, tags: ["fragrance-notes"] },
       }
     )
 

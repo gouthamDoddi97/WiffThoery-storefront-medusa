@@ -2,9 +2,7 @@
 
 import { convertToLocale } from "@lib/util/money"
 import {
-  getCartPayableTotal,
-  normalizeInrShippingAmount,
-  shouldNormalizeInrShipping,
+  getDisplayTotals,
 } from "@lib/util/medusa-amount"
 import PriceText from "@modules/common/components/price-text"
 import React from "react"
@@ -17,48 +15,83 @@ type CartTotalsProps = {
     currency_code: string
     item_subtotal?: number | null
     item_total?: number | null
+    item_tax_total?: number | null
     shipping_subtotal?: number | null
     shipping_total?: number | null
+    shipping_tax_total?: number | null
     discount_subtotal?: number | null
-    shipping_methods?: Array<{ name?: string | null }> | null
+    discount_total?: number | null
+    shipping_methods?: Array<{ name?: string | null; amount?: number | null }> | null
+    metadata?: Record<string, unknown> | null
   }
   variant?: "default" | "checkout"
+  shippingOverride?: { name: string; amount: number } | null
 }
 
-const CartTotals: React.FC<CartTotalsProps> = ({ totals, variant = "default" }) => {
+const CartTotals: React.FC<CartTotalsProps> = ({
+  totals,
+  variant = "default",
+  shippingOverride = null,
+}) => {
   const {
     currency_code,
     total,
-    tax_total,
     item_subtotal,
     item_total,
+    item_tax_total,
     shipping_subtotal,
     shipping_total,
+    shipping_tax_total,
     discount_subtotal,
+    discount_total,
     shipping_methods,
+    metadata,
   } = totals
 
-  const displayItemTotal = item_total ?? item_subtotal ?? 0
-  const rawShippingTotal = shipping_total ?? shipping_subtotal ?? 0
-  const displayShippingTotal = normalizeInrShippingAmount(
-    rawShippingTotal,
-    displayItemTotal,
-    currency_code
-  )
-  const displayTotal = getCartPayableTotal({
-    item_total: displayItemTotal,
-    shipping_total: rawShippingTotal,
-    discount_total: discount_subtotal,
-    total,
+  const shiprocket = metadata?.shiprocket as
+    | { courier_name?: string; rate_inr?: number }
+    | undefined
+
+  const display = getDisplayTotals({
     currency_code,
+    item_total,
+    item_subtotal,
+    item_tax_total,
+    shipping_subtotal,
+    shipping_total,
+    shipping_tax_total,
+    tax_total: totals.tax_total,
+    discount_subtotal,
+    discount_total,
+    total,
+    metadata,
   })
+
+  const displayItemTotal = display.itemTotal
+  let displayShippingTotal = display.shippingTotal
+  let displayTotal = display.displayTotal
   const shippingLabel =
-    shipping_methods?.at(-1)?.name?.trim() || "Standard"
-  const shippingWasNormalized = shouldNormalizeInrShipping(
-    rawShippingTotal,
-    displayItemTotal,
-    currency_code
-  )
+    shippingOverride?.name ||
+    shipping_methods?.at(-1)?.name?.trim() ||
+    (shiprocket?.courier_name
+      ? `${shiprocket.courier_name} via Shiprocket`
+      : "Standard")
+
+  if (shippingOverride) {
+    displayShippingTotal = shippingOverride.amount
+    displayTotal = Math.max(
+      0,
+      displayItemTotal + shippingOverride.amount - display.discountTotal
+    )
+  } else if (shiprocket?.rate_inr != null && Number.isFinite(shiprocket.rate_inr)) {
+    displayShippingTotal = shiprocket.rate_inr
+    displayTotal = Math.max(
+      0,
+      displayItemTotal + shiprocket.rate_inr - display.discountTotal
+    )
+  }
+
+  const shippingWasNormalized = display.shippingWasNormalized
 
   if (variant === "checkout") {
     return (
@@ -108,11 +141,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, variant = "default" }) 
             </PriceText>
           </span>
         </div>
-        {!!tax_total && !shippingWasNormalized && (
+        {!!display.taxTotal && !shippingWasNormalized && (
           <p className="font-mono text-[9px] tracking-[0.1em] uppercase text-on-surface-disabled text-right">
             Includes taxes{" "}
             <PriceText>
-              {convertToLocale({ amount: tax_total ?? 0, currency_code })}
+              {convertToLocale({ amount: display.taxTotal, currency_code })}
             </PriceText>
           </p>
         )}
@@ -125,17 +158,23 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, variant = "default" }) 
       <div className="flex flex-col gap-y-2 font-inter text-sm text-on-surface-variant">
         <div className="flex items-center justify-between gap-4">
           <span>Subtotal (excl. shipping and taxes)</span>
-          <span data-testid="cart-subtotal" data-value={item_subtotal || 0}>
+          <span data-testid="cart-subtotal" data-value={display.itemSubtotal}>
             <PriceText>
-              {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
+              {convertToLocale({ amount: display.itemSubtotal, currency_code })}
             </PriceText>
           </span>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <span>Shipping</span>
-          <span data-testid="cart-shipping" data-value={shipping_subtotal || 0}>
+          <span>
+            Shipping
+            {shiprocket?.courier_name ? ` · ${shiprocket.courier_name}` : ""}
+          </span>
+          <span data-testid="cart-shipping" data-value={displayShippingTotal}>
             <PriceText>
-              {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
+              {convertToLocale({
+                amount: displayShippingTotal,
+                currency_code,
+              })}
             </PriceText>
           </span>
         </div>
@@ -159,9 +198,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, variant = "default" }) 
         )}
         <div className="flex justify-between gap-4">
           <span>Taxes</span>
-          <span data-testid="cart-taxes" data-value={tax_total || 0}>
+          <span data-testid="cart-taxes" data-value={display.taxTotal}>
             <PriceText>
-              {convertToLocale({ amount: tax_total ?? 0, currency_code })}
+              {convertToLocale({ amount: display.taxTotal, currency_code })}
             </PriceText>
           </span>
         </div>
@@ -172,10 +211,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, variant = "default" }) 
         <span
           className="text-xl tracking-[-0.02em]"
           data-testid="cart-total"
-          data-value={total || 0}
+          data-value={displayTotal}
         >
           <PriceText>
-            {convertToLocale({ amount: total ?? 0, currency_code })}
+            {convertToLocale({ amount: displayTotal, currency_code })}
           </PriceText>
         </span>
       </div>

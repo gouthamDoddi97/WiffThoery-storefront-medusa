@@ -16,7 +16,7 @@ import { readLabLogEntries } from "@lib/util/lab-log"
 import { hasVlogContent } from "@lib/util/scent-vlog"
 import { getPlantImagesForPyramid } from "@lib/data/plant-images"
 
-import ProductActionsWrapper from "./product-actions-wrapper"
+import GalleryProductActions from "@modules/products/components/gallery-product-actions"
 import VariantImageCarousel from "@modules/products/components/variant-image-carousel"
 import ProductSpecTable from "@modules/products/components/product-spec-table"
 import NotePyramid from "@modules/products/components/note-pyramid"
@@ -274,13 +274,11 @@ const ProductTemplate = async ({
               />
 
               <ProductOnboardingCta />
-              <Suspense fallback={null}>
-                <ProductActionsWrapper
-                  id={product.id}
-                  region={region}
-                  accent={accent}
-                />
-              </Suspense>
+              <GalleryProductActions
+                product={product}
+                region={region}
+                accent={accent}
+              />
             </div>
           </div>
         </div>

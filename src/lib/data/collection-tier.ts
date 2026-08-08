@@ -26,7 +26,8 @@ export const getCollectionTiers = async (): Promise<
 > => {
   try {
     const res = await fetch(`${MEDUSA_BACKEND_URL}/store/collection-tiers`, {
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 300, tags: ["collection-tiers"] },
       headers: {
         "x-publishable-api-key":
           process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",

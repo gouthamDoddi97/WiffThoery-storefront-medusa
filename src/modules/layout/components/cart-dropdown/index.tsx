@@ -16,6 +16,11 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
+import {
+  CART_OPTIMISTIC_DELTA,
+  CART_UPDATED,
+} from "@lib/cart/cart-events"
+import { useOptimisticCartItems } from "@lib/hooks/use-optimistic-cart-items"
 
 const CartDropdown = ({
   cart: cartState,
@@ -26,14 +31,22 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const [optimisticDelta, setOptimisticDelta] = useState(0)
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
 
-  const totalItems =
+  const serverTotalItems =
     cartState?.items?.reduce((acc, item) => {
       return acc + item.quantity
     }, 0) || 0
+
+  const optimisticItems = useOptimisticCartItems(cartState)
+  const dropdownItems = optimisticItems.length
+    ? optimisticItems
+    : cartState?.items ?? []
+
+  const totalItems = Math.max(0, serverTotalItems + optimisticDelta)
 
   const subtotal = cartState?.subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
@@ -64,6 +77,25 @@ const CartDropdown = ({
   }, [activeTimer])
 
   const pathname = usePathname()
+
+  useEffect(() => {
+    setOptimisticDelta(0)
+  }, [serverTotalItems])
+
+  useEffect(() => {
+    const onOptimistic = (event: Event) => {
+      const delta = (event as CustomEvent<{ delta: number }>).detail.delta
+      setOptimisticDelta((current) => current + delta)
+    }
+    const onUpdated = () => setOptimisticDelta(0)
+
+    window.addEventListener(CART_OPTIMISTIC_DELTA, onOptimistic)
+    window.addEventListener(CART_UPDATED, onUpdated)
+    return () => {
+      window.removeEventListener(CART_OPTIMISTIC_DELTA, onOptimistic)
+      window.removeEventListener(CART_UPDATED, onUpdated)
+    }
+  }, [])
 
   // open cart dropdown when modifying the cart items, but only if we're not on the cart page
   useEffect(() => {
@@ -118,10 +150,10 @@ const CartDropdown = ({
                 <span className="font-inter text-xs text-on-surface-variant">{totalItems} item{totalItems !== 1 ? "s" : ""}</span>
               )}
             </div>
-            {cartState && cartState.items?.length ? (
+            {cartState && dropdownItems.length ? (
               <>
                 <div className="overflow-y-scroll max-h-[402px] px-5 grid grid-cols-1 gap-y-6 no-scrollbar py-4">
-                  {cartState.items
+                  {dropdownItems
                     .sort((a, b) => {
                       return (a.created_at ?? "") > (b.created_at ?? "")
                         ? -1
@@ -176,6 +208,7 @@ const CartDropdown = ({
                               />
                               <DeleteButton
                                 id={item.id}
+                                quantity={item.quantity}
                                 data-testid="cart-item-remove-button"
                                 className="text-on-surface-disabled hover:text-secondary transition-colors text-xs font-inter"
                               >

@@ -14,7 +14,8 @@ export type UgcGalleryPhoto = {
 export const listUgcGalleryPhotos = async (): Promise<UgcGalleryPhoto[]> => {
   try {
     const res = await fetch(`${MEDUSA_BACKEND_URL}/store/ugc-gallery`, {
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 300, tags: ["ugc-gallery"] },
       headers: {
         "x-publishable-api-key":
           process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
@@ -26,8 +27,6 @@ export const listUgcGalleryPhotos = async (): Promise<UgcGalleryPhoto[]> => {
     const { ugc_gallery_photos } = (await res.json()) as {
       ugc_gallery_photos: UgcGalleryPhoto[]
     }
-
-    console.log("Fetched UGC gallery photos:", ugc_gallery_photos)
 
     return ugc_gallery_photos ?? []
   } catch {

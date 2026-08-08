@@ -1,10 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import PriceText from "@modules/common/components/price-text"
-import { addToCart } from "@lib/data/cart"
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 import { FragranceSet } from "@lib/data/offers"
 
 const ACCENT = "var(--primary)"
@@ -26,22 +25,16 @@ function formatPrice(amount: number, currencyCode: string): string {
 
 function SetSlide({
   set,
-  countryCode,
 }: {
   set: FragranceSet
-  countryCode: string
 }) {
-  const [isAdding, setIsAdding] = useState(false)
+  const { addMany, isAdding, warmCart } = useAddToCart()
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsAdding(true)
-    await Promise.all(
-      set.items.map((item) =>
-        addToCart({ variantId: item.variant_id, quantity: 1, countryCode })
-      )
+    await addMany(
+      set.items.map((item) => ({ variantId: item.variant_id, quantity: 1 }))
     )
-    setIsAdding(false)
   }
 
   return (
@@ -104,6 +97,7 @@ function SetSlide({
         <div className="flex gap-2">
           <button
             onClick={handleAddToCart}
+            onMouseEnter={warmCart}
             disabled={isAdding}
             className="flex-1 py-3.5 font-inter text-[11px] tracking-[0.18em] uppercase font-bold disabled:opacity-50 transition-opacity"
             style={{ background: ACCENT, color: "var(--on-surface)", border: "none" }}
@@ -136,7 +130,6 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
   const startXRef = useRef<number | null>(null)
   const railRef = useRef<HTMLDivElement>(null)
   const [railWidth, setRailWidth] = useState(360)
-  const { countryCode } = useParams()
 
   useEffect(() => {
     const el = railRef.current
@@ -275,7 +268,7 @@ export default function OffersPanel({ sets }: { sets: FragranceSet[] }) {
         >
           {sets.map((set, i) => (
             <div key={set.id} style={{ flex: `0 0 ${railWidth}px`, padding: "0 20px" }}>
-              <SetSlide set={set} countryCode={countryCode as string} />
+              <SetSlide set={set} />
             </div>
           ))}
         </div>

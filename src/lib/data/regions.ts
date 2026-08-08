@@ -17,7 +17,10 @@ export const listRegions = async () => {
       cache: "force-cache",
     })
     .then(({ regions }) => regions)
-    .catch(medusaError)
+    .catch((error) => {
+      console.error("[listRegions] Backend unreachable:", error)
+      return [] as HttpTypes.StoreRegion[]
+    })
 }
 
 export const retrieveRegion = async (id: string) => {

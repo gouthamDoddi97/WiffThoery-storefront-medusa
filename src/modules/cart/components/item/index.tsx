@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteLineItem, updateLineItem } from "@lib/data/cart"
+import { useCartLineMutations } from "@lib/hooks/use-cart-line-mutations"
 import { HttpTypes } from "@medusajs/types"
 import { formatCartLineMeta } from "@modules/cart/lib/cart-display"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -10,7 +10,6 @@ import PlaceholderImage from "@modules/common/icons/placeholder-image"
 import Spinner from "@modules/common/icons/spinner"
 import QuantityStepper from "@modules/products/components/quantity-stepper"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 type ItemProps = {
@@ -22,7 +21,7 @@ type ItemProps = {
 const HAIRLINE = "color-mix(in srgb, var(--on-surface) 28%, transparent)"
 
 const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
-  const router = useRouter()
+  const { setLineQuantity } = useCartLineMutations()
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,15 +29,15 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
   const changeQuantity = async (quantity: number) => {
+    if (quantity === item.quantity) return
+
     setError(null)
     setUpdating(true)
     try {
-      if (quantity < 1) {
-        await deleteLineItem(item.id)
-      } else {
-        await updateLineItem({ lineId: item.id, quantity })
+      const ok = await setLineQuantity(item.id, quantity, item.quantity)
+      if (!ok) {
+        setError("Could not update quantity")
       }
-      router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not update quantity")
     } finally {

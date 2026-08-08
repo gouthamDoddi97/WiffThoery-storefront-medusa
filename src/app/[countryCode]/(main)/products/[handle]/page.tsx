@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { getProductByHandle } from "@lib/data/product-by-handle"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
@@ -73,18 +74,12 @@ function getImagesForVariant(
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const { handle } = params
-  const region = await getRegion(params.countryCode)
+  const [region, product] = await Promise.all([
+    getRegion(params.countryCode),
+    getProductByHandle(params.countryCode, handle),
+  ])
 
-  if (!region) {
-    notFound()
-  }
-
-  const product = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle },
-  }).then(({ response }) => response.products[0])
-
-  if (!product) {
+  if (!region || !product) {
     notFound()
   }
 
@@ -119,21 +114,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function ProductPage(props: Props) {
   const params = await props.params
-  const region = await getRegion(params.countryCode)
   const searchParams = await props.searchParams
-
   const selectedVariantId = searchParams.v_id
 
-  if (!region) {
-    notFound()
-  }
+  const [region, pricedProduct] = await Promise.all([
+    getRegion(params.countryCode),
+    getProductByHandle(params.countryCode, params.handle),
+  ])
 
-  const pricedProduct = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle: params.handle },
-  }).then(({ response }) => response.products[0])
-
-  if (!pricedProduct) {
+  if (!region || !pricedProduct) {
     notFound()
   }
 

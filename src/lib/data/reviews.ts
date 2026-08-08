@@ -37,7 +37,11 @@ export const getProductReviews = async (
   try {
     const res = await fetch(
       `${MEDUSA_BACKEND_URL}/store/products/${productId}/reviews`,
-      { cache: "no-store", headers: headers() }
+      {
+        cache: "force-cache",
+        next: { revalidate: 120, tags: ["reviews", `reviews-${productId}`] },
+        headers: headers(),
+      }
     )
     if (!res.ok) return { reviews: [], stats: { total: 0, average: null } }
     const data = await res.json()
@@ -56,7 +60,11 @@ export const getFeaturedReviews = async (
   try {
     const res = await fetch(
       `${MEDUSA_BACKEND_URL}/store/reviews?limit=${limit}`,
-      { cache: "no-store", headers: headers() }
+      {
+        cache: "force-cache",
+        next: { revalidate: 120, tags: ["reviews"] },
+        headers: headers(),
+      }
     )
     if (!res.ok) return []
     const data = await res.json()

@@ -1,6 +1,6 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import Divider from "@modules/common/components/divider"
@@ -8,7 +8,7 @@ import OptionSelect from "@modules/products/components/product-actions/option-se
 import VariantSelect from "@modules/products/components/product-actions/variant-select"
 import { productUsesVariantPicker } from "@lib/util/variant-label"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
@@ -38,9 +38,7 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>()
-  const [isAdding, setIsAdding] = useState(false)
-  const countryCode = useParams().countryCode as string
-  const router = useRouter()
+  const { add, isAdding, warmCart } = useAddToCart()
 
   const usesVariantPicker = useMemo(
     () => productUsesVariantPicker(product),
@@ -153,19 +151,7 @@ export default function ProductActions({
   // add the selected variant to the cart
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return null
-
-    setIsAdding(true)
-
-    try {
-      await addToCart({
-        variantId: selectedVariant.id,
-        quantity: 1,
-        countryCode,
-      })
-      router.refresh()
-    } finally {
-      setIsAdding(false)
-    }
+    await add({ variantId: selectedVariant.id, quantity: 1 })
   }
 
   // Primary action: if no variant is selected, focus/scroll to options
@@ -222,6 +208,7 @@ export default function ProductActions({
 
         <button
           onClick={handlePrimaryAction}
+          onMouseEnter={warmCart}
           disabled={
             !!disabled ||
             isAdding ||

@@ -16,7 +16,14 @@ export default function medusaError(error: any): never {
     // The request was made but no response was received
     throw new Error("No response received: " + error.request)
   } else {
-    // Something happened in setting up the request that triggered an Error
-    throw new Error("Error setting up the request: " + error.message)
+    const message = String(error.message ?? error)
+    if (/fetch failed|ECONNREFUSED|ENOTFOUND|network/i.test(message)) {
+      const backend =
+        process.env.MEDUSA_BACKEND_URL ?? "http://localhost:9000"
+      throw new Error(
+        `Cannot reach Medusa backend at ${backend}. Start the backend (npm run dev in whiff-theory) or check MEDUSA_BACKEND_URL.`
+      )
+    }
+    throw new Error("Error setting up the request: " + message)
   }
 }

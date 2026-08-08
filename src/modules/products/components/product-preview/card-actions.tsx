@@ -1,7 +1,7 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
 import { useWishlist } from "@lib/hooks/use-wishlist"
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 import { HttpTypes } from "@medusajs/types"
 import { useParams, useRouter } from "next/navigation"
 import { useState } from "react"
@@ -46,7 +46,7 @@ export default function CardActions({
 }) {
   const { countryCode } = useParams() as { countryCode: string }
   const router = useRouter()
-  const [isAdding, setIsAdding] = useState(false)
+  const { add, isAdding, warmCart } = useAddToCart()
   const [added, setAdded] = useState(false)
   const { isWishlisted, toggle, mounted } = useWishlist(product.id)
 
@@ -63,20 +63,10 @@ export default function CardActions({
       return
     }
 
-    setIsAdding(true)
-    try {
-      await addToCart({
-        variantId: variants[0].id!,
-        quantity: 1,
-        countryCode,
-      })
+    const ok = await add({ variantId: variants[0].id!, quantity: 1 })
+    if (ok) {
       setAdded(true)
-      router.refresh()
       setTimeout(() => setAdded(false), 1800)
-    } catch {
-      // silently fail — product page handles full error state
-    } finally {
-      setIsAdding(false)
     }
   }
 
@@ -156,6 +146,7 @@ export default function CardActions({
       <button
         type="button"
         onClick={handleAddToCart}
+        onMouseEnter={warmCart}
         disabled={isAdding}
         aria-label="Add to cart"
         className={`inline-flex items-center gap-2 font-inter text-[9px] tracking-[0.2em] uppercase transition-all duration-300 whitespace-nowrap flex-shrink-0 disabled:opacity-50 cursor-pointer ${

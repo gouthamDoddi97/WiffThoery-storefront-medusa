@@ -27,7 +27,8 @@ export async function getPerfumeDetailsMap(
       {
         method: "GET",
         query: { product_ids: uniqueIds.join(",") },
-        cache: "no-store",
+        cache: "force-cache",
+        next: { revalidate: 300, tags: ["perfume-details"] },
       }
     )
 
@@ -51,7 +52,11 @@ export const getPerfumeDetails = async (
       `/store/products/${productId}/perfume-details`,
       {
         method: "GET",
-        cache: "no-store",
+        cache: "force-cache",
+        next: {
+          revalidate: 300,
+          tags: ["perfume-details", `perfume-details-${productId}`],
+        },
       }
     )
     return perfume_details ?? null

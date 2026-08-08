@@ -1,6 +1,6 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { productUsesVariantPicker } from "@lib/util/variant-label"
 import { HttpTypes } from "@medusajs/types"
@@ -8,7 +8,7 @@ import GalleryVariantSelect from "@modules/products/components/gallery-variant-s
 import QuantityStepper from "@modules/products/components/quantity-stepper"
 import Spinner from "@modules/common/icons/spinner"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 
@@ -34,13 +34,11 @@ export default function GalleryProductActions({
 }: GalleryProductActionsProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const countryCode = useParams().countryCode as string
-  const router = useRouter()
+  const { add, isAdding, warmCart } = useAddToCart()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>()
   const [quantity, setQuantity] = useState(1)
-  const [isAdding, setIsAdding] = useState(false)
 
   const usesVariantPicker = useMemo(
     () => productUsesVariantPicker(product),
@@ -109,17 +107,7 @@ export default function GalleryProductActions({
 
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return
-    setIsAdding(true)
-    try {
-      await addToCart({
-        variantId: selectedVariant.id,
-        quantity,
-        countryCode,
-      })
-      router.refresh()
-    } finally {
-      setIsAdding(false)
-    }
+    await add({ variantId: selectedVariant.id, quantity })
   }
 
   const canAdd =
@@ -172,6 +160,7 @@ export default function GalleryProductActions({
           <button
             type="button"
             onClick={() => void handleAddToCart()}
+            onMouseEnter={warmCart}
             disabled={!canAdd}
             className="flex-1 h-10 rounded-sm font-mono text-[11px] tracking-[0.22em] uppercase text-[#FFFBF5] transition-opacity disabled:opacity-40"
             style={{ background: accent }}
@@ -210,6 +199,7 @@ export default function GalleryProductActions({
             <button
               type="button"
               onClick={() => void handleAddToCart()}
+              onMouseEnter={warmCart}
               disabled={!canAdd}
               className="flex-1 h-10 rounded-sm font-mono text-[11px] tracking-[0.2em] uppercase text-[#FFFBF5] disabled:opacity-40"
               style={{ background: accent }}

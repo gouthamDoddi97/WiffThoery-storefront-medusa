@@ -1,6 +1,6 @@
 "use client"
 
-import { placeOrder, updateCart } from "@lib/data/cart"
+import { completeRazorpayOrder } from "@lib/data/cart"
 import {
   createRazorpayCheckoutOrder,
   verifyRazorpayCheckoutPayment,
@@ -11,14 +11,53 @@ import { getCartPayableTotal, toRazorpayAmount } from "@lib/util/medusa-amount"
 import { HttpTypes } from "@medusajs/types"
 import Spinner from "@modules/common/icons/spinner"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { useRazorpay, RazorpayOrderOptions } from "react-razorpay"
 import { CurrencyCode } from "react-razorpay/dist/constants/currency"
+
+type RazorpayFailureResponse = {
+  error?: {
+    code?: string
+    description?: string
+    reason?: string
+    source?: string
+    step?: string
+  }
+}
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string
   razorpay_order_id: string
   razorpay_signature: string
+}
+
+function sanitizeIndianPhone(value?: string | null): string | undefined {
+  if (!value) return undefined
+  const digits = value.replace(/\D/g, "")
+  if (digits.length === 10) return digits
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2)
+  return undefined
+}
+
+function formatRazorpayFailure(response: RazorpayFailureResponse): string {
+  const err = response.error
+  if (!err) {
+    return "Payment failed. Please try again."
+  }
+
+  if (err.reason === "payment_cancelled") {
+    const hint =
+      process.env.NODE_ENV === "development"
+        ? " Test card: 4111 1111 1111 1111, expiry any future date, CVV any 3 digits, OTP 1234."
+        : ""
+    return (
+      (err.description ?? "Payment was cancelled.") +
+      hint
+    )
+  }
+
+  return err.description ?? err.reason ?? "Payment failed. Please try again."
 }
 
 export const RazorpayPaymentButton = ({
@@ -38,6 +77,7 @@ export const RazorpayPaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
   const { Razorpay, isLoading: razorpayScriptLoading } = useRazorpay()
   const [razorpayScriptReady, setRazorpayScriptReady] = useState(false)
 
@@ -74,6 +114,7 @@ export const RazorpayPaymentButton = ({
         discount_total: cart.discount_total,
         total: cart.total,
         currency_code: cart.currency_code ?? "inr",
+        metadata: cart.metadata,
       }),
       razorpayAmount: toRazorpayAmount(
         getCartPayableTotal({
@@ -82,6 +123,7 @@ export const RazorpayPaymentButton = ({
           discount_total: cart.discount_total,
           total: cart.total,
           currency_code: cart.currency_code ?? "inr",
+          metadata: cart.metadata,
         }),
         cart.currency_code ?? "inr"
       ),
@@ -113,24 +155,28 @@ export const RazorpayPaymentButton = ({
       razorpay_order_id: payment.razorpay_order_id,
       razorpay_payment_id: payment.razorpay_payment_id,
     })
+
     await verifyRazorpayCheckoutPayment({
       razorpay_order_id: payment.razorpay_order_id,
       razorpay_payment_id: payment.razorpay_payment_id,
       razorpay_signature: payment.razorpay_signature,
     })
 
-    await updateCart({
-      metadata: {
-        ...(cart.metadata ?? {}),
-        wt_payment: "razorpay",
-        razorpay_order_id: payment.razorpay_order_id,
-        razorpay_payment_id: payment.razorpay_payment_id,
-      },
+    const { orderId, countryCode } = await completeRazorpayOrder({
+      cartId: cart.id,
+      razorpay_order_id: payment.razorpay_order_id,
+      razorpay_payment_id: payment.razorpay_payment_id,
     })
 
-    await placeOrder()
-    logCartPayment("button", "completeOrder:success", { cartId: cart.id })
-  }, [cart.metadata, cart.id])
+    logCartPayment("button", "completeOrder:success", {
+      cartId: cart.id,
+      orderId,
+      countryCode,
+    })
+
+    router.push(`/${countryCode}/order/${orderId}/confirmed`)
+    router.refresh()
+  }, [cart.id, router])
 
   const handlePayment = useCallback(async () => {
     logCartPayment("button", "handlePayment:click", { cartId: cart.id })
@@ -156,6 +202,7 @@ export const RazorpayPaymentButton = ({
       discount_total: cart.discount_total,
       total: cart.total,
       currency_code: cart.currency_code ?? "inr",
+      metadata: cart.metadata,
     })
     const amount = toRazorpayAmount(payableTotal, cart.currency_code ?? "inr")
 
@@ -191,13 +238,13 @@ export const RazorpayPaymentButton = ({
 
       logCartPayment("button", "handlePayment:createOrder:start", {
         amount,
-        receipt: cart.id,
+        receipt: `${cart.id}_${Date.now()}`,
       })
 
       const order = await createRazorpayCheckoutOrder({
         amount,
         currency: (cart.currency_code ?? "inr").toUpperCase(),
-        receipt: cart.id,
+        receipt: `${cart.id}_${Date.now()}`,
       })
 
       logCartPayment("button", "handlePayment:createOrder:success", {
@@ -208,7 +255,6 @@ export const RazorpayPaymentButton = ({
 
       const options: RazorpayOrderOptions = {
         key: publicKey,
-        amount: order.amount,
         order_id: order.order_id,
         currency: order.currency.toUpperCase() as CurrencyCode,
         name: process.env.NEXT_PUBLIC_SHOP_NAME ?? "Whiff Theory",
@@ -221,10 +267,9 @@ export const RazorpayPaymentButton = ({
             .filter(Boolean)
             .join(" "),
           email: cart.email ?? undefined,
-          contact:
-            cart.shipping_address?.phone ??
-            cart.billing_address?.phone ??
-            undefined,
+          contact: sanitizeIndianPhone(
+            cart.shipping_address?.phone ?? cart.billing_address?.phone
+          ),
         },
         modal: {
           ondismiss: () => {
@@ -233,26 +278,37 @@ export const RazorpayPaymentButton = ({
           },
         },
         handler: (response: RazorpaySuccessResponse) => {
-          void completeOrder(response).catch(() => {
-            setErrorMessage(
-              "Payment received but verification or order placement failed. Contact support."
-            )
-            setSubmitting(false)
-          })
+          void completeOrder(response)
+            .catch((err: unknown) => {
+              const message =
+                err instanceof Error
+                  ? err.message
+                  : "Payment received but order placement failed."
+              logCartPayment("button", "completeOrder:error", { message })
+              setErrorMessage(
+                message.includes("shipping profiles")
+                  ? `${message} Run: npx medusa exec ./src/scripts/fix-product-shipping-profiles.ts`
+                  : `${message} Your payment may have gone through — contact support with payment ID ${response.razorpay_payment_id}.`
+              )
+            })
+            .finally(() => {
+              setSubmitting(false)
+            })
         },
       }
 
       const razorpay = new Razorpay(options)
-      razorpay.on(
-        "payment.failed",
-        (response: { error?: { description?: string } }) => {
-          logCartPayment("button", "razorpay:payment.failed", {
-            description: response.error?.description,
-          })
-          setSubmitting(false)
-          setErrorMessage(response.error?.description ?? "Payment failed.")
-        }
-      )
+      razorpay.on("payment.failed", (response: RazorpayFailureResponse) => {
+        logCartPayment("button", "razorpay:payment.failed", {
+          code: response.error?.code,
+          reason: response.error?.reason,
+          description: response.error?.description,
+          step: response.error?.step,
+          source: response.error?.source,
+        })
+        setSubmitting(false)
+        setErrorMessage(formatRazorpayFailure(response))
+      })
       logCartPayment("button", "razorpay:open")
       razorpay.open()
     } catch (err) {

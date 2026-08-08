@@ -8,7 +8,7 @@ import {
   setShippingMethod,
 } from "@lib/data/cart"
 import { isRazorpayConfigured } from "@lib/razorpay/config"
-import { checkPincodeServiceability, type PincodeCheck } from "@lib/data/shipping"
+import { listShiprocketCouriers, selectShiprocketCourier, type ShiprocketCourierOption } from "@lib/data/shipping"
 import { logCartPayment } from "@lib/debug/cart-payment"
 import { convertToLocale } from "@lib/util/money"
 import { normalizeInrShippingAmount } from "@lib/util/medusa-amount"
@@ -22,9 +22,10 @@ import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
 import PriceText from "@modules/common/components/price-text"
 import RazorpayMethodIcons from "@modules/common/components/razorpay-method-icons"
+import RazorpayScriptPreloader from "@modules/common/components/razorpay-script-preloader"
 import Spinner from "@modules/common/icons/spinner"
 import { useRouter } from "next/navigation"
-import { useActionState, useEffect, useMemo, useRef, useState } from "react"
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react"
 
 type CheckoutStep = "address" | "delivery" | "payment"
 
@@ -63,7 +64,6 @@ type CartCheckoutPanelProps = {
   cart: HttpTypes.StoreCart & { promotions: HttpTypes.StorePromotion[] }
   customer: HttpTypes.StoreCustomer | null
   shippingMethods: HttpTypes.StoreCartShippingOption[]
-  paymentMethods: { id: string }[]
 }
 
 export default function CartCheckoutPanel({
@@ -94,10 +94,25 @@ export default function CartCheckoutPanel({
   )
   const [razorpaySelected, setRazorpaySelected] = useState(true)
   const [saveAddress, setSaveAddress] = useState(true)
-  const [pincodeCheck, setPincodeCheck] = useState<PincodeCheck | null>(null)
-  const [pincodeChecking, setPincodeChecking] = useState(false)
+  const [shiprocketCouriers, setShiprocketCouriers] = useState<ShiprocketCourierOption[]>([])
+  const [couriersLoading, setCouriersLoading] = useState(false)
+  const [couriersError, setCouriersError] = useState<string | null>(null)
+  const [shiprocketLive, setShiprocketLive] = useState(false)
   const addressSubmitStarted = useRef(false)
   const paymentAutoPrepared = useRef(false)
+  const preparePromiseRef = useRef<Promise<boolean> | null>(null)
+  const [addressConfirmed, setAddressConfirmed] = useState(() =>
+    Boolean(cart.shipping_address?.address_1)
+  )
+  /** True after shipping/courier select succeeds — cart props may lag until refresh. */
+  const [shippingConfirmed, setShippingConfirmed] = useState(() =>
+    Boolean(cart.shipping_methods?.length)
+  )
+  /** Optimistic courier totals until cart refresh returns shiprocket metadata. */
+  const [shippingOverride, setShippingOverride] = useState<{
+    name: string
+    amount: number
+  } | null>(null)
 
   const [message, formAction, isSavingAddress] = useActionState(
     saveCartAddresses,
@@ -133,6 +148,7 @@ export default function CartCheckoutPanel({
     "shipping_address.first_name": cart.shipping_address?.first_name ?? "",
     "shipping_address.last_name": cart.shipping_address?.last_name ?? "",
     "shipping_address.address_1": cart.shipping_address?.address_1 ?? "",
+    "shipping_address.address_2": cart.shipping_address?.address_2 ?? "",
     "shipping_address.company": cart.shipping_address?.company ?? "",
     "shipping_address.postal_code": cart.shipping_address?.postal_code ?? "",
     "shipping_address.city": cart.shipping_address?.city ?? "",
@@ -165,33 +181,84 @@ export default function CartCheckoutPanel({
     ? selectedSavedAddress?.country_code ?? ""
     : formData["shipping_address.country_code"]
 
+  const shiprocketSelection = cart.metadata?.shiprocket as
+    | { courier_company_id?: number; courier_name?: string }
+    | undefined
+
+  const deliveryPincode =
+    cart.shipping_address?.postal_code?.trim() ||
+    (activeCountry === "in" ? (activePincode ?? "").trim() : "")
+
+  const useShiprocketDelivery = shiprocketCouriers.length > 0
+
   useEffect(() => {
-    const pin = (activePincode ?? "").trim()
-    if (activeCountry !== "in" || !/^\d{6}$/.test(pin)) {
-      setPincodeCheck(null)
-      setPincodeChecking(false)
+    if (cart.shipping_address?.address_1) {
+      setAddressConfirmed(true)
+    }
+  }, [cart.shipping_address?.address_1])
+
+  useEffect(() => {
+    if (cart.shipping_methods?.length) {
+      setShippingConfirmed(true)
+    }
+    const sr = cart.metadata?.shiprocket as { courier_name?: string; rate_inr?: number } | undefined
+    if (sr?.courier_name && sr.rate_inr != null) {
+      setShippingOverride({
+        name: `${sr.courier_name} via Shiprocket`,
+        amount: sr.rate_inr,
+      })
+    }
+  }, [cart.shipping_methods?.length, cart.metadata?.shiprocket])
+
+  useEffect(() => {
+    if (activeCountry !== "in" || !/^\d{6}$/.test(deliveryPincode)) {
+      setShiprocketCouriers([])
+      setCouriersError(null)
       return
     }
 
     let cancelled = false
-    setPincodeChecking(true)
-    setPincodeCheck(null)
+    setCouriersLoading(true)
+    setCouriersError(null)
 
-    const timer = setTimeout(() => {
-      void checkPincodeServiceability(pin)
-        .then((result) => {
-          if (!cancelled) setPincodeCheck(result)
-        })
-        .finally(() => {
-          if (!cancelled) setPincodeChecking(false)
-        })
-    }, 500)
+    void listShiprocketCouriers(deliveryPincode, cart.id)
+      .then((result) => {
+        if (cancelled) return
+        setShiprocketCouriers(result.couriers)
+        setShiprocketLive(result.live)
+        if (result.error && !result.couriers.length) {
+          setCouriersError(result.error)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCouriersLoading(false)
+      })
 
     return () => {
       cancelled = true
-      clearTimeout(timer)
     }
-  }, [activePincode, activeCountry])
+  }, [
+    deliveryPincode,
+    activeCountry,
+    cart.id,
+    cart.items?.map((item) => `${item.id}:${item.quantity}`).join(",") ?? "",
+  ])
+
+  const refreshCart = () => startTransition(() => router.refresh())
+
+  const advanceToDelivery = () => {
+    setAddressConfirmed(true)
+    setActiveStep("delivery")
+    refreshCart()
+  }
+
+  const advanceToPayment = () => {
+    setShippingConfirmed(true)
+    paymentAutoPrepared.current = false
+    setActiveStep("payment")
+    void ensureRazorpayReady({ silent: true })
+    refreshCart()
+  }
 
   useEffect(() => {
     if (savedAddresses.length) {
@@ -212,10 +279,9 @@ export default function CartCheckoutPanel({
 
     addressSubmitStarted.current = false
     if (message === null) {
-      router.refresh()
-      setActiveStep("delivery")
+      advanceToDelivery()
     }
-  }, [isSavingAddress, message, router])
+  }, [isSavingAddress, message])
 
   useEffect(() => {
     if (activeStep !== "payment") {
@@ -223,8 +289,17 @@ export default function CartCheckoutPanel({
     }
   }, [activeStep])
 
+  const expectShiprocketCouriers =
+    activeCountry === "in" && /^\d{6}$/.test(deliveryPincode)
+
   useEffect(() => {
     if (activeStep !== "delivery" || !deliveryMethods.length) return
+    // Wait for Shiprocket before falling back to flat-rate Medusa shipping.
+    if (expectShiprocketCouriers) {
+      if (couriersLoading) return
+      if (useShiprocketDelivery) return
+      if (!couriersError) return
+    }
     if (selectedShippingId) return
 
     const firstMethod = deliveryMethods[0]
@@ -233,32 +308,101 @@ export default function CartCheckoutPanel({
     setShippingLoading(true)
     void setShippingMethod({ cartId: cart.id, shippingMethodId: firstMethod.id })
       .then(() => {
-        router.refresh()
+        setShippingConfirmed(true)
+        refreshCart()
         if (deliveryMethods.length === 1) {
+          paymentAutoPrepared.current = false
           setActiveStep("payment")
+          void ensureRazorpayReady()
         }
       })
       .catch((err) => setShippingError(err.message))
       .finally(() => setShippingLoading(false))
-  }, [activeStep, deliveryMethods, selectedShippingId, cart.id, router])
+  }, [
+    activeStep,
+    deliveryMethods,
+    selectedShippingId,
+    cart.id,
+    expectShiprocketCouriers,
+    couriersLoading,
+    useShiprocketDelivery,
+    couriersError,
+  ])
 
-  const ensureRazorpayReady = async () => {
+  const handleCourierSelect = async (courier: ShiprocketCourierOption) => {
+    if (courier.courier_company_id === shiprocketSelection?.courier_company_id) {
+      advanceToPayment()
+      return
+    }
+
+    setShippingError(null)
+    setShippingOverride({
+      name: `${courier.courier_name} via Shiprocket`,
+      amount: courier.rate,
+    })
+    setShippingConfirmed(true)
+    advanceToPayment()
+
+    setShippingLoading(true)
+    try {
+      const { error } = await selectShiprocketCourier({
+        cartId: cart.id,
+        courierCompanyId: courier.courier_company_id,
+        pincode: deliveryPincode,
+        courierName: courier.courier_name,
+        rate: courier.rate,
+        etd: courier.etd,
+        estimatedDeliveryDays: courier.estimated_delivery_days,
+      })
+
+      if (error) {
+        setShippingError(error)
+        setShippingOverride(null)
+        setShippingConfirmed(false)
+        setActiveStep("delivery")
+        return
+      }
+
+      refreshCart()
+    } catch (err: unknown) {
+      setShippingError(
+        err instanceof Error ? err.message : "Could not select courier"
+      )
+      setShippingOverride(null)
+      setShippingConfirmed(false)
+      setActiveStep("delivery")
+    } finally {
+      setShippingLoading(false)
+    }
+  }
+
+  const ensureRazorpayReady = async (options?: {
+    skipRefresh?: boolean
+    /** Background prepare — no spinner on the payment card. */
+    silent?: boolean
+  }) => {
     logCartPayment("panel", "ensureRazorpayReady:start", {
       cartId: cart.id,
       effectiveEmail,
+      skipRefresh: options?.skipRefresh ?? false,
+      silent: options?.silent ?? false,
     })
 
     if (!isRazorpayConfigured()) {
       logCartPayment("panel", "ensureRazorpayReady:blocked — Razorpay not configured")
-      setPaymentError(
-        "Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in .env.local and restart the dev server."
-      )
+      if (!options?.silent) {
+        setPaymentError(
+          "Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in .env.local and restart the dev server."
+        )
+      }
       return false
     }
 
     if (!effectiveEmail) {
       logCartPayment("panel", "ensureRazorpayReady:blocked — no email")
-      setPaymentError("Add your email before paying.")
+      if (!options?.silent) {
+        setPaymentError("Add your email before paying.")
+      }
       return false
     }
 
@@ -271,72 +415,54 @@ export default function CartCheckoutPanel({
       return true
     }
 
-    if (paymentPreparing) {
-      return false
+    if (preparePromiseRef.current) {
+      if (!options?.silent) {
+        setPaymentPreparing(true)
+      }
+      try {
+        return await preparePromiseRef.current
+      } finally {
+        if (!options?.silent) {
+          setPaymentPreparing(false)
+        }
+      }
     }
 
-    setPaymentPreparing(true)
-    setPaymentError(null)
+    const runPrepare = async (): Promise<boolean> => {
+      if (!options?.silent) {
+        setPaymentPreparing(true)
+      }
+      setPaymentError(null)
 
-    const error = await prepareRazorpayCheckout(cart.id)
-    setPaymentPreparing(false)
+      const error = await prepareRazorpayCheckout(cart.id)
 
-    if (error) {
-      logCartPayment("panel", "ensureRazorpayReady:failed", { error })
-      setPaymentError(error)
-      paymentAutoPrepared.current = false
-      return false
-    }
+      if (!options?.silent) {
+        setPaymentPreparing(false)
+      }
 
-    paymentAutoPrepared.current = true
-    logCartPayment("panel", "ensureRazorpayReady:success — refreshing cart")
-    router.refresh()
-    return true
-  }
+      if (error) {
+        logCartPayment("panel", "ensureRazorpayReady:failed", { error })
+        if (!options?.silent) {
+          setPaymentError(error)
+        }
+        paymentAutoPrepared.current = false
+        return false
+      }
 
-  useEffect(() => {
-    if (activeStep !== "payment") return
-
-    if (!isRazorpayConfigured()) {
-      logCartPayment("panel", "auto-prepare:blocked — Razorpay not configured")
-      setPaymentError(
-        "Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in .env.local and restart the dev server."
-      )
-      return
-    }
-
-    if (!razorpaySelected || paymentAutoPrepared.current || paymentPreparing) {
-      return
-    }
-
-    if (!effectiveEmail) {
-      logCartPayment("panel", "auto-prepare:waiting for email")
-      return
-    }
-
-    const hasSession = cart.payment_collection?.payment_sessions?.some(
-      (session) => session.status === "pending"
-    )
-    if (hasSession && cart.metadata?.wt_payment === "razorpay") {
-      logCartPayment("panel", "auto-prepare:skipped — session already pending", {
-        paymentCollectionId: cart.payment_collection?.id,
-        sessionCount: cart.payment_collection?.payment_sessions?.length ?? 0,
-      })
       paymentAutoPrepared.current = true
-      return
+      logCartPayment("panel", "ensureRazorpayReady:success")
+      if (!options?.skipRefresh) {
+        refreshCart()
+      }
+      return true
     }
 
-    logCartPayment("panel", "auto-prepare:starting")
-    paymentAutoPrepared.current = true
-    void ensureRazorpayReady()
-  }, [
-    activeStep,
-    razorpaySelected,
-    effectiveEmail,
-    paymentPreparing,
-    cart.metadata?.wt_payment,
-    cart.payment_collection?.payment_sessions,
-  ])
+    preparePromiseRef.current = runPrepare().finally(() => {
+      preparePromiseRef.current = null
+    })
+
+    return preparePromiseRef.current
+  }
 
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -380,13 +506,12 @@ export default function CartCheckoutPanel({
       return
     }
 
-    router.refresh()
-    setActiveStep("delivery")
+    advanceToDelivery()
   }
 
   const handleShippingSelect = async (methodId: string) => {
     if (methodId === selectedShippingId) {
-      setActiveStep("payment")
+      advanceToPayment()
       return
     }
 
@@ -395,8 +520,7 @@ export default function CartCheckoutPanel({
 
     try {
       await setShippingMethod({ cartId: cart.id, shippingMethodId: methodId })
-      router.refresh()
-      setActiveStep("payment")
+      advanceToPayment()
     } catch (err: unknown) {
       setShippingError(err instanceof Error ? err.message : "Could not set shipping")
     } finally {
@@ -419,13 +543,12 @@ export default function CartCheckoutPanel({
 
     setConfirmedEmail(trimmed)
     paymentAutoPrepared.current = false
-    router.refresh()
   }
 
   const canPay =
-    Boolean(cart.shipping_address?.address_1) &&
+    (Boolean(cart.shipping_address?.address_1) || addressConfirmed) &&
     Boolean(effectiveEmail) &&
-    Boolean(cart.shipping_methods?.length) &&
+    (Boolean(cart.shipping_methods?.length) || shippingConfirmed) &&
     razorpaySelected &&
     isRazorpayConfigured()
 
@@ -476,24 +599,50 @@ export default function CartCheckoutPanel({
     paymentPreparing,
   ])
 
-  const pincodeStatus = pincodeChecking ? (
+  const paymentCart = useMemo(() => {
+    if (!shippingOverride) return cart
+
+    const baseShiprocket =
+      (cart.metadata?.shiprocket as Record<string, unknown> | undefined) ?? {}
+
+    return {
+      ...cart,
+      metadata: {
+        ...cart.metadata,
+        shiprocket: {
+          ...baseShiprocket,
+          courier_name: shippingOverride.name.replace(/ via Shiprocket$/i, ""),
+          rate_inr: shippingOverride.amount,
+        },
+      },
+    }
+  }, [cart, shippingOverride])
+
+  // Warm Medusa payment session + Razorpay script while user is on delivery/payment.
+  useEffect(() => {
+    if (activeStep !== "delivery" && activeStep !== "payment") return
+    if (!effectiveEmail || !isRazorpayConfigured()) return
+
+    void ensureRazorpayReady({ silent: true, skipRefresh: true })
+  }, [
+    activeStep,
+    effectiveEmail,
+    cart.id,
+    cart.metadata?.wt_payment,
+    cart.payment_collection?.payment_sessions,
+  ])
+
+  const pincodeStatus = couriersLoading ? (
     <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface-muted">
-      Checking delivery availability…
+      Loading delivery options…
     </p>
-  ) : pincodeCheck?.serviceable === true ? (
-    <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface">
-      ✓{" "}
-      {pincodeCheck.min_days
-        ? `Delivers to ${activePincode} in ${
-            pincodeCheck.min_days === pincodeCheck.max_days
-              ? pincodeCheck.min_days
-              : `${pincodeCheck.min_days}–${pincodeCheck.max_days}`
-          } days`
-        : `Delivery available to ${activePincode}`}
-    </p>
-  ) : pincodeCheck?.serviceable === false ? (
+  ) : couriersError ? (
     <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-red-500">
-      Delivery is currently unavailable to {activePincode}
+      {couriersError}
+    </p>
+  ) : shiprocketCouriers.length > 0 ? (
+    <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface">
+      ✓ {shiprocketCouriers.length} delivery options for {deliveryPincode}
     </p>
   ) : null
 
@@ -502,6 +651,12 @@ export default function CartCheckoutPanel({
       className="flex flex-col gap-6 p-6 small:p-8 bg-surface-low"
       style={{ border: PANEL_BORDER }}
     >
+      <RazorpayScriptPreloader
+        enabled={
+          isRazorpayConfigured() &&
+          (activeStep === "delivery" || activeStep === "payment")
+        }
+      />
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[9px] tracking-[0.16em] uppercase text-on-surface-muted">
         {CHECKOUT_STEPS.map((checkoutStep, index) => {
           const canOpen =
@@ -636,6 +791,13 @@ export default function CartCheckoutPanel({
                     onChange={handleFormChange}
                     required
                   />
+                  <Input
+                    label="Apartment, door no., landmark"
+                    name="shipping_address.address_2"
+                    value={formData["shipping_address.address_2"]}
+                    onChange={handleFormChange}
+                    placeholder="Flat 4B, near temple, etc."
+                  />
                   <div className="grid grid-cols-2 gap-3">
                     <Input
                       label="Postal code"
@@ -679,6 +841,7 @@ export default function CartCheckoutPanel({
                     name="shipping_address.phone"
                     value={formData["shipping_address.phone"]}
                     onChange={handleFormChange}
+                    placeholder="10-digit Indian mobile"
                   />
                 </div>
 
@@ -714,10 +877,72 @@ export default function CartCheckoutPanel({
         {activeStep === "delivery" && (
           <div className="flex flex-col gap-4">
             <p className="font-mono text-[9px] tracking-[0.14em] uppercase text-on-surface-muted">
-              Delivery method
+              {useShiprocketDelivery ? "Choose courier · Shiprocket" : "Delivery method"}
             </p>
 
-            {deliveryMethods.length ? (
+            {couriersLoading && (
+              <div className="flex items-center gap-2 text-on-surface-muted py-2">
+                <Spinner />
+                <span className="font-mono text-[9px] tracking-[0.12em] uppercase">
+                  Loading live delivery rates…
+                </span>
+              </div>
+            )}
+
+            {useShiprocketDelivery ? (
+              <div className="flex flex-col gap-2">
+                {!shiprocketLive && (
+                  <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface-muted">
+                    Demo couriers — set SHIPROCKET_DEMO_MODE=false for live rates
+                  </p>
+                )}
+                {shiprocketCouriers.map((courier) => {
+                  const selected =
+                    shiprocketSelection?.courier_company_id ===
+                    courier.courier_company_id
+                  const eta =
+                    courier.etd ??
+                    (courier.estimated_delivery_days
+                      ? `${courier.estimated_delivery_days} day${
+                          courier.estimated_delivery_days === 1 ? "" : "s"
+                        }`
+                      : "Standard delivery")
+
+                  return (
+                    <button
+                      key={courier.courier_company_id}
+                      type="button"
+                      onClick={() => void handleCourierSelect(courier)}
+                      disabled={shippingLoading}
+                      className={clx(
+                        "flex items-center justify-between gap-4 p-4 text-left transition-colors disabled:opacity-60",
+                        selected
+                          ? "bg-surface-container/60"
+                          : "bg-transparent hover:bg-surface-container/30"
+                      )}
+                      style={{ border: PANEL_BORDER }}
+                    >
+                      <div>
+                        <p className="font-garamond text-base text-on-surface">
+                          {courier.courier_name}
+                        </p>
+                        <p className="mt-1 font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface-muted">
+                          {eta} · prepaid
+                        </p>
+                      </div>
+                      <span className="font-mono text-sm text-on-surface whitespace-nowrap">
+                        <PriceText>
+                          {convertToLocale({
+                            amount: courier.rate,
+                            currency_code: cart.currency_code,
+                          })}
+                        </PriceText>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : deliveryMethods.length ? (
               <div className="flex flex-col gap-2">
                 {deliveryMethods.map((method) => {
                   const selected = selectedShippingId === method.id
@@ -773,11 +998,11 @@ export default function CartCheckoutPanel({
                   )
                 })}
               </div>
-            ) : (
+            ) : !couriersLoading ? (
               <p className="font-inter text-sm text-on-surface-variant">
-                No delivery methods available for this address.
+                {couriersError ?? "No delivery methods available for this address."}
               </p>
-            )}
+            ) : null}
 
             {shippingLoading && (
               <div className="flex items-center gap-2 text-on-surface-muted">
@@ -788,7 +1013,8 @@ export default function CartCheckoutPanel({
               </div>
             )}
 
-            {selectedShippingId && !shippingLoading && (
+            {(selectedShippingId || shiprocketSelection?.courier_company_id) &&
+              !shippingLoading && (
               <button
                 type="button"
                 onClick={() => setActiveStep("payment")}
@@ -798,7 +1024,7 @@ export default function CartCheckoutPanel({
               </button>
             )}
 
-            <ErrorMessage error={shippingError} />
+            <ErrorMessage error={shippingError ?? couriersError} />
           </div>
         )}
 
@@ -840,7 +1066,7 @@ export default function CartCheckoutPanel({
               type="button"
               onClick={() => {
                 setRazorpaySelected(true)
-                void ensureRazorpayReady()
+                void ensureRazorpayReady({ silent: true, skipRefresh: true })
               }}
               className={clx(
                 "w-full p-4 text-left transition-colors",
@@ -872,14 +1098,13 @@ export default function CartCheckoutPanel({
                     </p>
                   </div>
                 </div>
-                {paymentPreparing && <Spinner />}
               </div>
               <RazorpayMethodIcons className="mt-4 ml-7" compact />
             </button>
 
             {paymentPreparing && (
               <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-on-surface-muted">
-                Preparing secure checkout…
+                Connecting to payment…
               </p>
             )}
 
@@ -888,16 +1113,22 @@ export default function CartCheckoutPanel({
         )}
       </div>
 
-      <CartTotals totals={cart} variant="checkout" />
+      <CartTotals
+        totals={cart}
+        variant="checkout"
+        shippingOverride={shippingOverride}
+      />
 
       {activeStep === "payment" && (
         <RazorpayPaymentButton
           notReady={notReady}
-          cart={cart}
+          cart={paymentCart}
           data-testid="cart-checkout-pay-button"
           buttonLabel="PROCEED TO PAY →"
           buttonClassName="w-full py-4 px-6 bg-on-surface text-surface-lowest font-grotesk font-semibold text-[11px] tracking-[0.22em] uppercase transition-opacity duration-200 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          onBeforePay={ensureRazorpayReady}
+          onBeforePay={() =>
+            ensureRazorpayReady({ skipRefresh: true, silent: false })
+          }
         />
       )}
 

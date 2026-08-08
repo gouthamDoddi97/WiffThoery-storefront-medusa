@@ -4,30 +4,45 @@ import { transferCart } from "@lib/data/customer"
 import { ExclamationCircleSolid } from "@medusajs/icons"
 import { StoreCart, StoreCustomer } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { startTransition, useCallback, useEffect, useRef, useState } from "react"
 
 function CartMismatchBanner(props: {
   customer: StoreCustomer
   cart: StoreCart
 }) {
   const { customer, cart } = props
+  const router = useRouter()
+  const autoAttempted = useRef(false)
   const [isPending, setIsPending] = useState(false)
-  const [actionText, setActionText] = useState("Run transfer again")
+  const [dismissed, setDismissed] = useState(false)
+  const [actionText, setActionText] = useState("Link cart")
 
-  if (!customer || !!cart.customer_id) {
-    return
-  }
+  const shouldShow = Boolean(customer && !cart.customer_id && !dismissed)
 
-  const handleSubmit = async () => {
+  const runTransfer = useCallback(async () => {
+    setIsPending(true)
+    setActionText("Linking…")
+
     try {
-      setIsPending(true)
-      setActionText("Transferring..")
-
       await transferCart()
+      setDismissed(true)
+      startTransition(() => router.refresh())
     } catch {
-      setActionText("Run transfer again")
+      setActionText("Try again")
+    } finally {
       setIsPending(false)
     }
+  }, [router])
+
+  useEffect(() => {
+    if (!shouldShow || autoAttempted.current) return
+    autoAttempted.current = true
+    void runTransfer()
+  }, [shouldShow, runTransfer])
+
+  if (!shouldShow) {
+    return null
   }
 
   return (
@@ -35,7 +50,7 @@ function CartMismatchBanner(props: {
       <div className="flex flex-col small:flex-row small:gap-2 gap-1 items-center">
         <span className="flex items-center gap-1">
           <ExclamationCircleSolid className="inline" />
-          Something went wrong when we tried to transfer your cart
+          Link this cart to your account to save your checkout progress
         </span>
 
         <span>·</span>
@@ -45,7 +60,7 @@ function CartMismatchBanner(props: {
           className="hover:bg-transparent active:bg-transparent focus:bg-transparent disabled:text-orange-500 text-orange-950 p-0 bg-transparent"
           size="base"
           disabled={isPending}
-          onClick={handleSubmit}
+          onClick={() => void runTransfer()}
         >
           {actionText}
         </Button>

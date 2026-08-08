@@ -1,5 +1,6 @@
 "use server"
 
+import { cache } from "react"
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
@@ -14,8 +15,18 @@ import {
   removeCartId,
   setAuthToken,
 } from "./cookies"
+import { isCartAlreadyCompletedError } from "@lib/cart/cart-utils"
 
-export const retrieveCustomer =
+async function clearStaleCartCookieFromAuth() {
+  await removeCartId()
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag("carts")
+  if (cartCacheTag) {
+    revalidateTag(cartCacheTag)
+  }
+}
+
+export const retrieveCustomer = cache(
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
 
@@ -33,7 +44,7 @@ export const retrieveCustomer =
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
         query: {
-          fields: "*orders",
+          fields: "id,email,first_name,last_name,phone,*addresses",
         },
         headers,
         next,
@@ -42,6 +53,7 @@ export const retrieveCustomer =
       .then(({ customer }) => customer)
       .catch(() => null)
   }
+)
 
 export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
   const headers = {
@@ -152,7 +164,15 @@ export async function transferCart() {
 
   const headers = await getAuthHeaders()
 
-  await sdk.store.cart.transferCart(cartId, {}, headers)
+  try {
+    await sdk.store.cart.transferCart(cartId, {}, headers)
+  } catch (error) {
+    if (isCartAlreadyCompletedError(error)) {
+      await clearStaleCartCookieFromAuth()
+      return
+    }
+    medusaError(error)
+  }
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)

@@ -1,3 +1,5 @@
+import { cache } from "react"
+
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { getPerfumeDetails } from "@lib/data/perfume-details"
@@ -79,7 +81,7 @@ export type StoreCatalogData = {
   filterCounts: FilterCounts
 }
 
-export async function getStoreCatalogData(
+export const getStoreCatalogData = cache(async function getStoreCatalogData(
   countryCode: string,
   sortBy?: SortOptions,
   filters?: StoreFilters
@@ -139,7 +141,7 @@ export async function getStoreCatalogData(
       filterCounts,
     },
   }
-}
+})
 
 export default async function FilteredPaginatedProducts({
   sortBy,
@@ -159,38 +161,59 @@ export default async function FilteredPaginatedProducts({
   productsPerPage = 10,
   shopLayout = false,
 }: Props) {
-  const region = await getRegion(countryCode)
-  if (!region) return null
-
-  const queryParams: {
-    limit: number
-    collection_id?: string[]
-    category_id?: string[]
-    order?: string
-    fields?: string
-  } = {
-    limit: 100,
-    fields: shopLayout ? STORE_PRODUCT_FIELDS : undefined,
-  }
-
-  if (collectionId) queryParams.collection_id = [collectionId]
-  if (categoryId) queryParams.category_id = [categoryId]
-  if (sortBy === "created_at") queryParams.order = "created_at"
-
-  const {
-    response: { products: allProducts },
-  } = await listProductsWithSort({
-    page: 1,
-    queryParams,
-    sortBy,
-    countryCode,
-  })
-
-  let products = allProducts
+  let region: Awaited<ReturnType<typeof getRegion>>
+  let products: Awaited<ReturnType<typeof filterStoreProducts>>
+  let allProducts: Awaited<
+    ReturnType<typeof listProductsWithSort>
+  >["response"]["products"]
+  let filterCounts: FilterCounts | undefined
 
   if (shopLayout) {
-    products = await filterStoreProducts(allProducts, { tier, family, mood, price })
+    const catalog = await getStoreCatalogData(countryCode, sortBy, {
+      tier,
+      family,
+      mood,
+      price,
+    })
+
+    if (!catalog.region) return null
+
+    region = catalog.region
+    products = catalog.products
+    filterCounts = catalog.data.filterCounts
+    allProducts = products
   } else {
+    region = await getRegion(countryCode)
+    if (!region) return null
+
+    const queryParams: {
+      limit: number
+      collection_id?: string[]
+      category_id?: string[]
+      order?: string
+      fields?: string
+    } = {
+      limit: 100,
+    }
+
+    if (collectionId) queryParams.collection_id = [collectionId]
+    if (categoryId) queryParams.category_id = [categoryId]
+    if (sortBy === "created_at") queryParams.order = "created_at"
+
+    const {
+      response: { products: fetchedProducts },
+    } = await listProductsWithSort({
+      page: 1,
+      queryParams,
+      sortBy,
+      countryCode,
+    })
+
+    allProducts = fetchedProducts
+    products = allProducts
+  }
+
+  if (!shopLayout) {
     const hasLegacyFilters =
       longevity.length > 0 || sillage.length > 0 || notes.length > 0
 
@@ -304,12 +327,13 @@ export default async function FilteredPaginatedProducts({
       )
     }
 
-    const filterCounts = await computeFilterCounts(allProducts)
+    const sidebarCounts =
+      filterCounts ?? (await computeFilterCounts(allProducts))
 
     return (
       <div className="flex flex-col small:flex-row small:items-start">
         <StoreSidebar
-          counts={filterCounts}
+          counts={sidebarCounts}
           tier={tier}
           family={family}
           mood={mood}

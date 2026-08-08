@@ -1,5 +1,6 @@
 import ItemsTemplate from "./items"
 import EmptyCartMessage from "../components/empty-cart-message"
+import ResetCartButton from "../components/reset-cart-button"
 import SignInPrompt from "../components/sign-in-prompt"
 import CartCheckoutPanel from "@modules/cart/components/cart-checkout-panel"
 import {
@@ -12,12 +13,10 @@ const CartTemplate = ({
   cart,
   customer,
   shippingMethods,
-  paymentMethods,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
   shippingMethods: HttpTypes.StoreCartShippingOption[]
-  paymentMethods: { id: string }[]
 }) => {
   const itemCount = cart?.items?.length ?? 0
 
@@ -47,6 +46,10 @@ const CartTemplate = ({
               )}
 
               <ItemsTemplate cart={cart} />
+
+              <div className="mt-8 pt-6 border-t rule-ink">
+                <ResetCartButton />
+              </div>
             </div>
 
             <div className="relative lg:sticky lg:top-24">
@@ -55,7 +58,6 @@ const CartTemplate = ({
                   cart={cart as HttpTypes.StoreCart & { promotions: HttpTypes.StorePromotion[] }}
                   customer={customer}
                   shippingMethods={shippingMethods}
-                  paymentMethods={paymentMethods}
                 />
               )}
             </div>
@@ -71,6 +73,9 @@ const CartTemplate = ({
               </h1>
             </div>
             <EmptyCartMessage />
+            <div className="mt-6">
+              <ResetCartButton label="Start a new cart" />
+            </div>
           </>
         )}
       </div>

@@ -1,11 +1,8 @@
-import { listCollections } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import BrandLogo from "@modules/common/components/brand-logo"
 import FadeIn from "@modules/common/components/fade-in"
 
 export default async function Footer() {
-  const { collections } = await listCollections({ fields: "*products" })
-
   return (
     <footer className="bg-surface-lowest border-t border-surface-variant/30 w-full">
       <div className="content-container pt-20 pb-10">

@@ -7,6 +7,7 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import OrderReviewForm from "@modules/account/components/order-review-form"
 import { convertToLocale } from "@lib/util/money"
+import { getDisplayTotals } from "@lib/util/medusa-amount"
 import PriceText from "@modules/common/components/price-text"
 import { HttpTypes } from "@medusajs/types"
 
@@ -35,6 +36,19 @@ const OrderCard = ({ order }: OrderCardProps) => {
     setReviewingProductTitle(title)
   }
 
+  const displayTotal = getDisplayTotals({
+    currency_code: order.currency_code,
+    item_total: order.item_total,
+    item_subtotal: order.item_subtotal,
+    item_tax_total: order.item_tax_total,
+    shipping_subtotal: order.shipping_subtotal,
+    shipping_total: order.shipping_total,
+    shipping_tax_total: order.shipping_tax_total,
+    tax_total: order.tax_total,
+    discount_total: order.discount_total,
+    total: order.total,
+  }).displayTotal
+
   return (
     <div className="bg-surface-low border border-surface-variant/20 flex flex-col p-4" data-testid="order-card">
       <div className="uppercase text-large-semi mb-1 text-on-surface">
@@ -47,7 +61,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
         <span className="px-2" data-testid="order-amount">
           <PriceText>
             {convertToLocale({
-              amount: order.total,
+              amount: displayTotal,
               currency_code: order.currency_code,
             })}
           </PriceText>

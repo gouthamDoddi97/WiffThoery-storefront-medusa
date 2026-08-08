@@ -1,45 +1,41 @@
 import { Metadata } from "next"
+import { Suspense } from "react"
 
-import { listCartOptions, retrieveCart } from "@lib/data/cart"
+import { retrieveCart } from "@lib/data/cart"
+import { NAV_CART_FIELDS } from "@lib/cart/cart-fields"
 import { retrieveCustomer } from "@lib/data/customer"
 import { getBaseURL } from "@lib/util/env"
-import { StoreCartShippingOption } from "@medusajs/types"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
 import NavigationProgress from "@modules/layout/components/navigation-progress"
 import MobileBottomNav from "@modules/layout/components/mobile-bottom-nav"
-import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
+import FreeShippingNudgeLoader from "@modules/shipping/components/free-shipping-price-nudge/loader"
+import WarmCart from "@modules/layout/components/warm-cart"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
 }
 
 export default async function PageLayout(props: { children: React.ReactNode }) {
-  const customer = await retrieveCustomer()
-  const cart = await retrieveCart()
-  let shippingOptions: StoreCartShippingOption[] = []
-
-  if (cart) {
-    const { shipping_options } = await listCartOptions()
-
-    shippingOptions = shipping_options
-  }
+  const [customer, cart] = await Promise.all([
+    retrieveCustomer(),
+    retrieveCart(undefined, NAV_CART_FIELDS),
+  ])
 
   return (
     <>
+      <WarmCart />
       <NavigationProgress />
-      <Nav />
+      <Nav cart={cart} />
       {customer && cart && (
         <CartMismatchBanner customer={customer} cart={cart} />
       )}
 
       {cart && (
-        <FreeShippingPriceNudge
-          variant="popup"
-          cart={cart}
-          shippingOptions={shippingOptions}
-        />
+        <Suspense fallback={null}>
+          <FreeShippingNudgeLoader cart={cart} />
+        </Suspense>
       )}
       <div className="pb-[68px] small:pb-0">{props.children}</div>
       <Footer />
