@@ -16,11 +16,15 @@ export default function ProductPrice({
     variantId: variant?.id,
   })
 
-  const selectedPrice = variant ? variantPrice : cheapestPrice
+  const selectedPrice = variant
+    ? (variantPrice ?? cheapestPrice)
+    : cheapestPrice
 
   if (!selectedPrice) {
     return (
-      <div className="block w-32 h-9 bg-surface-container animate-pulse rounded-sm" />
+      <p className="font-inter text-sm text-on-surface-muted py-1">
+        Price unavailable — check variant pricing in admin for your region.
+      </p>
     )
   }
 

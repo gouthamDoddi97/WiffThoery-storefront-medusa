@@ -19,6 +19,15 @@ type PaymentDetailsProps = {
  * (9900) and adds it to item rupees (300) → 10200. Prefer order totals.
  */
 function getPaidAmount(order: HttpTypes.StoreOrder, paymentAmount?: number) {
+  const razorpayCharged = order.metadata?.razorpay_charged_amount_inr
+  if (
+    typeof razorpayCharged === "number" &&
+    Number.isFinite(razorpayCharged) &&
+    razorpayCharged > 0
+  ) {
+    return razorpayCharged
+  }
+
   const display = getDisplayTotals({
     currency_code: order.currency_code,
     item_total: order.item_total,
@@ -62,6 +71,16 @@ function getPaidAmount(order: HttpTypes.StoreOrder, paymentAmount?: number) {
 
   // Prefer order total when payment is wildly larger than order
   if (paymentAmount > display.displayTotal * 5) {
+    return display.displayTotal
+  }
+
+  // Medusa payment.amount can still reflect Standard Shipping before sync.
+  if (
+    order.metadata?.wt_payment === "razorpay" &&
+    paymentAmount != null &&
+    Number.isFinite(paymentAmount) &&
+    paymentAmount > display.displayTotal * 1.05
+  ) {
     return display.displayTotal
   }
 

@@ -18,10 +18,17 @@ export const metadata: Metadata = {
 }
 
 export default async function PageLayout(props: { children: React.ReactNode }) {
-  const [customer, cart] = await Promise.all([
-    retrieveCustomer(),
-    retrieveCart(undefined, NAV_CART_FIELDS),
-  ])
+  let customer = null
+  let cart = null
+
+  try {
+    ;[customer, cart] = await Promise.all([
+      retrieveCustomer(),
+      retrieveCart(undefined, NAV_CART_FIELDS),
+    ])
+  } catch (error) {
+    console.error("[PageLayout] Store API unavailable:", error)
+  }
 
   return (
     <>

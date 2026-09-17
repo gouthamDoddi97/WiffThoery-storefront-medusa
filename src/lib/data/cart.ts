@@ -612,6 +612,8 @@ export type CompleteRazorpayOrderInput = {
   cartId: string
   razorpay_order_id: string
   razorpay_payment_id: string
+  /** INR amount actually charged via Razorpay Standard Checkout */
+  razorpay_charged_amount_inr?: number
 }
 
 export type CompleteRazorpayOrderResult = {
@@ -715,6 +717,12 @@ export async function completeRazorpayOrder(
           wt_payment: "razorpay",
           razorpay_order_id: input.razorpay_order_id,
           razorpay_payment_id: input.razorpay_payment_id,
+          ...(input.razorpay_charged_amount_inr != null &&
+          Number.isFinite(input.razorpay_charged_amount_inr)
+            ? {
+                razorpay_charged_amount_inr: input.razorpay_charged_amount_inr,
+              }
+            : {}),
         },
       },
       { cartId: input.cartId, revalidateFulfillment: false }

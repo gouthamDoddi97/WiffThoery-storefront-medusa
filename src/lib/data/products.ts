@@ -7,6 +7,10 @@ import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 import { getRegion, retrieveRegion } from "./regions"
+import {
+  backendUnreachableMessage,
+  isBackendConnectionError,
+} from "@lib/util/backend-fetch"
 
 export const listProducts = async ({
   pageParam = 1,
@@ -51,15 +55,21 @@ export const listProducts = async ({
   }
 
   const defaultFields =
-    "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*options,*variants.options"
+    "*variants.calculated_price,+variants.inventory_quantity,+variants.metadata,*variants.images,+metadata,+tags,*options,*variants.options"
   const requestedFields = queryParams?.fields ?? defaultFields
-  const fields = requestedFields.includes("metadata")
+  let fields = requestedFields.includes("metadata")
     ? requestedFields
     : `${requestedFields},+metadata`
+  if (!fields.includes("variants.metadata")) {
+    fields = `${fields},+variants.metadata`
+  }
 
   const next = {
     ...(await getCacheOptions("products")),
   }
+
+  const fetchByHandle =
+    typeof queryParams?.handle === "string" && queryParams.handle.length > 0
 
   return sdk.client
     .fetch<{ products: HttpTypes.StoreProduct[]; count: number }>(
@@ -76,7 +86,7 @@ export const listProducts = async ({
         },
         headers,
         next,
-        cache: "force-cache",
+        cache: fetchByHandle ? "no-store" : "force-cache",
       }
     )
     .then(({ products, count }) => {
@@ -93,6 +103,17 @@ export const listProducts = async ({
         nextPage: nextPage,
         queryParams,
       }
+    })
+    .catch((error) => {
+      if (isBackendConnectionError(error)) {
+        console.error(`[listProducts] ${backendUnreachableMessage()}`)
+        return {
+          response: { products: [], count: 0 },
+          nextPage: null,
+          queryParams,
+        }
+      }
+      throw error
     })
 }
 

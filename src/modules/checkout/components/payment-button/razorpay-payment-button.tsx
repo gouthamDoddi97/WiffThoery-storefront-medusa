@@ -162,10 +162,20 @@ export const RazorpayPaymentButton = ({
       razorpay_signature: payment.razorpay_signature,
     })
 
+    const chargedAmountInr = getCartPayableTotal({
+      item_total: cart.item_total,
+      shipping_total: cart.shipping_total,
+      discount_total: cart.discount_total,
+      total: cart.total,
+      currency_code: cart.currency_code ?? "inr",
+      metadata: cart.metadata,
+    })
+
     const { orderId, countryCode } = await completeRazorpayOrder({
       cartId: cart.id,
       razorpay_order_id: payment.razorpay_order_id,
       razorpay_payment_id: payment.razorpay_payment_id,
+      razorpay_charged_amount_inr: chargedAmountInr,
     })
 
     logCartPayment("button", "completeOrder:success", {
@@ -176,7 +186,16 @@ export const RazorpayPaymentButton = ({
 
     router.push(`/${countryCode}/order/${orderId}/confirmed`)
     router.refresh()
-  }, [cart.id, router])
+  }, [
+    cart.id,
+    cart.item_total,
+    cart.shipping_total,
+    cart.discount_total,
+    cart.total,
+    cart.currency_code,
+    cart.metadata,
+    router,
+  ])
 
   const handlePayment = useCallback(async () => {
     logCartPayment("button", "handlePayment:click", { cartId: cart.id })

@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import VariantSelect from "@modules/products/components/product-actions/variant-select"
+import { isVariantOffline } from "@lib/util/product-availability"
 import { productUsesVariantPicker } from "@lib/util/variant-label"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
@@ -45,9 +46,14 @@ export default function ProductActions({
     [product]
   )
 
+  const storefrontVariants = useMemo(
+    () => (product.variants ?? []).filter((v) => !isVariantOffline(v)),
+    [product.variants]
+  )
+
   // Preselect from URL or when only one variant exists
   useEffect(() => {
-    const variants = product.variants ?? []
+    const variants = storefrontVariants
     if (variants.length === 1) {
       const variantOptions = optionsAsKeymap(variants[0].options)
       setOptions(variantOptions ?? {})
@@ -63,22 +69,22 @@ export default function ProductActions({
     if (fromUrl && variants.some((v) => v.id === fromUrl)) {
       setSelectedVariantId(fromUrl)
     }
-  }, [product.variants, usesVariantPicker, searchParams])
+  }, [storefrontVariants, usesVariantPicker, searchParams])
 
   const selectedVariant = useMemo(() => {
-    if (!product.variants || product.variants.length === 0) {
+    if (!storefrontVariants.length) {
       return
     }
 
     if (usesVariantPicker) {
-      return product.variants.find((v) => v.id === selectedVariantId)
+      return storefrontVariants.find((v) => v.id === selectedVariantId)
     }
 
-    return product.variants.find((v) => {
+    return storefrontVariants.find((v) => {
       const variantOptions = optionsAsKeymap(v.options)
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options, selectedVariantId, usesVariantPicker])
+  }, [storefrontVariants, options, selectedVariantId, usesVariantPicker])
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -94,11 +100,11 @@ export default function ProductActions({
       return !!selectedVariantId
     }
 
-    return product.variants?.some((v) => {
+    return storefrontVariants.some((v) => {
       const variantOptions = optionsAsKeymap(v.options)
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options, selectedVariantId, usesVariantPicker])
+  }, [storefrontVariants, options, selectedVariantId, usesVariantPicker])
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
@@ -174,11 +180,11 @@ export default function ProductActions({
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
         <div>
-          {(product.variants?.length ?? 0) > 1 && (
+          {storefrontVariants.length > 1 && (
             <div className="flex flex-col gap-y-4">
               {usesVariantPicker ? (
                 <VariantSelect
-                  variants={product.variants ?? []}
+                  variants={storefrontVariants}
                   currentVariantId={selectedVariantId}
                   onSelect={setSelectedVariantId}
                   title="Variant"
